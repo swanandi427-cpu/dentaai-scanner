@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Satoshi";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("/assets/fonts/Satoshi.woff2") format("woff2");
+}
+
+:root {
+  /* Deep black background, gold accent */
+  --background: 0.08 0.005 60;
+  --foreground: 0.96 0.01 80;
+  --card: 0.12 0.008 60;
+  --card-foreground: 0.96 0.01 80;
+  --popover: 0.12 0.008 60;
+  --popover-foreground: 0.96 0.01 80;
+  --primary: 0.78 0.16 80;
+  --primary-foreground: 0.08 0.005 60;
+  --secondary: 0.18 0.015 60;
+  --secondary-foreground: 0.85 0.01 80;
+  --muted: 0.16 0.01 60;
+  --muted-foreground: 0.55 0.03 70;
+  --accent: 0.72 0.18 75;
+  --accent-foreground: 0.08 0.005 60;
+  --destructive: 0.62 0.22 25;
+  --destructive-foreground: 0.98 0 0;
+  --border: 0.22 0.015 60;
+  --input: 0.22 0.015 60;
+  --ring: 0.78 0.16 80;
+  --radius: 1.5rem;
+  --chart-1: 0.78 0.16 80;
+  --chart-2: 0.72 0.17 150;
+  --chart-3: 0.62 0.22 25;
+  --chart-4: 0.85 0.2 85;
+  --chart-5: 0.68 0.22 280;
+  --sidebar: 0.1 0.008 60;
+  --sidebar-foreground: 0.96 0.01 80;
+  --sidebar-primary: 0.78 0.16 80;
+  --sidebar-primary-foreground: 0.08 0.005 60;
+  --sidebar-accent: 0.16 0.01 60;
+  --sidebar-accent-foreground: 0.85 0.01 80;
+  --sidebar-border: 0.22 0.015 60;
+  --sidebar-ring: 0.78 0.16 80;
+}
+
+* {
+  border-color: oklch(var(--border));
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: oklch(var(--background));
+  color: oklch(var(--foreground));
+  font-family: "Satoshi", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  }
+
+  /* Gold gradient text */
+  .text-gradient-gold {
+    background: linear-gradient(
+      135deg,
+      oklch(0.88 0.18 85),
+      oklch(0.72 0.19 72)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Keep old name as alias for compatibility */
+  .text-gradient-cyan {
+    background: linear-gradient(
+      135deg,
+      oklch(0.88 0.18 85),
+      oklch(0.72 0.19 72)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass-card {
+    background: oklch(0.12 0.008 60 / 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid oklch(0.3 0.03 70 / 0.45);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px oklch(0.78 0.16 80 / 0.4), 0 0 60px
+      oklch(0.78 0.16 80 / 0.18);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 20px oklch(0.78 0.16 80 / 0.7);
+  }
+
+  .grid-bg {
+    background-image: linear-gradient(
+        oklch(0.28 0.025 70 / 0.1) 1px,
+        transparent 1px
+      ), linear-gradient(90deg, oklch(0.28 0.025 70 / 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .pill-button {
+    border-radius: 9999px;
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
+  }
+
+  .circle-icon {
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Gold glow ring accent */
+  .circle-glow-ring {
+    box-shadow: 0 0 0 1px oklch(0.78 0.16 80 / 0.3), 0 0 16px 4px
+      oklch(0.78 0.16 80 / 0.15);
+  }
+
+  /**
+   * Logo circle — gold border, no square edges.
+   */
+  .logo-circle {
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: oklch(0.78 0.16 80 / 0.08);
+    border: 2px solid oklch(0.78 0.16 80 / 0.55);
+    box-shadow: 0 0 0 4px oklch(0.78 0.16 80 / 0.08), 0 0 20px 4px
+      oklch(0.78 0.16 80 / 0.2), inset 0 0 12px oklch(0.78 0.16 80 / 0.06);
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(-110%);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110%);
+    opacity: 0.8;
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px oklch(0.78 0.16 80 / 0.08), 0 0 15px
+      oklch(0.78 0.16 80 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px oklch(0.78 0.16 80 / 0.14), 0 0 40px
+      oklch(0.78 0.16 80 / 0.7), 0 0 80px oklch(0.78 0.16 80 / 0.3);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 2.5s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out both;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: oklch(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(var(--border));
+  border-radius: 3px;
+}
