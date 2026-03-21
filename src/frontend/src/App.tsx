@@ -4,6 +4,7 @@ import { ScanProvider } from "@/context/ScanContext";
 import AnalysisPage from "@/pages/AnalysisPage";
 import HistoryPage from "@/pages/HistoryPage";
 import HomePage from "@/pages/HomePage";
+import ProfilePage from "@/pages/ProfilePage";
 import QRCodePage from "@/pages/QRCodePage";
 import ResultsPage from "@/pages/ResultsPage";
 import ScanPage from "@/pages/ScanPage";
@@ -62,6 +63,12 @@ const qrRoute = createRoute({
   component: QRCodePage,
 });
 
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/profile",
+  component: ProfilePage,
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   scanRoute,
@@ -69,6 +76,7 @@ const routeTree = rootRoute.addChildren([
   resultsRoute,
   historyRoute,
   qrRoute,
+  profileRoute,
 ]);
 
 const router = createRouter({ routeTree });

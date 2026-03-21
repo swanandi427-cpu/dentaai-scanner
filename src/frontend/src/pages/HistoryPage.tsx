@@ -242,6 +242,21 @@ export default function HistoryPage() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="py-6 text-center text-xs text-muted-foreground border-t border-border/30">
+        <p>
+          © {new Date().getFullYear()} DantaNova.{" "}
+          <a
+            href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            caffeine.ai
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
