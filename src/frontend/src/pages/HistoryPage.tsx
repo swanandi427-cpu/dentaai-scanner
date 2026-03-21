@@ -256,6 +256,7 @@ export default function HistoryPage() {
             caffeine.ai
           </a>
         </p>
+        <p className="mt-1">Developed by Swanandi Manoj Vispute</p>
       </footer>
     </div>
   );

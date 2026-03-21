@@ -216,6 +216,7 @@ export default function QRCodePage() {
 
       <footer className="py-6 text-center text-xs text-muted-foreground border-t border-border/30">
         <p>© 2026 DantaNova. Because Every Smile Matters The Most.</p>
+        <p className="mt-1">Developed by Swanandi Manoj Vispute</p>
       </footer>
     </div>
   );

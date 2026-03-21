@@ -166,6 +166,7 @@ export default function ProfilePage() {
             caffeine.ai
           </a>
         </p>
+        <p className="mt-1">Developed by Swanandi Manoj Vispute</p>
       </footer>
     </div>
   );
