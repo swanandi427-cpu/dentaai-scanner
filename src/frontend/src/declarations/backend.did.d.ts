@@ -10,38 +10,250 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface ScanResult {
-  'teeth' : Array<ToothRecord>,
-  'overallScore' : bigint,
+export interface AvailabilitySlot {
+  'dateTimeLabel' : string,
+  'slotId' : bigint,
+  'isBooked' : boolean,
+  'dentistId' : Principal,
+}
+export interface Booking {
+  'status' : BookingStatus,
+  'paymentStatus' : PaymentStatusInternal,
+  'bookingId' : bigint,
+  'urgency' : BookingUrgency,
+  'patientId' : Principal,
+  'dentistEmail' : string,
+  'createdAt' : Time,
+  'amountRupees' : bigint,
+  'notes' : string,
+  'requestedDate' : string,
+}
+export type BookingStatus = { 'cancelled' : null } |
+  { 'pending' : null } |
+  { 'completed' : null } |
+  { 'approved' : null } |
+  { 'declined' : null };
+export type BookingUrgency = { 'emergency' : null } |
+  { 'routine' : null } |
+  { 'urgent' : null };
+export interface DentistProfile {
+  'bio' : string,
+  'name' : string,
+  'email' : string,
+  'available' : boolean,
+  'isVerified' : boolean,
+  'licenseNumber' : string,
+  'specialties' : Array<string>,
+  'location' : string,
+}
+export interface FeedbackEntry {
+  'id' : bigint,
+  'text' : string,
+  'author' : Principal,
   'timestamp' : Time,
+}
+export interface Message {
+  'id' : bigint,
+  'content' : string,
+  'bookingId' : bigint,
+  'createdAt' : Time,
+  'senderPrincipal' : string,
+  'senderName' : string,
+}
+export interface PassportRecord {
+  'id' : bigint,
+  'patientEmail' : string,
+  'treatmentHistory' : string,
+  'preApprovedBudget' : bigint,
+  'passportCode' : string,
+  'isActive' : boolean,
+  'currentConditions' : string,
+  'patientPrincipal' : string,
+  'notes' : string,
+  'issuedAt' : Time,
+  'issuedBy' : string,
+  'allergies' : string,
+}
+export type PaymentStatusInternal = { 'pending' : null } |
+  { 'paid' : null } |
+  { 'refunded' : null };
+export interface ReimbursementRequest {
+  'id' : bigint,
+  'status' : ReimbursementStatus,
+  'createdAt' : Time,
+  'passportCode' : string,
+  'treatmentDetails' : string,
+  'amountRupees' : bigint,
+  'passportOwnerId' : string,
+  'netAmountRupees' : bigint,
+  'platformFeeRupees' : bigint,
+  'requestedBy' : string,
+}
+export type ReimbursementStatus = { 'settled' : null } |
+  { 'pending' : null } |
+  { 'approved' : null } |
+  { 'declined' : null };
+export interface ScanResult {
+  'id' : bigint,
+  'teeth' : Array<ToothRecord>,
+  'timestamp' : Time,
+  'severity' : ScanSeverity,
+  'healthScore' : bigint,
+}
+export type ScanSeverity = { 'mild' : null } |
+  { 'severe' : null } |
+  { 'moderate' : null };
+export interface Testimonial {
+  'content' : string,
+  'testimonialId' : bigint,
+  'name' : string,
+  'role' : string,
+  'author' : Principal,
+  'timestamp' : Time,
+  'rating' : bigint,
+  'location' : string,
 }
 export type Time = bigint;
 export interface ToothRecord {
   'status' : ToothStatus,
-  'number' : bigint,
   'recommendation' : string,
+  'toothNumber' : bigint,
   'condition' : string,
 }
 export type ToothStatus = { 'risk' : null } |
   { 'healthy' : null } |
   { 'cavity' : null };
-export interface UserProfile { 'name' : string }
-export type UserRole = { 'admin' : null } |
-  { 'user' : null } |
-  { 'guest' : null };
+export interface UserProfile {
+  'name' : string,
+  'createdAt' : Time,
+  'email' : string,
+  'principalId' : string,
+}
+export type UserRole = { 'patient' : null } |
+  { 'admin' : null } |
+  { 'dentist' : null } |
+  { 'anonymous' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'approveBooking' : ActorMethod<[bigint], undefined>,
+  'approveReimbursementRequest' : ActorMethod<[bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'declineBooking' : ActorMethod<[bigint], undefined>,
+  'declineReimbursementRequest' : ActorMethod<[bigint, string], undefined>,
+  'deleteTestimonial' : ActorMethod<[bigint], undefined>,
   'deleteUserScans' : ActorMethod<[], undefined>,
+  'getAllDentists' : ActorMethod<[], Array<DentistProfile>>,
+  'getAllTestimonials' : ActorMethod<[], Array<Testimonial>>,
+  'getAvailabilitySlots' : ActorMethod<[Principal], Array<AvailabilitySlot>>,
+  'getBooking' : ActorMethod<[bigint], [] | [Booking]>,
+  /**
+   * / Alias for getDentistBookings
+   */
+  'getBookingsByDentist' : ActorMethod<[], Array<Booking>>,
+  /**
+   * / Alias for getCallerBookings
+   */
+  'getBookingsByPatient' : ActorMethod<[], Array<Booking>>,
+  'getBookingsForDentist' : ActorMethod<[], Array<Booking>>,
+  'getCallerBookings' : ActorMethod<[], Array<Booking>>,
   'getCallerLatestScan' : ActorMethod<[], [] | [ScanResult]>,
+  'getCallerPassports' : ActorMethod<[], Array<PassportRecord>>,
   'getCallerScanHistory' : ActorMethod<[], Array<ScanResult>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getDentistBookings' : ActorMethod<[], Array<Booking>>,
+  'getDentistProfile' : ActorMethod<[Principal], [] | [DentistProfile]>,
+  /**
+   * / Alias for getAllDentists
+   */
+  'getDentistProfiles' : ActorMethod<[], Array<DentistProfile>>,
+  'getFeedbackList' : ActorMethod<[], Array<FeedbackEntry>>,
+  'getMessages' : ActorMethod<[bigint], Array<Message>>,
+  /**
+   * / Alias for getMessages
+   */
+  'getMessagesByBooking' : ActorMethod<[bigint], Array<Message>>,
+  'getMyBookings' : ActorMethod<[], Array<Booking>>,
+  'getMyPassports' : ActorMethod<[], Array<PassportRecord>>,
+  'getMyReimbursementRequests' : ActorMethod<[], Array<ReimbursementRequest>>,
+  'getPassportByCode' : ActorMethod<[string], [] | [PassportRecord]>,
+  'getReimbursementRequests' : ActorMethod<[], Array<ReimbursementRequest>>,
+  'getReimbursementRequestsForMe' : ActorMethod<
+    [],
+    Array<ReimbursementRequest>
+  >,
+  'getTestimonialById' : ActorMethod<[bigint], [] | [Testimonial]>,
+  /**
+   * / Alias for getAllTestimonials
+   */
+  'getTestimonials' : ActorMethod<[], Array<Testimonial>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getUserScanHistory' : ActorMethod<[Principal], Array<ScanResult>>,
+  'getVisitorCount' : ActorMethod<[], bigint>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'submitScan' : ActorMethod<[ScanResult], undefined>,
+  'issuePassport' : ActorMethod<
+    [string, string, string, string, bigint, string],
+    string
+  >,
+  'lookupPassportByCode' : ActorMethod<[string], [] | [PassportRecord]>,
+  'recordVisit' : ActorMethod<[], undefined>,
+  'registerAvailabilitySlot' : ActorMethod<[string], bigint>,
+  /**
+   * / Alias for registerDentistProfile
+   */
+  'registerDentist' : ActorMethod<
+    [string, string, string, Array<string>, string, string],
+    undefined
+  >,
+  'registerDentistProfile' : ActorMethod<
+    [string, string, string, Array<string>, string, string, boolean],
+    undefined
+  >,
+  /**
+   * / Alias for requestBooking
+   */
+  'requestAppointment' : ActorMethod<
+    [string, string, string, BookingUrgency],
+    bigint
+  >,
+  'requestBooking' : ActorMethod<
+    [string, string, string, BookingUrgency],
+    bigint
+  >,
+  'respondToBooking' : ActorMethod<[bigint, boolean], undefined>,
+  'saveCallerUserProfile' : ActorMethod<[string, string], undefined>,
+  /**
+   * / Alias for registerAvailabilitySlot
+   */
+  'saveDentistAvailability' : ActorMethod<[string], bigint>,
+  'selfIssuePassport' : ActorMethod<
+    [string, string, string, bigint, string],
+    string
+  >,
+  'settleReimbursement' : ActorMethod<[bigint, bigint], undefined>,
+  'submitFeedback' : ActorMethod<[string], undefined>,
+  'submitMessage' : ActorMethod<[bigint, string], bigint>,
+  'submitReimbursementRequest' : ActorMethod<
+    [string, string, bigint, string],
+    bigint
+  >,
+  'submitScan' : ActorMethod<
+    [Array<ToothRecord>, bigint, ScanSeverity],
+    bigint
+  >,
+  'submitTestimonial' : ActorMethod<
+    [string, string, bigint, string, string],
+    bigint
+  >,
+  'updateAvailabilitySlot' : ActorMethod<[bigint, string], undefined>,
+  'updateDentistProfile' : ActorMethod<
+    [string, string, string, Array<string>, string, string, boolean],
+    undefined
+  >,
+  'updatePaymentStatus' : ActorMethod<
+    [bigint, PaymentStatusInternal, bigint],
+    undefined
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

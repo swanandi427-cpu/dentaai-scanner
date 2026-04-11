@@ -1,7 +1,69 @@
 import { useActor } from "@/hooks/useActor";
-import type { ScanResult } from "@/types";
+import type { ScanResult, ScanSeverity, ToothRecord } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+
+// ─── Helper: map frontend ScanSeverity to backend variant ────────────────────
+function toBackendSeverity(severity: ScanSeverity) {
+  switch (severity) {
+    case "mild":
+      return { mild: null };
+    case "moderate":
+      return { moderate: null };
+    case "severe":
+      return { severe: null };
+    default:
+      return { mild: null };
+  }
+}
+
+// ─── Helper: map backend variant to frontend ScanSeverity ─────────────────────
+function fromBackendSeverity(
+  sv: Record<string, null> | undefined,
+): ScanSeverity {
+  if (!sv) return "mild";
+  if ("severe" in sv) return "severe";
+  if ("moderate" in sv) return "moderate";
+  return "mild";
+}
+
+// ─── Helper: map backend ToothStatus variant to frontend string ───────────────
+function fromBackendToothStatus(
+  ts: Record<string, null>,
+): "healthy" | "risk" | "cavity" {
+  if ("cavity" in ts) return "cavity";
+  if ("risk" in ts) return "risk";
+  return "healthy";
+}
+
+// ─── Helper: map frontend ToothRecord to backend format ───────────────────────
+function toBackendToothRecord(t: ToothRecord) {
+  return {
+    toothNumber: t.toothNumber,
+    status: { [t.status]: null } as Record<string, null>,
+    condition: t.condition,
+    recommendation: t.recommendation,
+  };
+}
+
+// ─── Helper: map backend ScanResult to frontend ScanResult ───────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fromBackendScanResult(raw: any): ScanResult {
+  return {
+    id: raw.id,
+    teeth: (raw.teeth ?? []).map((t: any) => ({
+      toothNumber: t.toothNumber,
+      status: fromBackendToothStatus(t.status),
+      condition: t.condition,
+      recommendation: t.recommendation,
+    })),
+    healthScore: raw.healthScore,
+    severity: fromBackendSeverity(raw.severity),
+    timestamp: raw.timestamp,
+  };
+}
+
+// ─── Queries ──────────────────────────────────────────────────────────────────
 
 export function useScanHistory() {
   const { actor, isFetching } = useActor();
@@ -10,7 +72,8 @@ export function useScanHistory() {
     queryFn: async (): Promise<ScanResult[]> => {
       if (!actor) return [];
       const result = await actor.getCallerScanHistory();
-      return result as unknown as ScanResult[];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (result as any[]).map(fromBackendScanResult);
     },
     enabled: !!actor && !isFetching,
   });
@@ -22,20 +85,36 @@ export function useLatestScan() {
     queryKey: ["latestScan"],
     queryFn: async (): Promise<ScanResult | null> => {
       if (!actor) return null;
-      const result = await actor.getCallerLatestScan();
-      return result as unknown as ScanResult | null;
+      // ICP option type returns [] or [value]
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = (await actor.getCallerLatestScan()) as any;
+      const raw = Array.isArray(result) ? result[0] : result;
+      return raw ? fromBackendScanResult(raw) : null;
     },
     enabled: !!actor && !isFetching,
   });
+}
+
+interface SubmitScanArgs {
+  teeth: ToothRecord[];
+  healthScore: number;
+  severity: ScanSeverity;
 }
 
 export function useSubmitScan() {
   const { actor } = useActor();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (scan: ScanResult) => {
+    mutationFn: async ({ teeth, healthScore, severity }: SubmitScanArgs) => {
       if (!actor) throw new Error("Not authenticated");
-      await actor.submitScan(scan as any);
+      const backendTeeth = teeth.map(toBackendToothRecord);
+      await actor.submitScan(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        backendTeeth as any,
+        BigInt(Math.round(healthScore)),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        toBackendSeverity(severity) as any,
+      );
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scanHistory"] });
@@ -47,13 +126,12 @@ export function useSubmitScan() {
 export function useVisitorCount() {
   const { actor, isFetching } = useActor();
 
-  // Fire-and-forget: record this visit only if the function exists on the actor
   useEffect(() => {
-    if (actor && typeof (actor as any).recordVisit === "function") {
+    if (actor) {
       try {
-        (actor as any).recordVisit().catch(() => {});
+        actor.recordVisit().catch(() => {});
       } catch {
-        // Silently ignore if recordVisit is unavailable
+        // ignore
       }
     }
   }, [actor]);
@@ -63,11 +141,8 @@ export function useVisitorCount() {
     queryFn: async (): Promise<number> => {
       if (!actor) return 0;
       try {
-        if (typeof (actor as any).getVisitorCount === "function") {
-          const count = await (actor as any).getVisitorCount();
-          return Number(count);
-        }
-        return 0;
+        const count = await actor.getVisitorCount();
+        return Number(count);
       } catch {
         return 0;
       }

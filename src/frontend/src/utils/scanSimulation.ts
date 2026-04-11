@@ -1,4 +1,9 @@
-import type { ScanResult, ToothRecord, ToothStatus } from "@/types";
+import type {
+  ScanResult,
+  ScanSeverity,
+  ToothRecord,
+  ToothStatus,
+} from "@/types";
 
 const CONDITION_MAP: Record<
   ToothStatus,
@@ -18,6 +23,11 @@ const CONDITION_MAP: Record<
       condition: "No Detectable Issues",
       recommendation:
         "No signs of disease. Continue with regular 6-month check-ups.",
+    },
+    {
+      condition: "Well-Maintained",
+      recommendation:
+        "Tooth looks great. Continue your current oral hygiene routine.",
     },
   ],
   risk: [
@@ -49,7 +59,7 @@ const CONDITION_MAP: Record<
     {
       condition: "Dental Hypersensitivity",
       recommendation:
-        "Use desensitizing toothpaste. Avoid very hot or cold foods. Consult dentist.",
+        "Use desensitizing toothpaste. Avoid very hot or cold foods.",
     },
     {
       condition: "Calculus (Tartar) Deposit",
@@ -74,7 +84,7 @@ const CONDITION_MAP: Record<
     {
       condition: "Mild Tooth Discoloration",
       recommendation:
-        "Surface stains detected. Consider professional whitening and avoid staining foods.",
+        "Surface stains detected. Consider professional whitening.",
     },
     {
       condition: "Dry Socket Risk",
@@ -131,6 +141,7 @@ const CONDITION_MAP: Record<
   ],
 };
 
+// Deterministic RNG — same seed = same result
 function seededRng(seed: number) {
   let s = seed;
   return () => {
@@ -139,6 +150,70 @@ function seededRng(seed: number) {
   };
 }
 
+function pickFrom<T>(rng: () => number, arr: T[]): T {
+  return arr[Math.floor(rng() * arr.length)];
+}
+
+// Deterministic scan simulation by severity
+export function simulateScan(severity: ScanSeverity = "moderate"): ScanResult {
+  // Fixed seeds per severity so same severity always gives same result
+  const seedMap: Record<ScanSeverity, number> = {
+    mild: 42_001,
+    moderate: 88_332,
+    severe: 13_579,
+  };
+  const rng = seededRng(seedMap[severity]);
+
+  const CAVITY_TEETH: Record<ScanSeverity, number[]> = {
+    mild: [],
+    moderate: [14, 18],
+    severe: [3, 7, 14, 18],
+  };
+
+  const RISK_TEETH: Record<ScanSeverity, number[]> = {
+    mild: [5, 19, 27],
+    moderate: [4, 8, 13, 16, 21, 24],
+    severe: [2, 5, 9, 12, 17, 20, 25, 28, 30],
+  };
+
+  const cavitySet = new Set(CAVITY_TEETH[severity]);
+  const riskSet = new Set(RISK_TEETH[severity]);
+
+  const teeth: ToothRecord[] = [];
+
+  for (let i = 1; i <= 32; i++) {
+    let status: ToothStatus = "healthy";
+    if (cavitySet.has(i)) status = "cavity";
+    else if (riskSet.has(i)) status = "risk";
+
+    const options = CONDITION_MAP[status];
+    const { condition, recommendation } = pickFrom(rng, options);
+
+    teeth.push({
+      toothNumber: BigInt(i),
+      status,
+      condition,
+      recommendation,
+    });
+  }
+
+  const healthScoreMap: Record<ScanSeverity, number> = {
+    mild: 91,
+    moderate: 63,
+    severe: 28,
+  };
+
+  const healthScore = healthScoreMap[severity];
+
+  return {
+    teeth,
+    healthScore: BigInt(healthScore),
+    severity,
+    timestamp: BigInt(Date.now()) * BigInt(1_000_000),
+  };
+}
+
+// Randomized scan for image-based analysis (uses time-seeded RNG)
 export function generateScanResult(imageCount = 5): ScanResult {
   const seed = (Date.now() + imageCount * 7919) & 0x7fffffff;
   const rng = seededRng(seed);
@@ -148,39 +223,34 @@ export function generateScanResult(imageCount = 5): ScanResult {
   for (let i = 0; i < 32; i++) {
     const r = rng();
     let status: ToothStatus;
-    if (r < 0.6) {
-      status = "healthy";
-    } else if (r < 0.85) {
-      status = "risk";
-    } else {
-      status = "cavity";
-    }
+    if (r < 0.6) status = "healthy";
+    else if (r < 0.85) status = "risk";
+    else status = "cavity";
 
     const options = CONDITION_MAP[status];
-    const optionIndex = Math.floor(rng() * options.length);
-    const { condition, recommendation } = options[optionIndex];
+    const { condition, recommendation } = pickFrom(rng, options);
 
     teeth.push({
-      number: BigInt(i + 1),
+      toothNumber: BigInt(i + 1),
       status,
       condition,
       recommendation,
     });
   }
 
-  const issueTeeth = teeth.filter((t) => t.status !== "healthy");
   const cavityCount = teeth.filter((t) => t.status === "cavity").length;
   const riskCount = teeth.filter((t) => t.status === "risk").length;
-  const overallScore = Math.max(
+  const healthScore = Math.max(
     0,
     Math.min(100, 100 - cavityCount * 8 - riskCount * 3),
   );
-
-  void issueTeeth;
+  const severity: ScanSeverity =
+    healthScore >= 70 ? "mild" : healthScore >= 40 ? "moderate" : "severe";
 
   return {
     teeth,
-    overallScore: BigInt(overallScore),
+    healthScore: BigInt(healthScore),
+    severity,
     timestamp: BigInt(Date.now()) * BigInt(1_000_000),
   };
 }

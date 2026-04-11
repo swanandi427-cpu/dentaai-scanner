@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /messages/
+Disallow: /ui-test
+
+Sitemap: https://dentaai-scanner-n0h.caffeine.xyz/sitemap.xml
+
+# IndexNow
+Host: https://dentaai-scanner-n0h.caffeine.xyz

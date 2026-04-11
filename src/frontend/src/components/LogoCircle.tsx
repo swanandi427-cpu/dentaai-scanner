@@ -1,15 +1,15 @@
 /**
  * LogoCircle — DantaNova logo displayed inside a circular bordered frame.
- * Use size="sm" for headers, size="md" for nav/scan pages, size="lg" for hero.
+ * Use size="sm" for headers, size="md" for nav, size="lg" for hero, size="xl" for splash.
  */
 
-// Logo lives in public/assets/uploads — reference as a plain URL, not a module import
 const LOGO_URL =
   "/assets/uploads/file_00000000a88c720bbdf9639edb08e122-3-1.png";
 
 interface LogoCircleProps {
   size?: "sm" | "md" | "lg" | "xl";
   animate?: boolean;
+  glow?: boolean;
   className?: string;
 }
 
@@ -23,17 +23,20 @@ const SIZE_MAP = {
 export default function LogoCircle({
   size = "md",
   animate = false,
+  glow = false,
   className = "",
 }: LogoCircleProps) {
   const { outer, imgSize } = SIZE_MAP[size];
   return (
     <div
-      className={`logo-circle ${outer} ${className}`}
+      className={`logo-circle ${outer} ${glow ? "animate-pulse-glow" : ""} ${className}`}
       style={{ overflow: "hidden", flexShrink: 0 }}
     >
       <img
         src={LOGO_URL}
         alt="DantaNova Logo"
+        width={imgSize}
+        height={imgSize}
         style={{
           width: imgSize,
           height: imgSize,
