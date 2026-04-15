@@ -1,9 +1,12 @@
 import CookieNotice from "@/components/CookieNotice";
 import FloatingFeedback from "@/components/FloatingFeedback";
+import IntroScreen from "@/components/IntroScreen";
 import { Toaster } from "@/components/ui/sonner";
 import { ScanProvider } from "@/context/ScanContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import AnalysisPage from "@/pages/AnalysisPage";
 import BookByCodePage from "@/pages/BookByCodePage";
+import CorporatePlanPage from "@/pages/CorporatePlanPage";
 import DemoPage from "@/pages/DemoPage";
 import DentistDashboardPage from "@/pages/DentistDashboardPage";
 import DentistRegisterPage from "@/pages/DentistRegisterPage";
@@ -17,6 +20,7 @@ import MyBookingsPage from "@/pages/MyBookingsPage";
 import OperationsDashboardPage from "@/pages/OperationsDashboardPage";
 import PassportLookupPage from "@/pages/PassportLookupPage";
 import PassportPage from "@/pages/PassportPage";
+import PricingPage from "@/pages/PricingPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import ProfilePage from "@/pages/ProfilePage";
 import QRCodePage from "@/pages/QRCodePage";
@@ -36,7 +40,7 @@ import {
   createRouter,
   useRouterState,
 } from "@tanstack/react-router";
-import { Bug } from "lucide-react";
+import { Bug, Moon, Sun } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,13 +51,44 @@ const queryClient = new QueryClient({
   },
 });
 
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
+  const tooltip = isDark ? "Switch to light mode" : "Switch to dark mode";
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label={tooltip}
+      title={tooltip}
+      data-ocid="nav.theme_toggle"
+      className="fixed top-3 right-4 z-50 flex items-center justify-center w-9 h-9 rounded-full border border-border/40 bg-card/80 backdrop-blur transition-all shadow-md hover:scale-105 active:scale-95"
+      style={{
+        borderColor: "oklch(0.88 0.18 85 / 0.3)",
+        background: "oklch(0.10 0.006 70 / 0.85)",
+      }}
+    >
+      {isDark ? (
+        // In dark mode: show Moon icon in gold
+        <Moon className="w-4 h-4" style={{ color: "oklch(0.88 0.18 85)" }} />
+      ) : (
+        // In light mode: show Sun icon in gold
+        <Sun className="w-4 h-4" style={{ color: "oklch(0.72 0.19 76)" }} />
+      )}
+    </button>
+  );
+}
+
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isDebugPage = pathname === "/ui-test";
 
   return (
     <>
+      <IntroScreen />
       <Outlet />
+      <ThemeToggle />
       <FloatingFeedback />
       <CookieNotice />
       <Toaster />
@@ -219,6 +254,18 @@ const supportDashboardRoute = createRoute({
   component: SupportDashboardPage,
 });
 
+const pricingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/pricing",
+  component: PricingPage,
+});
+
+const corporatePlanRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/corporate-plan",
+  component: CorporatePlanPage,
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   scanRoute,
@@ -244,6 +291,8 @@ const routeTree = rootRoute.addChildren([
   marketingDashboardRoute,
   operationsDashboardRoute,
   supportDashboardRoute,
+  pricingRoute,
+  corporatePlanRoute,
 ]);
 
 const router = createRouter({ routeTree });
@@ -257,9 +306,11 @@ declare module "@tanstack/react-router" {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ScanProvider>
-        <RouterProvider router={router} />
-      </ScanProvider>
+      <ThemeProvider>
+        <ScanProvider>
+          <RouterProvider router={router} />
+        </ScanProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

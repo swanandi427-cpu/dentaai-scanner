@@ -8,11 +8,32 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const ToothStatus = IDL.Variant({
+  'risk' : IDL.Null,
+  'healthy' : IDL.Null,
+  'cavity' : IDL.Null,
+});
+export const ToothRecord = IDL.Record({
+  'status' : ToothStatus,
+  'recommendation' : IDL.Text,
+  'toothNumber' : IDL.Nat,
+  'condition' : IDL.Text,
+});
+export const ScanSeverity = IDL.Variant({
+  'mild' : IDL.Null,
+  'severe' : IDL.Null,
+  'moderate' : IDL.Null,
+});
 export const UserRole = IDL.Variant({
   'patient' : IDL.Null,
   'admin' : IDL.Null,
   'dentist' : IDL.Null,
   'anonymous' : IDL.Null,
+});
+export const BookingUrgency = IDL.Variant({
+  'emergency' : IDL.Null,
+  'routine' : IDL.Null,
+  'urgent' : IDL.Null,
 });
 export const DentistProfile = IDL.Record({
   'bio' : IDL.Text,
@@ -53,11 +74,6 @@ export const PaymentStatusInternal = IDL.Variant({
   'paid' : IDL.Null,
   'refunded' : IDL.Null,
 });
-export const BookingUrgency = IDL.Variant({
-  'emergency' : IDL.Null,
-  'routine' : IDL.Null,
-  'urgent' : IDL.Null,
-});
 export const Booking = IDL.Record({
   'status' : BookingStatus,
   'paymentStatus' : PaymentStatusInternal,
@@ -70,21 +86,26 @@ export const Booking = IDL.Record({
   'notes' : IDL.Text,
   'requestedDate' : IDL.Text,
 });
-export const ToothStatus = IDL.Variant({
-  'risk' : IDL.Null,
-  'healthy' : IDL.Null,
-  'cavity' : IDL.Null,
+export const PaymentKind = IDL.Variant({
+  'reimbursement' : IDL.Null,
+  'bookingFee' : IDL.Null,
 });
-export const ToothRecord = IDL.Record({
-  'status' : ToothStatus,
-  'recommendation' : IDL.Text,
-  'toothNumber' : IDL.Nat,
-  'condition' : IDL.Text,
+export const PaymentState = IDL.Variant({
+  'pending' : IDL.Null,
+  'paid' : IDL.Null,
+  'refunded' : IDL.Null,
+  'failed' : IDL.Null,
 });
-export const ScanSeverity = IDL.Variant({
-  'mild' : IDL.Null,
-  'severe' : IDL.Null,
-  'moderate' : IDL.Null,
+export const PaymentRecord = IDL.Record({
+  'id' : IDL.Nat,
+  'kind' : PaymentKind,
+  'createdAt' : Time,
+  'referenceId' : IDL.Nat,
+  'amountRupees' : IDL.Nat,
+  'state' : PaymentState,
+  'payer' : IDL.Principal,
+  'stripeSessionId' : IDL.Text,
+  'settledAt' : IDL.Opt(Time),
 });
 export const ScanResult = IDL.Record({
   'id' : IDL.Nat,
@@ -92,6 +113,14 @@ export const ScanResult = IDL.Record({
   'timestamp' : Time,
   'severity' : ScanSeverity,
   'healthScore' : IDL.Nat,
+});
+export const Message = IDL.Record({
+  'id' : IDL.Nat,
+  'content' : IDL.Text,
+  'bookingId' : IDL.Nat,
+  'createdAt' : Time,
+  'senderPrincipal' : IDL.Text,
+  'senderName' : IDL.Text,
 });
 export const PassportRecord = IDL.Record({
   'id' : IDL.Nat,
@@ -113,19 +142,30 @@ export const UserProfile = IDL.Record({
   'email' : IDL.Text,
   'principalId' : IDL.Text,
 });
+export const SubscriptionTier = IDL.Variant({
+  'pro' : IDL.Null,
+  'free' : IDL.Null,
+  'elite' : IDL.Null,
+});
+export const SubscriptionState = IDL.Variant({
+  'active' : IDL.Null,
+  'cancelled' : IDL.Null,
+  'expired' : IDL.Null,
+});
+export const DentistSubscription = IDL.Record({
+  'startedAt' : Time,
+  'stripeSubscriptionId' : IDL.Text,
+  'tier' : SubscriptionTier,
+  'renewsAt' : IDL.Opt(Time),
+  'monthlyAmountRupees' : IDL.Nat,
+  'state' : SubscriptionState,
+  'dentistId' : IDL.Principal,
+});
 export const FeedbackEntry = IDL.Record({
   'id' : IDL.Nat,
   'text' : IDL.Text,
   'author' : IDL.Principal,
   'timestamp' : Time,
-});
-export const Message = IDL.Record({
-  'id' : IDL.Nat,
-  'content' : IDL.Text,
-  'bookingId' : IDL.Nat,
-  'createdAt' : Time,
-  'senderPrincipal' : IDL.Text,
-  'senderName' : IDL.Text,
 });
 export const ReimbursementStatus = IDL.Variant({
   'settled' : IDL.Null,
@@ -145,16 +185,46 @@ export const ReimbursementRequest = IDL.Record({
   'platformFeeRupees' : IDL.Nat,
   'requestedBy' : IDL.Text,
 });
+export const TierInfo = IDL.Record({
+  'features' : IDL.Vec(IDL.Text),
+  'name' : IDL.Text,
+  'tier' : SubscriptionTier,
+  'monthlyAmountRupees' : IDL.Nat,
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addScanResult' : IDL.Func(
+      [IDL.Vec(ToothRecord), IDL.Nat, ScanSeverity],
+      [IDL.Nat],
+      [],
+    ),
   'approveBooking' : IDL.Func([IDL.Nat], [], []),
   'approveReimbursementRequest' : IDL.Func([IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'cancelMySubscription' : IDL.Func([], [], []),
+  'confirmPayment' : IDL.Func([IDL.Text], [], []),
+  'createAvailabilitySlot' : IDL.Func([IDL.Text], [IDL.Nat], []),
+  'createBooking' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, BookingUrgency],
+      [IDL.Nat],
+      [],
+    ),
+  'createPassport' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
+      [IDL.Text],
+      [],
+    ),
   'declineBooking' : IDL.Func([IDL.Nat], [], []),
   'declineReimbursementRequest' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'deleteTestimonial' : IDL.Func([IDL.Nat], [], []),
   'deleteUserScans' : IDL.Func([], [], []),
+  'failPayment' : IDL.Func([IDL.Text], [], []),
+  'findDentistByEmail' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(DentistProfile)],
+      ['query'],
+    ),
   'getAllDentists' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
   'getAllTestimonials' : IDL.Func([], [IDL.Vec(Testimonial)], ['query']),
   'getAvailabilitySlots' : IDL.Func(
@@ -162,13 +232,25 @@ export const idlService = IDL.Service({
       [IDL.Vec(AvailabilitySlot)],
       ['query'],
     ),
+  'getAvailableSlots' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(AvailabilitySlot)],
+      ['query'],
+    ),
   'getBooking' : IDL.Func([IDL.Nat], [IDL.Opt(Booking)], ['query']),
+  'getBookingPayment' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Opt(PaymentRecord)],
+      ['query'],
+    ),
   'getBookingsByDentist' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
   'getBookingsByPatient' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
   'getBookingsForDentist' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
   'getCallerBookings' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
   'getCallerLatestScan' : IDL.Func([], [IDL.Opt(ScanResult)], ['query']),
+  'getCallerMessages' : IDL.Func([IDL.Nat], [IDL.Vec(Message)], ['query']),
   'getCallerPassports' : IDL.Func([], [IDL.Vec(PassportRecord)], ['query']),
+  'getCallerProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerScanHistory' : IDL.Func([], [IDL.Vec(ScanResult)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
@@ -179,19 +261,32 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getDentistProfiles' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
+  'getDentistSubscription' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(DentistSubscription)],
+      ['query'],
+    ),
   'getFeedbackList' : IDL.Func([], [IDL.Vec(FeedbackEntry)], ['query']),
   'getMessages' : IDL.Func([IDL.Nat], [IDL.Vec(Message)], ['query']),
   'getMessagesByBooking' : IDL.Func([IDL.Nat], [IDL.Vec(Message)], ['query']),
   'getMyBookings' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
   'getMyPassports' : IDL.Func([], [IDL.Vec(PassportRecord)], ['query']),
+  'getMyPayments' : IDL.Func([], [IDL.Vec(PaymentRecord)], ['query']),
   'getMyReimbursementRequests' : IDL.Func(
       [],
       [IDL.Vec(ReimbursementRequest)],
       ['query'],
     ),
+  'getMySubscription' : IDL.Func([], [IDL.Opt(DentistSubscription)], ['query']),
   'getPassportByCode' : IDL.Func(
       [IDL.Text],
       [IDL.Opt(PassportRecord)],
+      ['query'],
+    ),
+  'getPricingTiers' : IDL.Func([], [IDL.Vec(TierInfo)], ['query']),
+  'getReimbursementPayment' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Opt(PaymentRecord)],
       ['query'],
     ),
   'getReimbursementRequests' : IDL.Func(
@@ -201,6 +296,11 @@ export const idlService = IDL.Service({
     ),
   'getReimbursementRequestsForMe' : IDL.Func(
       [],
+      [IDL.Vec(ReimbursementRequest)],
+      ['query'],
+    ),
+  'getReimbursementsByPassportCode' : IDL.Func(
+      [IDL.Text],
       [IDL.Vec(ReimbursementRequest)],
       ['query'],
     ),
@@ -216,6 +316,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(ScanResult)],
       ['query'],
     ),
+  'getVerifiedDentists' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
   'getVisitorCount' : IDL.Func([], [IDL.Nat], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'issuePassport' : IDL.Func(
@@ -227,6 +328,16 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [IDL.Opt(PassportRecord)],
       ['query'],
+    ),
+  'recordBookingPayment' : IDL.Func(
+      [IDL.Nat, IDL.Nat, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
+  'recordReimbursementPayment' : IDL.Func(
+      [IDL.Nat, IDL.Nat, IDL.Text],
+      [IDL.Nat],
+      [],
     ),
   'recordVisit' : IDL.Func([], [], []),
   'registerAvailabilitySlot' : IDL.Func([IDL.Text], [IDL.Nat], []),
@@ -266,6 +377,11 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'setDentistSubscription' : IDL.Func(
+      [IDL.Principal, SubscriptionTier, IDL.Text, IDL.Nat],
+      [],
+      [],
+    ),
   'settleReimbursement' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'submitFeedback' : IDL.Func([IDL.Text], [], []),
   'submitMessage' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Nat], []),
@@ -284,7 +400,9 @@ export const idlService = IDL.Service({
       [IDL.Nat],
       [],
     ),
+  'submitUserProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'updateAvailabilitySlot' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+  'updateBookingStatus' : IDL.Func([IDL.Nat, BookingStatus], [], []),
   'updateDentistProfile' : IDL.Func(
       [
         IDL.Text,
@@ -303,16 +421,42 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'updateReimbursementStatus' : IDL.Func(
+      [IDL.Nat, ReimbursementStatus],
+      [],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const ToothStatus = IDL.Variant({
+    'risk' : IDL.Null,
+    'healthy' : IDL.Null,
+    'cavity' : IDL.Null,
+  });
+  const ToothRecord = IDL.Record({
+    'status' : ToothStatus,
+    'recommendation' : IDL.Text,
+    'toothNumber' : IDL.Nat,
+    'condition' : IDL.Text,
+  });
+  const ScanSeverity = IDL.Variant({
+    'mild' : IDL.Null,
+    'severe' : IDL.Null,
+    'moderate' : IDL.Null,
+  });
   const UserRole = IDL.Variant({
     'patient' : IDL.Null,
     'admin' : IDL.Null,
     'dentist' : IDL.Null,
     'anonymous' : IDL.Null,
+  });
+  const BookingUrgency = IDL.Variant({
+    'emergency' : IDL.Null,
+    'routine' : IDL.Null,
+    'urgent' : IDL.Null,
   });
   const DentistProfile = IDL.Record({
     'bio' : IDL.Text,
@@ -353,11 +497,6 @@ export const idlFactory = ({ IDL }) => {
     'paid' : IDL.Null,
     'refunded' : IDL.Null,
   });
-  const BookingUrgency = IDL.Variant({
-    'emergency' : IDL.Null,
-    'routine' : IDL.Null,
-    'urgent' : IDL.Null,
-  });
   const Booking = IDL.Record({
     'status' : BookingStatus,
     'paymentStatus' : PaymentStatusInternal,
@@ -370,21 +509,26 @@ export const idlFactory = ({ IDL }) => {
     'notes' : IDL.Text,
     'requestedDate' : IDL.Text,
   });
-  const ToothStatus = IDL.Variant({
-    'risk' : IDL.Null,
-    'healthy' : IDL.Null,
-    'cavity' : IDL.Null,
+  const PaymentKind = IDL.Variant({
+    'reimbursement' : IDL.Null,
+    'bookingFee' : IDL.Null,
   });
-  const ToothRecord = IDL.Record({
-    'status' : ToothStatus,
-    'recommendation' : IDL.Text,
-    'toothNumber' : IDL.Nat,
-    'condition' : IDL.Text,
+  const PaymentState = IDL.Variant({
+    'pending' : IDL.Null,
+    'paid' : IDL.Null,
+    'refunded' : IDL.Null,
+    'failed' : IDL.Null,
   });
-  const ScanSeverity = IDL.Variant({
-    'mild' : IDL.Null,
-    'severe' : IDL.Null,
-    'moderate' : IDL.Null,
+  const PaymentRecord = IDL.Record({
+    'id' : IDL.Nat,
+    'kind' : PaymentKind,
+    'createdAt' : Time,
+    'referenceId' : IDL.Nat,
+    'amountRupees' : IDL.Nat,
+    'state' : PaymentState,
+    'payer' : IDL.Principal,
+    'stripeSessionId' : IDL.Text,
+    'settledAt' : IDL.Opt(Time),
   });
   const ScanResult = IDL.Record({
     'id' : IDL.Nat,
@@ -392,6 +536,14 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : Time,
     'severity' : ScanSeverity,
     'healthScore' : IDL.Nat,
+  });
+  const Message = IDL.Record({
+    'id' : IDL.Nat,
+    'content' : IDL.Text,
+    'bookingId' : IDL.Nat,
+    'createdAt' : Time,
+    'senderPrincipal' : IDL.Text,
+    'senderName' : IDL.Text,
   });
   const PassportRecord = IDL.Record({
     'id' : IDL.Nat,
@@ -413,19 +565,30 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'principalId' : IDL.Text,
   });
+  const SubscriptionTier = IDL.Variant({
+    'pro' : IDL.Null,
+    'free' : IDL.Null,
+    'elite' : IDL.Null,
+  });
+  const SubscriptionState = IDL.Variant({
+    'active' : IDL.Null,
+    'cancelled' : IDL.Null,
+    'expired' : IDL.Null,
+  });
+  const DentistSubscription = IDL.Record({
+    'startedAt' : Time,
+    'stripeSubscriptionId' : IDL.Text,
+    'tier' : SubscriptionTier,
+    'renewsAt' : IDL.Opt(Time),
+    'monthlyAmountRupees' : IDL.Nat,
+    'state' : SubscriptionState,
+    'dentistId' : IDL.Principal,
+  });
   const FeedbackEntry = IDL.Record({
     'id' : IDL.Nat,
     'text' : IDL.Text,
     'author' : IDL.Principal,
     'timestamp' : Time,
-  });
-  const Message = IDL.Record({
-    'id' : IDL.Nat,
-    'content' : IDL.Text,
-    'bookingId' : IDL.Nat,
-    'createdAt' : Time,
-    'senderPrincipal' : IDL.Text,
-    'senderName' : IDL.Text,
   });
   const ReimbursementStatus = IDL.Variant({
     'settled' : IDL.Null,
@@ -445,16 +608,46 @@ export const idlFactory = ({ IDL }) => {
     'platformFeeRupees' : IDL.Nat,
     'requestedBy' : IDL.Text,
   });
+  const TierInfo = IDL.Record({
+    'features' : IDL.Vec(IDL.Text),
+    'name' : IDL.Text,
+    'tier' : SubscriptionTier,
+    'monthlyAmountRupees' : IDL.Nat,
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addScanResult' : IDL.Func(
+        [IDL.Vec(ToothRecord), IDL.Nat, ScanSeverity],
+        [IDL.Nat],
+        [],
+      ),
     'approveBooking' : IDL.Func([IDL.Nat], [], []),
     'approveReimbursementRequest' : IDL.Func([IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'cancelMySubscription' : IDL.Func([], [], []),
+    'confirmPayment' : IDL.Func([IDL.Text], [], []),
+    'createAvailabilitySlot' : IDL.Func([IDL.Text], [IDL.Nat], []),
+    'createBooking' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, BookingUrgency],
+        [IDL.Nat],
+        [],
+      ),
+    'createPassport' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'declineBooking' : IDL.Func([IDL.Nat], [], []),
     'declineReimbursementRequest' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'deleteTestimonial' : IDL.Func([IDL.Nat], [], []),
     'deleteUserScans' : IDL.Func([], [], []),
+    'failPayment' : IDL.Func([IDL.Text], [], []),
+    'findDentistByEmail' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(DentistProfile)],
+        ['query'],
+      ),
     'getAllDentists' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
     'getAllTestimonials' : IDL.Func([], [IDL.Vec(Testimonial)], ['query']),
     'getAvailabilitySlots' : IDL.Func(
@@ -462,13 +655,25 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(AvailabilitySlot)],
         ['query'],
       ),
+    'getAvailableSlots' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(AvailabilitySlot)],
+        ['query'],
+      ),
     'getBooking' : IDL.Func([IDL.Nat], [IDL.Opt(Booking)], ['query']),
+    'getBookingPayment' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Opt(PaymentRecord)],
+        ['query'],
+      ),
     'getBookingsByDentist' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
     'getBookingsByPatient' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
     'getBookingsForDentist' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
     'getCallerBookings' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
     'getCallerLatestScan' : IDL.Func([], [IDL.Opt(ScanResult)], ['query']),
+    'getCallerMessages' : IDL.Func([IDL.Nat], [IDL.Vec(Message)], ['query']),
     'getCallerPassports' : IDL.Func([], [IDL.Vec(PassportRecord)], ['query']),
+    'getCallerProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerScanHistory' : IDL.Func([], [IDL.Vec(ScanResult)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
@@ -479,19 +684,36 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getDentistProfiles' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
+    'getDentistSubscription' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(DentistSubscription)],
+        ['query'],
+      ),
     'getFeedbackList' : IDL.Func([], [IDL.Vec(FeedbackEntry)], ['query']),
     'getMessages' : IDL.Func([IDL.Nat], [IDL.Vec(Message)], ['query']),
     'getMessagesByBooking' : IDL.Func([IDL.Nat], [IDL.Vec(Message)], ['query']),
     'getMyBookings' : IDL.Func([], [IDL.Vec(Booking)], ['query']),
     'getMyPassports' : IDL.Func([], [IDL.Vec(PassportRecord)], ['query']),
+    'getMyPayments' : IDL.Func([], [IDL.Vec(PaymentRecord)], ['query']),
     'getMyReimbursementRequests' : IDL.Func(
         [],
         [IDL.Vec(ReimbursementRequest)],
         ['query'],
       ),
+    'getMySubscription' : IDL.Func(
+        [],
+        [IDL.Opt(DentistSubscription)],
+        ['query'],
+      ),
     'getPassportByCode' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(PassportRecord)],
+        ['query'],
+      ),
+    'getPricingTiers' : IDL.Func([], [IDL.Vec(TierInfo)], ['query']),
+    'getReimbursementPayment' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Opt(PaymentRecord)],
         ['query'],
       ),
     'getReimbursementRequests' : IDL.Func(
@@ -501,6 +723,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getReimbursementRequestsForMe' : IDL.Func(
         [],
+        [IDL.Vec(ReimbursementRequest)],
+        ['query'],
+      ),
+    'getReimbursementsByPassportCode' : IDL.Func(
+        [IDL.Text],
         [IDL.Vec(ReimbursementRequest)],
         ['query'],
       ),
@@ -520,6 +747,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ScanResult)],
         ['query'],
       ),
+    'getVerifiedDentists' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
     'getVisitorCount' : IDL.Func([], [IDL.Nat], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'issuePassport' : IDL.Func(
@@ -531,6 +759,16 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [IDL.Opt(PassportRecord)],
         ['query'],
+      ),
+    'recordBookingPayment' : IDL.Func(
+        [IDL.Nat, IDL.Nat, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+    'recordReimbursementPayment' : IDL.Func(
+        [IDL.Nat, IDL.Nat, IDL.Text],
+        [IDL.Nat],
+        [],
       ),
     'recordVisit' : IDL.Func([], [], []),
     'registerAvailabilitySlot' : IDL.Func([IDL.Text], [IDL.Nat], []),
@@ -570,6 +808,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'setDentistSubscription' : IDL.Func(
+        [IDL.Principal, SubscriptionTier, IDL.Text, IDL.Nat],
+        [],
+        [],
+      ),
     'settleReimbursement' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'submitFeedback' : IDL.Func([IDL.Text], [], []),
     'submitMessage' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Nat], []),
@@ -588,7 +831,9 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Nat],
         [],
       ),
+    'submitUserProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'updateAvailabilitySlot' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+    'updateBookingStatus' : IDL.Func([IDL.Nat, BookingStatus], [], []),
     'updateDentistProfile' : IDL.Func(
         [
           IDL.Text,
@@ -604,6 +849,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'updatePaymentStatus' : IDL.Func(
         [IDL.Nat, PaymentStatusInternal, IDL.Nat],
+        [],
+        [],
+      ),
+    'updateReimbursementStatus' : IDL.Func(
+        [IDL.Nat, ReimbursementStatus],
         [],
         [],
       ),

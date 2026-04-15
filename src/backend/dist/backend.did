@@ -26,6 +26,13 @@ type ToothRecord =
    toothNumber: nat;
  };
 type Time = int;
+type TierInfo = 
+ record {
+   features: vec text;
+   monthlyAmountRupees: nat;
+   name: text;
+   tier: SubscriptionTier;
+ };
 type Testimonial = 
  record {
    author: principal;
@@ -36,6 +43,18 @@ type Testimonial =
    role: text;
    testimonialId: nat;
    timestamp: Time;
+ };
+type SubscriptionTier = 
+ variant {
+   elite;
+   free;
+   pro;
+ };
+type SubscriptionState = 
+ variant {
+   active;
+   cancelled;
+   expired;
  };
 type ScanSeverity = 
  variant {
@@ -77,6 +96,30 @@ type PaymentStatusInternal =
    pending;
    refunded;
  };
+type PaymentState = 
+ variant {
+   failed;
+   paid;
+   pending;
+   refunded;
+ };
+type PaymentRecord = 
+ record {
+   amountRupees: nat;
+   createdAt: Time;
+   id: nat;
+   kind: PaymentKind;
+   payer: principal;
+   referenceId: nat;
+   settledAt: opt Time;
+   state: PaymentState;
+   stripeSessionId: text;
+ };
+type PaymentKind = 
+ variant {
+   bookingFee;
+   reimbursement;
+ };
 type PassportRecord = 
  record {
    allergies: text;
@@ -107,6 +150,16 @@ type FeedbackEntry =
    id: nat;
    "text": text;
    timestamp: Time;
+ };
+type DentistSubscription = 
+ record {
+   dentistId: principal;
+   monthlyAmountRupees: nat;
+   renewsAt: opt Time;
+   startedAt: Time;
+   state: SubscriptionState;
+   stripeSubscriptionId: text;
+   tier: SubscriptionTier;
  };
 type DentistProfile = 
  record {
@@ -155,18 +208,37 @@ type AvailabilitySlot =
  };
 service : {
   _initializeAccessControlWithSecret: (userSecret: text) -> ();
+  /// addScanResult: alias for submitScan
+  addScanResult: (teeth: vec ToothRecord, healthScore: nat, severity:
+   ScanSeverity) -> (nat);
   approveBooking: (bookingId: nat) -> ();
   approveReimbursementRequest: (requestId: nat) -> ();
   assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  cancelMySubscription: () -> ();
+  confirmPayment: (stripeSessionId: text) -> ();
+  /// createAvailabilitySlot: alias for registerAvailabilitySlot
+  createAvailabilitySlot: (dateTimeLabel: text) -> (nat);
+  /// createBooking: alias for requestBooking
+  createBooking: (dentistEmail: text, requestedDate: text, notes: text,
+   urgency: BookingUrgency) -> (nat);
+  /// createPassport: alias for selfIssuePassport — patient creates their own passport
+  createPassport: (treatmentHistory: text, currentConditions: text,
+   allergies: text, preApprovedBudget: nat, notes: text) -> (text);
   declineBooking: (bookingId: nat) -> ();
   declineReimbursementRequest: (requestId: nat, reason: text) -> ();
   deleteTestimonial: (id: nat) -> ();
   deleteUserScans: () -> ();
+  failPayment: (stripeSessionId: text) -> ();
+  /// findDentistByEmail: look up a dentist profile by email address
+  findDentistByEmail: (email: text) -> (opt DentistProfile) query;
   getAllDentists: () -> (vec DentistProfile) query;
   getAllTestimonials: () -> (vec Testimonial) query;
   getAvailabilitySlots: (dentistId: principal) ->
    (vec AvailabilitySlot) query;
+  /// getAvailableSlots: return unbooked slots for a given dentist
+  getAvailableSlots: (dentistId: principal) -> (vec AvailabilitySlot) query;
   getBooking: (bookingId: nat) -> (opt Booking) query;
+  getBookingPayment: (bookingId: nat) -> (opt PaymentRecord) query;
   /// Alias for getDentistBookings
   getBookingsByDentist: () -> (vec Booking) query;
   /// Alias for getCallerBookings
@@ -174,7 +246,11 @@ service : {
   getBookingsForDentist: () -> (vec Booking) query;
   getCallerBookings: () -> (vec Booking) query;
   getCallerLatestScan: () -> (opt ScanResult) query;
+  /// getCallerMessages: return messages for a booking (accessible by both parties)
+  getCallerMessages: (bookingId: nat) -> (vec Message) query;
   getCallerPassports: () -> (vec PassportRecord) query;
+  /// getCallerProfile: alias for getCallerUserProfile
+  getCallerProfile: () -> (opt UserProfile) query;
   getCallerScanHistory: () -> (vec ScanResult) query;
   getCallerUserProfile: () -> (opt UserProfile) query;
   getCallerUserRole: () -> (UserRole) query;
@@ -182,27 +258,43 @@ service : {
   getDentistProfile: (dentist: principal) -> (opt DentistProfile) query;
   /// Alias for getAllDentists
   getDentistProfiles: () -> (vec DentistProfile) query;
+  getDentistSubscription: (dentistId: principal) ->
+   (opt DentistSubscription) query;
   getFeedbackList: () -> (vec FeedbackEntry) query;
   getMessages: (bookingId: nat) -> (vec Message) query;
   /// Alias for getMessages
   getMessagesByBooking: (bookingId: nat) -> (vec Message) query;
   getMyBookings: () -> (vec Booking) query;
   getMyPassports: () -> (vec PassportRecord) query;
+  getMyPayments: () -> (vec PaymentRecord) query;
   getMyReimbursementRequests: () -> (vec ReimbursementRequest) query;
+  getMySubscription: () -> (opt DentistSubscription) query;
   getPassportByCode: (code: text) -> (opt PassportRecord) query;
+  getPricingTiers: () -> (vec TierInfo) query;
+  getReimbursementPayment: (reimbursementId: nat) ->
+   (opt PaymentRecord) query;
   getReimbursementRequests: () -> (vec ReimbursementRequest) query;
   getReimbursementRequestsForMe: () -> (vec ReimbursementRequest) query;
+  /// getReimbursementsByPassportCode: return all reimbursement requests for a given passport code
+  getReimbursementsByPassportCode: (code: text) ->
+   (vec ReimbursementRequest) query;
   getTestimonialById: (id: nat) -> (opt Testimonial) query;
   /// Alias for getAllTestimonials
   getTestimonials: () -> (vec Testimonial) query;
   getUserProfile: (user: principal) -> (opt UserProfile) query;
   getUserScanHistory: (user: principal) -> (vec ScanResult) query;
+  /// getVerifiedDentists: return all dentists (available for patient matching)
+  getVerifiedDentists: () -> (vec DentistProfile) query;
   getVisitorCount: () -> (nat) query;
   isCallerAdmin: () -> (bool) query;
   issuePassport: (patientEmail: text, treatmentHistory: text,
    currentConditions: text, allergies: text, preApprovedBudget: nat, notes:
    text) -> (text);
   lookupPassportByCode: (code: text) -> (opt PassportRecord) query;
+  recordBookingPayment: (bookingId: nat, amountRupees: nat, stripeSessionId:
+   text) -> (nat);
+  recordReimbursementPayment: (reimbursementId: nat, amountRupees: nat,
+   stripeSessionId: text) -> (nat);
   recordVisit: () -> ();
   registerAvailabilitySlot: (dateTimeLabel: text) -> (nat);
   /// Alias for registerDentistProfile
@@ -221,6 +313,8 @@ service : {
   saveDentistAvailability: (dateTimeLabel: text) -> (nat);
   selfIssuePassport: (treatmentHistory: text, currentConditions: text,
    allergies: text, preApprovedBudget: nat, notes: text) -> (text);
+  setDentistSubscription: (dentistId: principal, tier: SubscriptionTier,
+   stripeSubscriptionId: text, monthlyAmountRupees: nat) -> ();
   settleReimbursement: (requestId: nat, amountRupees: nat) -> ();
   submitFeedback: ("text": text) -> ();
   submitMessage: (bookingId: nat, content: text) -> (nat);
@@ -230,9 +324,16 @@ service : {
    ScanSeverity) -> (nat);
   submitTestimonial: (name: text, location: text, rating: nat, content: 
    text, role: text) -> (nat);
+  /// submitUserProfile: alias for saveCallerUserProfile
+  submitUserProfile: (name: text, email: text) -> ();
   updateAvailabilitySlot: (slotId: nat, dateTimeLabel: text) -> ();
+  /// updateBookingStatus: dentist or admin updates a booking's status
+  updateBookingStatus: (bookingId: nat, status: BookingStatus) -> ();
   updateDentistProfile: (name: text, email: text, licenseNumber: text,
    specialties: vec text, location: text, bio: text, available: bool) -> ();
   updatePaymentStatus: (bookingId: nat, status: PaymentStatusInternal,
    amountRupees: nat) -> ();
+  /// updateReimbursementStatus: passport owner or admin updates a reimbursement status
+  updateReimbursementStatus: (requestId: nat, status: ReimbursementStatus) ->
+   ();
 }

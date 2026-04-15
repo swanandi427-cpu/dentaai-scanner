@@ -1,5 +1,9 @@
-import type { Booking } from "@/backend.d";
-import { BookingStatus, PaymentStatusInternal } from "@/backend.d";
+import type { Booking, PaymentRecord } from "@/backend.d";
+import {
+  BookingStatus,
+  PaymentState,
+  PaymentStatusInternal,
+} from "@/backend.d";
 import LogoCircle from "@/components/LogoCircle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +16,7 @@ import {
   ArrowLeft,
   Calendar,
   CalendarCheck,
+  CreditCard,
   IndianRupee,
   MessageSquare,
   Plus,
@@ -33,17 +38,39 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-muted text-muted-foreground border-border",
 };
 
-const PAYMENT_COLORS: Record<string, string> = {
-  pending: "bg-muted text-muted-foreground border-border",
-  paid: "bg-green-500/15 text-green-400 border-green-500/30",
-  refunded: "bg-primary/10 text-primary border-primary/30",
-};
-
 const URGENCY_COLORS: Record<string, string> = {
   routine: "bg-primary/10 text-primary border-primary/30",
   urgent: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
   emergency: "bg-red-500/15 text-red-400 border-red-500/30",
 };
+
+// Map PaymentState from payment records to display info
+function paymentChipInfo(payState: PaymentState | null): {
+  label: string;
+  cls: string;
+} {
+  if (!payState || payState === PaymentState.pending)
+    return {
+      label: "Pending",
+      cls: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+    };
+  if (payState === PaymentState.paid)
+    return {
+      label: "Paid",
+      cls: "bg-green-500/15 text-green-400 border-green-500/30",
+    };
+  if (payState === PaymentState.refunded)
+    return {
+      label: "Refunded",
+      cls: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    };
+  if (payState === PaymentState.failed)
+    return {
+      label: "Failed",
+      cls: "bg-red-500/15 text-red-400 border-red-500/30",
+    };
+  return { label: "N/A", cls: "bg-muted text-muted-foreground border-border" };
+}
 
 export default function MyBookingsPage() {
   const navigate = useNavigate();
@@ -60,6 +87,27 @@ export default function MyBookingsPage() {
     enabled: !!actor && !isFetching && !!identity,
   });
 
+  // Fetch payment records and index by bookingId (referenceId in PaymentRecord)
+  const { data: myPayments = [] } = useQuery<PaymentRecord[]>({
+    queryKey: ["myPayments"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getMyPayments();
+    },
+    enabled: !!actor && !isFetching && !!identity,
+  });
+
+  // Build a map: bookingId string -> most recent payment state
+  const paymentByBookingId: Record<string, PaymentState> = {};
+  for (const p of myPayments) {
+    const key = p.referenceId.toString();
+    // Keep the most "settled" state if multiple payments exist for same booking
+    const existing = paymentByBookingId[key];
+    if (!existing || p.state === PaymentState.paid) {
+      paymentByBookingId[key] = p.state;
+    }
+  }
+
   const markPaid = async (bookingId: bigint, amount: bigint) => {
     if (!actor) return;
     try {
@@ -70,6 +118,7 @@ export default function MyBookingsPage() {
       );
       toast.success("Payment marked as paid!");
       queryClient.invalidateQueries({ queryKey: ["myBookings"] });
+      queryClient.invalidateQueries({ queryKey: ["myPayments"] });
     } catch {
       toast.error("Failed to update payment");
     }
@@ -203,15 +252,26 @@ export default function MyBookingsPage() {
           <div className="flex flex-col gap-3" data-ocid="my_bookings.list">
             {bookings.map((bk, i) => {
               const statusStr = getStatusStr(bk.status);
-              const paymentStr = getStatusStr(bk.paymentStatus);
               const urgencyStr = getStatusStr(bk.urgency);
               const statusColor =
                 STATUS_COLORS[statusStr] ?? STATUS_COLORS.pending;
-              const paymentColor =
-                PAYMENT_COLORS[paymentStr] ?? PAYMENT_COLORS.pending;
               const urgencyColor =
                 URGENCY_COLORS[urgencyStr] ?? URGENCY_COLORS.routine;
               const isApproved = statusStr === BookingStatus.approved;
+
+              // Resolve payment state: prefer payment records, fall back to booking.paymentStatus
+              const payRecordState =
+                paymentByBookingId[bk.bookingId.toString()] ?? null;
+              const internalPayStr = getStatusStr(bk.paymentStatus);
+              // Determine chip: use payment record if available
+              let chipPayState: PaymentState | null = payRecordState;
+              if (!chipPayState) {
+                if (internalPayStr === "paid") chipPayState = PaymentState.paid;
+                else if (internalPayStr === "refunded")
+                  chipPayState = PaymentState.refunded;
+                else chipPayState = PaymentState.pending;
+              }
+              const chip = paymentChipInfo(chipPayState);
 
               return (
                 <motion.div
@@ -249,25 +309,30 @@ export default function MyBookingsPage() {
                       <Badge className={`text-xs ${statusColor}`}>
                         {statusStr}
                       </Badge>
-                      <Badge className={`text-xs ${paymentColor}`}>
-                        <IndianRupee className="w-2.5 h-2.5 mr-0.5" />
-                        {paymentStr}
+                      {/* Payment status chip */}
+                      <Badge
+                        className={`text-xs flex items-center gap-1 ${chip.cls}`}
+                        data-ocid={`my_bookings.payment_chip.${i + 1}`}
+                      >
+                        <CreditCard className="w-2.5 h-2.5" />
+                        {chip.label}
                       </Badge>
                       {bk.amountRupees > 0n && (
-                        <span className="text-xs text-muted-foreground">
-                          ₹{Number(bk.amountRupees).toLocaleString("en-IN")}
+                        <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                          <IndianRupee className="w-2.5 h-2.5" />
+                          {Number(bk.amountRupees).toLocaleString("en-IN")}
                         </span>
                       )}
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {isApproved && paymentStr === "pending" && (
+                    {isApproved && chipPayState !== PaymentState.paid && (
                       <Button
                         size="sm"
                         className="rounded-full bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 text-xs px-3"
                         onClick={() => markPaid(bk.bookingId, 0n)}
-                        data-ocid="my_bookings.mark_paid"
+                        data-ocid={`my_bookings.mark_paid.${i + 1}`}
                       >
                         <IndianRupee className="w-3 h-3 mr-1" />
                         Mark Paid
@@ -284,7 +349,7 @@ export default function MyBookingsPage() {
                             params: { bookingId: bk.bookingId.toString() },
                           })
                         }
-                        data-ocid="my_bookings.chat"
+                        data-ocid={`my_bookings.chat.${i + 1}`}
                       >
                         <MessageSquare className="w-3.5 h-3.5 mr-1" />
                         Message Dentist

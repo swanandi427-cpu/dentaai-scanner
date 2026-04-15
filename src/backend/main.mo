@@ -1,10 +1,13 @@
 import Map "mo:core/Map";
+import List "mo:core/List";
 import Time "mo:core/Time";
 import Nat "mo:core/Nat";
 import Text "mo:core/Text";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Prim "mo:prim";
+import PaymentsMixin "mixins/payments-api";
+import PaymentsTypes "types/payments";
 
 
 
@@ -234,6 +237,13 @@ actor {
   var nextPassportId : Nat = 1;
   var nextReimbursementId : Nat = 1;
   var nextScanId : Nat = 1;
+
+  // ─── Payment state ────────────────────────────────────────────────────────
+  let paymentRecords = List.empty<PaymentsTypes.PaymentRecord>();
+  let dentistSubscriptions = Map.empty<Principal, PaymentsTypes.DentistSubscription>();
+  let nextPaymentIdRef = { var id : Nat = 1 };
+
+  include PaymentsMixin(paymentRecords, dentistSubscriptions, nextPaymentIdRef);
 
   // ===================== AUTH MIXIN ENDPOINTS ==============================
 
@@ -975,6 +985,226 @@ actor {
 
   // ==================== CONTRACT ALIAS ENDPOINTS ====================
   // These match the exact function names used in the frontend bindings contract.
+
+  /// submitUserProfile: alias for saveCallerUserProfile
+  public shared ({ caller }) func submitUserProfile(name : Text, email : Text) : async () {
+    let existing = userProfiles.get(caller);
+    let createdAt = switch (existing) {
+      case (?p) { p.createdAt };
+      case (null) { Time.now() };
+    };
+    let profile : UserProfile = {
+      principalId = caller.toText();
+      name;
+      email;
+      createdAt;
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  /// getCallerProfile: alias for getCallerUserProfile
+  public query ({ caller }) func getCallerProfile() : async ?UserProfile {
+    userProfiles.get(caller);
+  };
+
+  /// addScanResult: alias for submitScan
+  public shared ({ caller }) func addScanResult(
+    teeth : [ToothRecord],
+    healthScore : Nat,
+    severity : ScanSeverity
+  ) : async Nat {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Must be authenticated to submit a scan");
+    };
+    let scan : ScanResult = {
+      id = nextScanId;
+      timestamp = Time.now();
+      healthScore;
+      severity;
+      teeth;
+    };
+    let existingScans = switch (userScanResults.get(caller)) {
+      case (null) { [] };
+      case (?scans) { scans };
+    };
+    let updatedScans = existingScans.concat([scan]);
+    userScanResults.add(caller, updatedScans);
+    let id = nextScanId;
+    nextScanId += 1;
+    id;
+  };
+
+  /// findDentistByEmail: look up a dentist profile by email address
+  public query func findDentistByEmail(email : Text) : async ?DentistProfile {
+    switch (emailToDentistPrincipal.get(email)) {
+      case (null) { null };
+      case (?principal) { dentistProfiles.get(principal) };
+    };
+  };
+
+  /// getVerifiedDentists: return all dentists (available for patient matching)
+  public query func getVerifiedDentists() : async [DentistProfile] {
+    dentistProfiles.values().toArray();
+  };
+
+  /// createAvailabilitySlot: alias for registerAvailabilitySlot
+  public shared ({ caller }) func createAvailabilitySlot(dateTimeLabel : Text) : async Nat {
+    let slot : AvailabilitySlot = {
+      slotId = nextSlotId;
+      dentistId = caller;
+      dateTimeLabel;
+      isBooked = false;
+    };
+    availabilitySlots.add(nextSlotId, slot);
+    nextSlotId += 1;
+    slot.slotId;
+  };
+
+  /// getAvailableSlots: return unbooked slots for a given dentist
+  public query func getAvailableSlots(dentistId : Principal) : async [AvailabilitySlot] {
+    availabilitySlots.values().filter(
+      func(slot) { slot.dentistId == dentistId and not slot.isBooked }
+    ).toArray();
+  };
+
+  /// createBooking: alias for requestBooking
+  public shared ({ caller }) func createBooking(
+    dentistEmail : Text,
+    requestedDate : Text,
+    notes : Text,
+    urgency : BookingUrgency
+  ) : async Nat {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Must be authenticated to create a booking");
+    };
+    let booking : Booking = {
+      bookingId = nextBookingId;
+      patientId = caller;
+      dentistEmail;
+      requestedDate;
+      notes;
+      urgency;
+      status = #pending;
+      paymentStatus = #pending;
+      amountRupees = 0;
+      createdAt = Time.now();
+    };
+    bookings.add(nextBookingId, booking);
+    nextBookingId += 1;
+    booking.bookingId;
+  };
+
+  /// updateBookingStatus: dentist or admin updates a booking's status
+  public shared ({ caller }) func updateBookingStatus(bookingId : Nat, status : BookingStatus) : async () {
+    switch (bookings.get(bookingId)) {
+      case (null) { Runtime.trap("Booking does not exist") };
+      case (?booking) {
+        let callerProfile = dentistProfiles.get(caller);
+        let callerEmail = switch (callerProfile) {
+          case (?p) { p.email };
+          case (null) { "" };
+        };
+        let isPatient = booking.patientId == caller;
+        let isDentist = callerEmail == booking.dentistEmail;
+        let isAdmin = acIsAdmin(accessControlState, caller);
+        if (not isPatient and not isDentist and not isAdmin) {
+          Runtime.trap("Unauthorized: Cannot update this booking status");
+        };
+        let updatedBooking : Booking = { booking with status };
+        bookings.add(bookingId, updatedBooking);
+      };
+    };
+  };
+
+  /// getCallerMessages: return messages for a booking (accessible by both parties)
+  public query ({ caller }) func getCallerMessages(bookingId : Nat) : async [Message] {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Must be authenticated to read messages");
+    };
+    messages.values().filter(
+      func(message) { message.bookingId == bookingId }
+    ).toArray();
+  };
+
+  /// createPassport: alias for selfIssuePassport — patient creates their own passport
+  public shared ({ caller }) func createPassport(
+    treatmentHistory : Text,
+    currentConditions : Text,
+    allergies : Text,
+    preApprovedBudget : Nat,
+    notes : Text
+  ) : async Text {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Must be authenticated to create a passport");
+    };
+    switch (patientPassportMap.get(caller)) {
+      case (?existingId) {
+        switch (passports.get(existingId)) {
+          case (?existing) {
+            let updated : PassportRecord = {
+              existing with
+              treatmentHistory;
+              currentConditions;
+              allergies;
+              preApprovedBudget;
+              notes;
+            };
+            passports.add(existingId, updated);
+            return existing.passportCode;
+          };
+          case (null) {};
+        };
+      };
+      case (null) {};
+    };
+    let patientEmail = switch (userProfiles.get(caller)) {
+      case (?p) { p.email };
+      case (null) { "" };
+    };
+    let code = "DP-" # nextPassportId.toText();
+    let passport : PassportRecord = {
+      id = nextPassportId;
+      patientPrincipal = caller.toText();
+      patientEmail;
+      passportCode = code;
+      preApprovedBudget;
+      treatmentHistory;
+      currentConditions;
+      allergies;
+      notes;
+      issuedBy = caller.toText();
+      issuedAt = Time.now();
+      isActive = true;
+    };
+    passports.add(nextPassportId, passport);
+    patientPassportMap.add(caller, nextPassportId);
+    passportCodeMap.add(code, nextPassportId);
+    nextPassportId += 1;
+    code;
+  };
+
+  /// getReimbursementsByPassportCode: return all reimbursement requests for a given passport code
+  public query func getReimbursementsByPassportCode(code : Text) : async [ReimbursementRequest] {
+    let fullCode = if (code.startsWith(#text "DP-")) { code } else { "DP-" # code };
+    reimbursementRequests.values().filter(
+      func(r) { r.passportCode == fullCode }
+    ).toArray();
+  };
+
+  /// updateReimbursementStatus: passport owner or admin updates a reimbursement status
+  public shared ({ caller }) func updateReimbursementStatus(requestId : Nat, status : ReimbursementStatus) : async () {
+    switch (reimbursementRequests.get(requestId)) {
+      case (null) { Runtime.trap("Request not found") };
+      case (?req) {
+        if (req.passportOwnerId != caller.toText() and not acIsAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: Only the passport owner can update this request");
+        };
+        if (req.status != #pending) { Runtime.trap("Request already processed") };
+        let updatedReq : ReimbursementRequest = { req with status };
+        reimbursementRequests.add(requestId, updatedReq);
+      };
+    };
+  };
 
   /// Alias for registerDentistProfile
   public shared ({ caller }) func registerDentist(

@@ -1,26 +1,31 @@
 {
-  "overview": "DantaNova is an AI-powered dental health platform for early detection of dental issues and instant emergency dentist connection. Users scan their teeth via camera, get AI-powered analysis on a 3D dental arch visualization, and can book emergency dentists. Features a unique Dental Passport trust-transfer system for dental care while traveling.",
+  "overview": "DantaNova is an AI-powered dental health platform with camera-based tooth scanning, 3D dental arch visualization, emergency dentist connection, Dental Passport system, and subscription tiers for dentists. Built for patients and dental practices worldwide.",
   "features": [
-    "AI-powered dental scanning and analysis",
-    "Interactive 3D dental arch visualization",
-    "Emergency Dentist Finder and booking system",
-    "Dental Passport trust-transfer network",
-    "Real-time messaging between patients and dentists",
-    "Marketing, Operations, and Support dashboards",
-    "Y Combinator pitch page with PDF export",
-    "Engineering Principles section (Elon Musk algorithm)",
-    "SEO-optimized with schema.org markup",
-    "Google AdSense integration"
+    "AI dental scan via phone camera",
+    "Interactive 3D dental arch with realistic textures",
+    "Emergency dentist finder and booking",
+    "Dental Passport for record sharing while traveling",
+    "Cinematic loading intro animation",
+    "Dark/light mode toggle",
+    "Animated health score reveal",
+    "Dentist subscription tiers (Free/Pro/Elite)",
+    "Stripe payments for bookings and reimbursements",
+    "Corporate dental plan page",
+    "Impact stats counter",
+    "As Seen In press strip",
+    "Y Combinator pitch page",
+    "3 analytics dashboards"
   ],
-  "category": "health",
+  "category": "health-medical",
   "tags": [
-    "dental",
-    "ai",
-    "health",
-    "3d",
-    "booking",
-    "passport",
-    "emergency"
+    "dental-health",
+    "ai-scanning",
+    "telemedicine",
+    "3d-visualization",
+    "react-three-fiber",
+    "stripe",
+    "internet-computer",
+    "glassmorphism"
   ],
-  "last_updated": "2026-04-07T17:16:55.924Z"
+  "last_updated": "2026-04-14T15:03:52.387Z"
 }

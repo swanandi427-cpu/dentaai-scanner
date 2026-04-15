@@ -97,6 +97,17 @@ export interface ScanResult {
     severity: ScanSeverity;
     healthScore: bigint;
 }
+export interface PaymentRecord {
+    id: bigint;
+    kind: PaymentKind;
+    createdAt: Time;
+    referenceId: bigint;
+    amountRupees: bigint;
+    state: PaymentState;
+    payer: Principal;
+    stripeSessionId: string;
+    settledAt?: Time;
+}
 export interface PassportRecord {
     id: bigint;
     patientEmail: string;
@@ -111,23 +122,32 @@ export interface PassportRecord {
     issuedBy: string;
     allergies: string;
 }
+export interface TierInfo {
+    features: Array<string>;
+    name: string;
+    tier: SubscriptionTier;
+    monthlyAmountRupees: bigint;
+}
 export interface FeedbackEntry {
     id: bigint;
     text: string;
     author: Principal;
     timestamp: Time;
 }
-export interface AvailabilitySlot {
-    dateTimeLabel: string;
-    slotId: bigint;
-    isBooked: boolean;
-    dentistId: Principal;
-}
 export interface ToothRecord {
     status: ToothStatus;
     recommendation: string;
     toothNumber: bigint;
     condition: string;
+}
+export interface DentistSubscription {
+    startedAt: Time;
+    stripeSubscriptionId: string;
+    tier: SubscriptionTier;
+    renewsAt?: Time;
+    monthlyAmountRupees: bigint;
+    state: SubscriptionState;
+    dentistId: Principal;
 }
 export interface DentistProfile {
     bio: string;
@@ -138,6 +158,12 @@ export interface DentistProfile {
     licenseNumber: string;
     specialties: Array<string>;
     location: string;
+}
+export interface AvailabilitySlot {
+    dateTimeLabel: string;
+    slotId: bigint;
+    isBooked: boolean;
+    dentistId: Principal;
 }
 export interface Message {
     id: bigint;
@@ -199,6 +225,16 @@ export enum BookingUrgency {
     routine = "routine",
     urgent = "urgent"
 }
+export enum PaymentKind {
+    reimbursement = "reimbursement",
+    bookingFee = "bookingFee"
+}
+export enum PaymentState {
+    pending = "pending",
+    paid = "paid",
+    refunded = "refunded",
+    failed = "failed"
+}
 export enum PaymentStatusInternal {
     pending = "pending",
     paid = "paid",
@@ -215,6 +251,16 @@ export enum ScanSeverity {
     severe = "severe",
     moderate = "moderate"
 }
+export enum SubscriptionState {
+    active = "active",
+    cancelled = "cancelled",
+    expired = "expired"
+}
+export enum SubscriptionTier {
+    pro = "pro",
+    free = "free",
+    elite = "elite"
+}
 export enum ToothStatus {
     risk = "risk",
     healthy = "healthy",
@@ -228,17 +274,45 @@ export enum UserRole {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    /**
+     * / addScanResult: alias for submitScan
+     */
+    addScanResult(teeth: Array<ToothRecord>, healthScore: bigint, severity: ScanSeverity): Promise<bigint>;
     approveBooking(bookingId: bigint): Promise<void>;
     approveReimbursementRequest(requestId: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    cancelMySubscription(): Promise<void>;
+    confirmPayment(stripeSessionId: string): Promise<void>;
+    /**
+     * / createAvailabilitySlot: alias for registerAvailabilitySlot
+     */
+    createAvailabilitySlot(dateTimeLabel: string): Promise<bigint>;
+    /**
+     * / createBooking: alias for requestBooking
+     */
+    createBooking(dentistEmail: string, requestedDate: string, notes: string, urgency: BookingUrgency): Promise<bigint>;
+    /**
+     * / createPassport: alias for selfIssuePassport — patient creates their own passport
+     */
+    createPassport(treatmentHistory: string, currentConditions: string, allergies: string, preApprovedBudget: bigint, notes: string): Promise<string>;
     declineBooking(bookingId: bigint): Promise<void>;
     declineReimbursementRequest(requestId: bigint, reason: string): Promise<void>;
     deleteTestimonial(id: bigint): Promise<void>;
     deleteUserScans(): Promise<void>;
+    failPayment(stripeSessionId: string): Promise<void>;
+    /**
+     * / findDentistByEmail: look up a dentist profile by email address
+     */
+    findDentistByEmail(email: string): Promise<DentistProfile | null>;
     getAllDentists(): Promise<Array<DentistProfile>>;
     getAllTestimonials(): Promise<Array<Testimonial>>;
     getAvailabilitySlots(dentistId: Principal): Promise<Array<AvailabilitySlot>>;
+    /**
+     * / getAvailableSlots: return unbooked slots for a given dentist
+     */
+    getAvailableSlots(dentistId: Principal): Promise<Array<AvailabilitySlot>>;
     getBooking(bookingId: bigint): Promise<Booking | null>;
+    getBookingPayment(bookingId: bigint): Promise<PaymentRecord | null>;
     /**
      * / Alias for getDentistBookings
      */
@@ -250,7 +324,15 @@ export interface backendInterface {
     getBookingsForDentist(): Promise<Array<Booking>>;
     getCallerBookings(): Promise<Array<Booking>>;
     getCallerLatestScan(): Promise<ScanResult | null>;
+    /**
+     * / getCallerMessages: return messages for a booking (accessible by both parties)
+     */
+    getCallerMessages(bookingId: bigint): Promise<Array<Message>>;
     getCallerPassports(): Promise<Array<PassportRecord>>;
+    /**
+     * / getCallerProfile: alias for getCallerUserProfile
+     */
+    getCallerProfile(): Promise<UserProfile | null>;
     getCallerScanHistory(): Promise<Array<ScanResult>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -260,6 +342,7 @@ export interface backendInterface {
      * / Alias for getAllDentists
      */
     getDentistProfiles(): Promise<Array<DentistProfile>>;
+    getDentistSubscription(dentistId: Principal): Promise<DentistSubscription | null>;
     getFeedbackList(): Promise<Array<FeedbackEntry>>;
     getMessages(bookingId: bigint): Promise<Array<Message>>;
     /**
@@ -268,10 +351,18 @@ export interface backendInterface {
     getMessagesByBooking(bookingId: bigint): Promise<Array<Message>>;
     getMyBookings(): Promise<Array<Booking>>;
     getMyPassports(): Promise<Array<PassportRecord>>;
+    getMyPayments(): Promise<Array<PaymentRecord>>;
     getMyReimbursementRequests(): Promise<Array<ReimbursementRequest>>;
+    getMySubscription(): Promise<DentistSubscription | null>;
     getPassportByCode(code: string): Promise<PassportRecord | null>;
+    getPricingTiers(): Promise<Array<TierInfo>>;
+    getReimbursementPayment(reimbursementId: bigint): Promise<PaymentRecord | null>;
     getReimbursementRequests(): Promise<Array<ReimbursementRequest>>;
     getReimbursementRequestsForMe(): Promise<Array<ReimbursementRequest>>;
+    /**
+     * / getReimbursementsByPassportCode: return all reimbursement requests for a given passport code
+     */
+    getReimbursementsByPassportCode(code: string): Promise<Array<ReimbursementRequest>>;
     getTestimonialById(id: bigint): Promise<Testimonial | null>;
     /**
      * / Alias for getAllTestimonials
@@ -279,10 +370,16 @@ export interface backendInterface {
     getTestimonials(): Promise<Array<Testimonial>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getUserScanHistory(user: Principal): Promise<Array<ScanResult>>;
+    /**
+     * / getVerifiedDentists: return all dentists (available for patient matching)
+     */
+    getVerifiedDentists(): Promise<Array<DentistProfile>>;
     getVisitorCount(): Promise<bigint>;
     isCallerAdmin(): Promise<boolean>;
     issuePassport(patientEmail: string, treatmentHistory: string, currentConditions: string, allergies: string, preApprovedBudget: bigint, notes: string): Promise<string>;
     lookupPassportByCode(code: string): Promise<PassportRecord | null>;
+    recordBookingPayment(bookingId: bigint, amountRupees: bigint, stripeSessionId: string): Promise<bigint>;
+    recordReimbursementPayment(reimbursementId: bigint, amountRupees: bigint, stripeSessionId: string): Promise<bigint>;
     recordVisit(): Promise<void>;
     registerAvailabilitySlot(dateTimeLabel: string): Promise<bigint>;
     /**
@@ -302,17 +399,30 @@ export interface backendInterface {
      */
     saveDentistAvailability(dateTimeLabel: string): Promise<bigint>;
     selfIssuePassport(treatmentHistory: string, currentConditions: string, allergies: string, preApprovedBudget: bigint, notes: string): Promise<string>;
+    setDentistSubscription(dentistId: Principal, tier: SubscriptionTier, stripeSubscriptionId: string, monthlyAmountRupees: bigint): Promise<void>;
     settleReimbursement(requestId: bigint, amountRupees: bigint): Promise<void>;
     submitFeedback(text: string): Promise<void>;
     submitMessage(bookingId: bigint, content: string): Promise<bigint>;
     submitReimbursementRequest(passportCode: string, treatmentDetails: string, amountRupees: bigint, notes: string): Promise<bigint>;
     submitScan(teeth: Array<ToothRecord>, healthScore: bigint, severity: ScanSeverity): Promise<bigint>;
     submitTestimonial(name: string, location: string, rating: bigint, content: string, role: string): Promise<bigint>;
+    /**
+     * / submitUserProfile: alias for saveCallerUserProfile
+     */
+    submitUserProfile(name: string, email: string): Promise<void>;
     updateAvailabilitySlot(slotId: bigint, dateTimeLabel: string): Promise<void>;
+    /**
+     * / updateBookingStatus: dentist or admin updates a booking's status
+     */
+    updateBookingStatus(bookingId: bigint, status: BookingStatus): Promise<void>;
     updateDentistProfile(name: string, email: string, licenseNumber: string, specialties: Array<string>, location: string, bio: string, available: boolean): Promise<void>;
     updatePaymentStatus(bookingId: bigint, status: PaymentStatusInternal, amountRupees: bigint): Promise<void>;
+    /**
+     * / updateReimbursementStatus: passport owner or admin updates a reimbursement status
+     */
+    updateReimbursementStatus(requestId: bigint, status: ReimbursementStatus): Promise<void>;
 }
-import type { Booking as _Booking, BookingStatus as _BookingStatus, BookingUrgency as _BookingUrgency, DentistProfile as _DentistProfile, PassportRecord as _PassportRecord, PaymentStatusInternal as _PaymentStatusInternal, ReimbursementRequest as _ReimbursementRequest, ReimbursementStatus as _ReimbursementStatus, ScanResult as _ScanResult, ScanSeverity as _ScanSeverity, Testimonial as _Testimonial, Time as _Time, ToothRecord as _ToothRecord, ToothStatus as _ToothStatus, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { Booking as _Booking, BookingStatus as _BookingStatus, BookingUrgency as _BookingUrgency, DentistProfile as _DentistProfile, DentistSubscription as _DentistSubscription, PassportRecord as _PassportRecord, PaymentKind as _PaymentKind, PaymentRecord as _PaymentRecord, PaymentState as _PaymentState, PaymentStatusInternal as _PaymentStatusInternal, ReimbursementRequest as _ReimbursementRequest, ReimbursementStatus as _ReimbursementStatus, ScanResult as _ScanResult, ScanSeverity as _ScanSeverity, SubscriptionState as _SubscriptionState, SubscriptionTier as _SubscriptionTier, Testimonial as _Testimonial, TierInfo as _TierInfo, Time as _Time, ToothRecord as _ToothRecord, ToothStatus as _ToothStatus, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -326,6 +436,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor._initializeAccessControlWithSecret(arg0);
+            return result;
+        }
+    }
+    async addScanResult(arg0: Array<ToothRecord>, arg1: bigint, arg2: ScanSeverity): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addScanResult(to_candid_vec_n1(this._uploadFile, this._downloadFile, arg0), arg1, to_candid_ScanSeverity_n6(this._uploadFile, this._downloadFile, arg2));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addScanResult(to_candid_vec_n1(this._uploadFile, this._downloadFile, arg0), arg1, to_candid_ScanSeverity_n6(this._uploadFile, this._downloadFile, arg2));
             return result;
         }
     }
@@ -360,14 +484,84 @@ export class Backend implements backendInterface {
     async assignCallerUserRole(arg0: Principal, arg1: UserRole): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n8(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n8(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async cancelMySubscription(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.cancelMySubscription();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.cancelMySubscription();
+            return result;
+        }
+    }
+    async confirmPayment(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.confirmPayment(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.confirmPayment(arg0);
+            return result;
+        }
+    }
+    async createAvailabilitySlot(arg0: string): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createAvailabilitySlot(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createAvailabilitySlot(arg0);
+            return result;
+        }
+    }
+    async createBooking(arg0: string, arg1: string, arg2: string, arg3: BookingUrgency): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createBooking(arg0, arg1, arg2, to_candid_BookingUrgency_n10(this._uploadFile, this._downloadFile, arg3));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createBooking(arg0, arg1, arg2, to_candid_BookingUrgency_n10(this._uploadFile, this._downloadFile, arg3));
+            return result;
+        }
+    }
+    async createPassport(arg0: string, arg1: string, arg2: string, arg3: bigint, arg4: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createPassport(arg0, arg1, arg2, arg3, arg4);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createPassport(arg0, arg1, arg2, arg3, arg4);
             return result;
         }
     }
@@ -427,6 +621,34 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async failPayment(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.failPayment(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.failPayment(arg0);
+            return result;
+        }
+    }
+    async findDentistByEmail(arg0: string): Promise<DentistProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.findDentistByEmail(arg0);
+                return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.findDentistByEmail(arg0);
+            return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getAllDentists(): Promise<Array<DentistProfile>> {
         if (this.processError) {
             try {
@@ -469,88 +691,130 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getAvailableSlots(arg0: Principal): Promise<Array<AvailabilitySlot>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAvailableSlots(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAvailableSlots(arg0);
+            return result;
+        }
+    }
     async getBooking(arg0: bigint): Promise<Booking | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getBooking(arg0);
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getBooking(arg0);
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getBookingsByDentist(): Promise<Array<Booking>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getBookingsByDentist();
-                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getBookingsByDentist();
-            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getBookingsByPatient(): Promise<Array<Booking>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getBookingsByPatient();
-                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getBookingsByPatient();
-            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getBookingsForDentist(): Promise<Array<Booking>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getBookingsForDentist();
-                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getBookingsForDentist();
-            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getCallerBookings(): Promise<Array<Booking>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getCallerBookings();
-                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getCallerBookings();
-            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getCallerLatestScan(): Promise<ScanResult | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getCallerLatestScan();
                 return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getCallerLatestScan();
+            const result = await this.actor.getBooking(arg0);
             return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getBookingPayment(arg0: bigint): Promise<PaymentRecord | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBookingPayment(arg0);
+                return from_candid_opt_n22(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBookingPayment(arg0);
+            return from_candid_opt_n22(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getBookingsByDentist(): Promise<Array<Booking>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBookingsByDentist();
+                return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBookingsByDentist();
+            return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getBookingsByPatient(): Promise<Array<Booking>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBookingsByPatient();
+                return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBookingsByPatient();
+            return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getBookingsForDentist(): Promise<Array<Booking>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBookingsForDentist();
+                return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBookingsForDentist();
+            return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getCallerBookings(): Promise<Array<Booking>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCallerBookings();
+                return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCallerBookings();
+            return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getCallerLatestScan(): Promise<ScanResult | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCallerLatestScan();
+                return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCallerLatestScan();
+            return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getCallerMessages(arg0: bigint): Promise<Array<Message>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCallerMessages(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCallerMessages(arg0);
+            return result;
         }
     }
     async getCallerPassports(): Promise<Array<PassportRecord>> {
@@ -567,74 +831,88 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getCallerProfile(): Promise<UserProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCallerProfile();
+                return from_candid_opt_n41(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCallerProfile();
+            return from_candid_opt_n41(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getCallerScanHistory(): Promise<Array<ScanResult>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerScanHistory();
-                return from_candid_vec_n23(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n42(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerScanHistory();
-            return from_candid_vec_n23(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n42(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n41(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n41(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n25(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n43(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n25(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n43(this._uploadFile, this._downloadFile, result);
         }
     }
     async getDentistBookings(): Promise<Array<Booking>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getDentistBookings();
-                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getDentistBookings();
-            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
         }
     }
     async getDentistProfile(arg0: Principal): Promise<DentistProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getDentistProfile(arg0);
-                return from_candid_opt_n27(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getDentistProfile(arg0);
-            return from_candid_opt_n27(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
         }
     }
     async getDentistProfiles(): Promise<Array<DentistProfile>> {
@@ -649,6 +927,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getDentistProfiles();
             return result;
+        }
+    }
+    async getDentistSubscription(arg0: Principal): Promise<DentistSubscription | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDentistSubscription(arg0);
+                return from_candid_opt_n45(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDentistSubscription(arg0);
+            return from_candid_opt_n45(this._uploadFile, this._downloadFile, result);
         }
     }
     async getFeedbackList(): Promise<Array<FeedbackEntry>> {
@@ -697,14 +989,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getMyBookings();
-                return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getMyBookings();
-            return from_candid_vec_n12(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
         }
     }
     async getMyPassports(): Promise<Array<PassportRecord>> {
@@ -721,74 +1013,144 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getMyPayments(): Promise<Array<PaymentRecord>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyPayments();
+                return from_candid_vec_n52(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyPayments();
+            return from_candid_vec_n52(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getMyReimbursementRequests(): Promise<Array<ReimbursementRequest>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getMyReimbursementRequests();
-                return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getMyReimbursementRequests();
-            return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getMySubscription(): Promise<DentistSubscription | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMySubscription();
+                return from_candid_opt_n45(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMySubscription();
+            return from_candid_opt_n45(this._uploadFile, this._downloadFile, result);
         }
     }
     async getPassportByCode(arg0: string): Promise<PassportRecord | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getPassportByCode(arg0);
-                return from_candid_opt_n33(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n58(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getPassportByCode(arg0);
-            return from_candid_opt_n33(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n58(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getPricingTiers(): Promise<Array<TierInfo>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getPricingTiers();
+                return from_candid_vec_n59(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getPricingTiers();
+            return from_candid_vec_n59(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getReimbursementPayment(arg0: bigint): Promise<PaymentRecord | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getReimbursementPayment(arg0);
+                return from_candid_opt_n22(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getReimbursementPayment(arg0);
+            return from_candid_opt_n22(this._uploadFile, this._downloadFile, result);
         }
     }
     async getReimbursementRequests(): Promise<Array<ReimbursementRequest>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getReimbursementRequests();
-                return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getReimbursementRequests();
-            return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
         }
     }
     async getReimbursementRequestsForMe(): Promise<Array<ReimbursementRequest>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getReimbursementRequestsForMe();
-                return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getReimbursementRequestsForMe();
-            return from_candid_vec_n28(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getReimbursementsByPassportCode(arg0: string): Promise<Array<ReimbursementRequest>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getReimbursementsByPassportCode(arg0);
+                return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getReimbursementsByPassportCode(arg0);
+            return from_candid_vec_n53(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTestimonialById(arg0: bigint): Promise<Testimonial | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getTestimonialById(arg0);
-                return from_candid_opt_n34(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n62(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getTestimonialById(arg0);
-            return from_candid_opt_n34(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n62(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTestimonials(): Promise<Array<Testimonial>> {
@@ -809,28 +1171,42 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n41(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n41(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserScanHistory(arg0: Principal): Promise<Array<ScanResult>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserScanHistory(arg0);
-                return from_candid_vec_n23(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n42(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserScanHistory(arg0);
-            return from_candid_vec_n23(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n42(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getVerifiedDentists(): Promise<Array<DentistProfile>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getVerifiedDentists();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getVerifiedDentists();
+            return result;
         }
     }
     async getVisitorCount(): Promise<bigint> {
@@ -879,14 +1255,42 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.lookupPassportByCode(arg0);
-                return from_candid_opt_n33(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n58(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.lookupPassportByCode(arg0);
-            return from_candid_opt_n33(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n58(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async recordBookingPayment(arg0: bigint, arg1: bigint, arg2: string): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.recordBookingPayment(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.recordBookingPayment(arg0, arg1, arg2);
+            return result;
+        }
+    }
+    async recordReimbursementPayment(arg0: bigint, arg1: bigint, arg2: string): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.recordReimbursementPayment(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.recordReimbursementPayment(arg0, arg1, arg2);
+            return result;
         }
     }
     async recordVisit(): Promise<void> {
@@ -948,28 +1352,28 @@ export class Backend implements backendInterface {
     async requestAppointment(arg0: string, arg1: string, arg2: string, arg3: BookingUrgency): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.requestAppointment(arg0, arg1, arg2, to_candid_BookingUrgency_n35(this._uploadFile, this._downloadFile, arg3));
+                const result = await this.actor.requestAppointment(arg0, arg1, arg2, to_candid_BookingUrgency_n10(this._uploadFile, this._downloadFile, arg3));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.requestAppointment(arg0, arg1, arg2, to_candid_BookingUrgency_n35(this._uploadFile, this._downloadFile, arg3));
+            const result = await this.actor.requestAppointment(arg0, arg1, arg2, to_candid_BookingUrgency_n10(this._uploadFile, this._downloadFile, arg3));
             return result;
         }
     }
     async requestBooking(arg0: string, arg1: string, arg2: string, arg3: BookingUrgency): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.requestBooking(arg0, arg1, arg2, to_candid_BookingUrgency_n35(this._uploadFile, this._downloadFile, arg3));
+                const result = await this.actor.requestBooking(arg0, arg1, arg2, to_candid_BookingUrgency_n10(this._uploadFile, this._downloadFile, arg3));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.requestBooking(arg0, arg1, arg2, to_candid_BookingUrgency_n35(this._uploadFile, this._downloadFile, arg3));
+            const result = await this.actor.requestBooking(arg0, arg1, arg2, to_candid_BookingUrgency_n10(this._uploadFile, this._downloadFile, arg3));
             return result;
         }
     }
@@ -1026,6 +1430,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.selfIssuePassport(arg0, arg1, arg2, arg3, arg4);
+            return result;
+        }
+    }
+    async setDentistSubscription(arg0: Principal, arg1: SubscriptionTier, arg2: string, arg3: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setDentistSubscription(arg0, to_candid_SubscriptionTier_n63(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setDentistSubscription(arg0, to_candid_SubscriptionTier_n63(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
             return result;
         }
     }
@@ -1088,14 +1506,14 @@ export class Backend implements backendInterface {
     async submitScan(arg0: Array<ToothRecord>, arg1: bigint, arg2: ScanSeverity): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.submitScan(to_candid_vec_n37(this._uploadFile, this._downloadFile, arg0), arg1, to_candid_ScanSeverity_n42(this._uploadFile, this._downloadFile, arg2));
+                const result = await this.actor.submitScan(to_candid_vec_n1(this._uploadFile, this._downloadFile, arg0), arg1, to_candid_ScanSeverity_n6(this._uploadFile, this._downloadFile, arg2));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.submitScan(to_candid_vec_n37(this._uploadFile, this._downloadFile, arg0), arg1, to_candid_ScanSeverity_n42(this._uploadFile, this._downloadFile, arg2));
+            const result = await this.actor.submitScan(to_candid_vec_n1(this._uploadFile, this._downloadFile, arg0), arg1, to_candid_ScanSeverity_n6(this._uploadFile, this._downloadFile, arg2));
             return result;
         }
     }
@@ -1113,6 +1531,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async submitUserProfile(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.submitUserProfile(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.submitUserProfile(arg0, arg1);
+            return result;
+        }
+    }
     async updateAvailabilitySlot(arg0: bigint, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -1124,6 +1556,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.updateAvailabilitySlot(arg0, arg1);
+            return result;
+        }
+    }
+    async updateBookingStatus(arg0: bigint, arg1: BookingStatus): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateBookingStatus(arg0, to_candid_BookingStatus_n65(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateBookingStatus(arg0, to_candid_BookingStatus_n65(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -1144,70 +1590,183 @@ export class Backend implements backendInterface {
     async updatePaymentStatus(arg0: bigint, arg1: PaymentStatusInternal, arg2: bigint): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updatePaymentStatus(arg0, to_candid_PaymentStatusInternal_n44(this._uploadFile, this._downloadFile, arg1), arg2);
+                const result = await this.actor.updatePaymentStatus(arg0, to_candid_PaymentStatusInternal_n67(this._uploadFile, this._downloadFile, arg1), arg2);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updatePaymentStatus(arg0, to_candid_PaymentStatusInternal_n44(this._uploadFile, this._downloadFile, arg1), arg2);
+            const result = await this.actor.updatePaymentStatus(arg0, to_candid_PaymentStatusInternal_n67(this._uploadFile, this._downloadFile, arg1), arg2);
+            return result;
+        }
+    }
+    async updateReimbursementStatus(arg0: bigint, arg1: ReimbursementStatus): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateReimbursementStatus(arg0, to_candid_ReimbursementStatus_n69(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateReimbursementStatus(arg0, to_candid_ReimbursementStatus_n69(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
 }
-function from_candid_BookingStatus_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BookingStatus): BookingStatus {
-    return from_candid_variant_n7(_uploadFile, _downloadFile, value);
+function from_candid_BookingStatus_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BookingStatus): BookingStatus {
+    return from_candid_variant_n17(_uploadFile, _downloadFile, value);
 }
-function from_candid_BookingUrgency_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BookingUrgency): BookingUrgency {
-    return from_candid_variant_n11(_uploadFile, _downloadFile, value);
+function from_candid_BookingUrgency_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BookingUrgency): BookingUrgency {
+    return from_candid_variant_n21(_uploadFile, _downloadFile, value);
 }
-function from_candid_Booking_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Booking): Booking {
-    return from_candid_record_n5(_uploadFile, _downloadFile, value);
-}
-function from_candid_PaymentStatusInternal_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaymentStatusInternal): PaymentStatusInternal {
-    return from_candid_variant_n9(_uploadFile, _downloadFile, value);
-}
-function from_candid_ReimbursementRequest_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ReimbursementRequest): ReimbursementRequest {
-    return from_candid_record_n30(_uploadFile, _downloadFile, value);
-}
-function from_candid_ReimbursementStatus_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ReimbursementStatus): ReimbursementStatus {
-    return from_candid_variant_n32(_uploadFile, _downloadFile, value);
-}
-function from_candid_ScanResult_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanResult): ScanResult {
+function from_candid_Booking_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Booking): Booking {
     return from_candid_record_n15(_uploadFile, _downloadFile, value);
 }
-function from_candid_ScanSeverity_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanSeverity): ScanSeverity {
-    return from_candid_variant_n22(_uploadFile, _downloadFile, value);
+function from_candid_DentistSubscription_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _DentistSubscription): DentistSubscription {
+    return from_candid_record_n47(_uploadFile, _downloadFile, value);
 }
-function from_candid_ToothRecord_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ToothRecord): ToothRecord {
-    return from_candid_record_n18(_uploadFile, _downloadFile, value);
-}
-function from_candid_ToothStatus_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ToothStatus): ToothStatus {
-    return from_candid_variant_n20(_uploadFile, _downloadFile, value);
-}
-function from_candid_UserRole_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+function from_candid_PaymentKind_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaymentKind): PaymentKind {
     return from_candid_variant_n26(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ScanResult]): ScanResult | null {
-    return value.length === 0 ? null : from_candid_ScanResult_n14(_uploadFile, _downloadFile, value[0]);
+function from_candid_PaymentRecord_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaymentRecord): PaymentRecord {
+    return from_candid_record_n24(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_PaymentState_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaymentState): PaymentState {
+    return from_candid_variant_n28(_uploadFile, _downloadFile, value);
+}
+function from_candid_PaymentStatusInternal_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaymentStatusInternal): PaymentStatusInternal {
+    return from_candid_variant_n19(_uploadFile, _downloadFile, value);
+}
+function from_candid_ReimbursementRequest_n54(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ReimbursementRequest): ReimbursementRequest {
+    return from_candid_record_n55(_uploadFile, _downloadFile, value);
+}
+function from_candid_ReimbursementStatus_n56(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ReimbursementStatus): ReimbursementStatus {
+    return from_candid_variant_n57(_uploadFile, _downloadFile, value);
+}
+function from_candid_ScanResult_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanResult): ScanResult {
+    return from_candid_record_n33(_uploadFile, _downloadFile, value);
+}
+function from_candid_ScanSeverity_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ScanSeverity): ScanSeverity {
+    return from_candid_variant_n40(_uploadFile, _downloadFile, value);
+}
+function from_candid_SubscriptionState_n50(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SubscriptionState): SubscriptionState {
+    return from_candid_variant_n51(_uploadFile, _downloadFile, value);
+}
+function from_candid_SubscriptionTier_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SubscriptionTier): SubscriptionTier {
+    return from_candid_variant_n49(_uploadFile, _downloadFile, value);
+}
+function from_candid_TierInfo_n60(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TierInfo): TierInfo {
+    return from_candid_record_n61(_uploadFile, _downloadFile, value);
+}
+function from_candid_ToothRecord_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ToothRecord): ToothRecord {
+    return from_candid_record_n36(_uploadFile, _downloadFile, value);
+}
+function from_candid_ToothStatus_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ToothStatus): ToothStatus {
+    return from_candid_variant_n38(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserRole_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n44(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_DentistProfile]): DentistProfile | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_DentistProfile]): DentistProfile | null {
+function from_candid_opt_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Booking]): Booking | null {
+    return value.length === 0 ? null : from_candid_Booking_n14(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_PaymentRecord]): PaymentRecord | null {
+    return value.length === 0 ? null : from_candid_PaymentRecord_n23(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Time]): Time | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Booking]): Booking | null {
-    return value.length === 0 ? null : from_candid_Booking_n4(_uploadFile, _downloadFile, value[0]);
+function from_candid_opt_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ScanResult]): ScanResult | null {
+    return value.length === 0 ? null : from_candid_ScanResult_n32(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_opt_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_PassportRecord]): PassportRecord | null {
+function from_candid_opt_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Testimonial]): Testimonial | null {
+function from_candid_opt_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_DentistSubscription]): DentistSubscription | null {
+    return value.length === 0 ? null : from_candid_DentistSubscription_n46(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n58(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_PassportRecord]): PassportRecord | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n62(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Testimonial]): Testimonial | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    status: _BookingStatus;
+    paymentStatus: _PaymentStatusInternal;
+    bookingId: bigint;
+    urgency: _BookingUrgency;
+    patientId: Principal;
+    dentistEmail: string;
+    createdAt: _Time;
+    amountRupees: bigint;
+    notes: string;
+    requestedDate: string;
+}): {
+    status: BookingStatus;
+    paymentStatus: PaymentStatusInternal;
+    bookingId: bigint;
+    urgency: BookingUrgency;
+    patientId: Principal;
+    dentistEmail: string;
+    createdAt: Time;
+    amountRupees: bigint;
+    notes: string;
+    requestedDate: string;
+} {
+    return {
+        status: from_candid_BookingStatus_n16(_uploadFile, _downloadFile, value.status),
+        paymentStatus: from_candid_PaymentStatusInternal_n18(_uploadFile, _downloadFile, value.paymentStatus),
+        bookingId: value.bookingId,
+        urgency: from_candid_BookingUrgency_n20(_uploadFile, _downloadFile, value.urgency),
+        patientId: value.patientId,
+        dentistEmail: value.dentistEmail,
+        createdAt: value.createdAt,
+        amountRupees: value.amountRupees,
+        notes: value.notes,
+        requestedDate: value.requestedDate
+    };
+}
+function from_candid_record_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: bigint;
+    kind: _PaymentKind;
+    createdAt: _Time;
+    referenceId: bigint;
+    amountRupees: bigint;
+    state: _PaymentState;
+    payer: Principal;
+    stripeSessionId: string;
+    settledAt: [] | [_Time];
+}): {
+    id: bigint;
+    kind: PaymentKind;
+    createdAt: Time;
+    referenceId: bigint;
+    amountRupees: bigint;
+    state: PaymentState;
+    payer: Principal;
+    stripeSessionId: string;
+    settledAt?: Time;
+} {
+    return {
+        id: value.id,
+        kind: from_candid_PaymentKind_n25(_uploadFile, _downloadFile, value.kind),
+        createdAt: value.createdAt,
+        referenceId: value.referenceId,
+        amountRupees: value.amountRupees,
+        state: from_candid_PaymentState_n27(_uploadFile, _downloadFile, value.state),
+        payer: value.payer,
+        stripeSessionId: value.stripeSessionId,
+        settledAt: record_opt_to_undefined(from_candid_opt_n29(_uploadFile, _downloadFile, value.settledAt))
+    };
+}
+function from_candid_record_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     teeth: Array<_ToothRecord>;
     timestamp: _Time;
@@ -1222,13 +1781,13 @@ function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         id: value.id,
-        teeth: from_candid_vec_n16(_uploadFile, _downloadFile, value.teeth),
+        teeth: from_candid_vec_n34(_uploadFile, _downloadFile, value.teeth),
         timestamp: value.timestamp,
-        severity: from_candid_ScanSeverity_n21(_uploadFile, _downloadFile, value.severity),
+        severity: from_candid_ScanSeverity_n39(_uploadFile, _downloadFile, value.severity),
         healthScore: value.healthScore
     };
 }
-function from_candid_record_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     status: _ToothStatus;
     recommendation: string;
     toothNumber: bigint;
@@ -1240,13 +1799,40 @@ function from_candid_record_n18(_uploadFile: (file: ExternalBlob) => Promise<Uin
     condition: string;
 } {
     return {
-        status: from_candid_ToothStatus_n19(_uploadFile, _downloadFile, value.status),
+        status: from_candid_ToothStatus_n37(_uploadFile, _downloadFile, value.status),
         recommendation: value.recommendation,
         toothNumber: value.toothNumber,
         condition: value.condition
     };
 }
-function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    startedAt: _Time;
+    stripeSubscriptionId: string;
+    tier: _SubscriptionTier;
+    renewsAt: [] | [_Time];
+    monthlyAmountRupees: bigint;
+    state: _SubscriptionState;
+    dentistId: Principal;
+}): {
+    startedAt: Time;
+    stripeSubscriptionId: string;
+    tier: SubscriptionTier;
+    renewsAt?: Time;
+    monthlyAmountRupees: bigint;
+    state: SubscriptionState;
+    dentistId: Principal;
+} {
+    return {
+        startedAt: value.startedAt,
+        stripeSubscriptionId: value.stripeSubscriptionId,
+        tier: from_candid_SubscriptionTier_n48(_uploadFile, _downloadFile, value.tier),
+        renewsAt: record_opt_to_undefined(from_candid_opt_n29(_uploadFile, _downloadFile, value.renewsAt)),
+        monthlyAmountRupees: value.monthlyAmountRupees,
+        state: from_candid_SubscriptionState_n50(_uploadFile, _downloadFile, value.state),
+        dentistId: value.dentistId
+    };
+}
+function from_candid_record_n55(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     status: _ReimbursementStatus;
     createdAt: _Time;
@@ -1271,7 +1857,7 @@ function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         id: value.id,
-        status: from_candid_ReimbursementStatus_n31(_uploadFile, _downloadFile, value.status),
+        status: from_candid_ReimbursementStatus_n56(_uploadFile, _downloadFile, value.status),
         createdAt: value.createdAt,
         passportCode: value.passportCode,
         treatmentDetails: value.treatmentDetails,
@@ -1282,92 +1868,25 @@ function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uin
         requestedBy: value.requestedBy
     };
 }
-function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    status: _BookingStatus;
-    paymentStatus: _PaymentStatusInternal;
-    bookingId: bigint;
-    urgency: _BookingUrgency;
-    patientId: Principal;
-    dentistEmail: string;
-    createdAt: _Time;
-    amountRupees: bigint;
-    notes: string;
-    requestedDate: string;
+function from_candid_record_n61(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    features: Array<string>;
+    name: string;
+    tier: _SubscriptionTier;
+    monthlyAmountRupees: bigint;
 }): {
-    status: BookingStatus;
-    paymentStatus: PaymentStatusInternal;
-    bookingId: bigint;
-    urgency: BookingUrgency;
-    patientId: Principal;
-    dentistEmail: string;
-    createdAt: Time;
-    amountRupees: bigint;
-    notes: string;
-    requestedDate: string;
+    features: Array<string>;
+    name: string;
+    tier: SubscriptionTier;
+    monthlyAmountRupees: bigint;
 } {
     return {
-        status: from_candid_BookingStatus_n6(_uploadFile, _downloadFile, value.status),
-        paymentStatus: from_candid_PaymentStatusInternal_n8(_uploadFile, _downloadFile, value.paymentStatus),
-        bookingId: value.bookingId,
-        urgency: from_candid_BookingUrgency_n10(_uploadFile, _downloadFile, value.urgency),
-        patientId: value.patientId,
-        dentistEmail: value.dentistEmail,
-        createdAt: value.createdAt,
-        amountRupees: value.amountRupees,
-        notes: value.notes,
-        requestedDate: value.requestedDate
+        features: value.features,
+        name: value.name,
+        tier: from_candid_SubscriptionTier_n48(_uploadFile, _downloadFile, value.tier),
+        monthlyAmountRupees: value.monthlyAmountRupees
     };
 }
-function from_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    emergency: null;
-} | {
-    routine: null;
-} | {
-    urgent: null;
-}): BookingUrgency {
-    return "emergency" in value ? BookingUrgency.emergency : "routine" in value ? BookingUrgency.routine : "urgent" in value ? BookingUrgency.urgent : value;
-}
-function from_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    risk: null;
-} | {
-    healthy: null;
-} | {
-    cavity: null;
-}): ToothStatus {
-    return "risk" in value ? ToothStatus.risk : "healthy" in value ? ToothStatus.healthy : "cavity" in value ? ToothStatus.cavity : value;
-}
-function from_candid_variant_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    mild: null;
-} | {
-    severe: null;
-} | {
-    moderate: null;
-}): ScanSeverity {
-    return "mild" in value ? ScanSeverity.mild : "severe" in value ? ScanSeverity.severe : "moderate" in value ? ScanSeverity.moderate : value;
-}
-function from_candid_variant_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    patient: null;
-} | {
-    admin: null;
-} | {
-    dentist: null;
-} | {
-    anonymous: null;
-}): UserRole {
-    return "patient" in value ? UserRole.patient : "admin" in value ? UserRole.admin : "dentist" in value ? UserRole.dentist : "anonymous" in value ? UserRole.anonymous : value;
-}
-function from_candid_variant_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    settled: null;
-} | {
-    pending: null;
-} | {
-    approved: null;
-} | {
-    declined: null;
-}): ReimbursementStatus {
-    return "settled" in value ? ReimbursementStatus.settled : "pending" in value ? ReimbursementStatus.pending : "approved" in value ? ReimbursementStatus.approved : "declined" in value ? ReimbursementStatus.declined : value;
-}
-function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     cancelled: null;
 } | {
     pending: null;
@@ -1380,7 +1899,7 @@ function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): BookingStatus {
     return "cancelled" in value ? BookingStatus.cancelled : "pending" in value ? BookingStatus.pending : "completed" in value ? BookingStatus.completed : "approved" in value ? BookingStatus.approved : "declined" in value ? BookingStatus.declined : value;
 }
-function from_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     pending: null;
 } | {
     paid: null;
@@ -1389,37 +1908,137 @@ function from_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): PaymentStatusInternal {
     return "pending" in value ? PaymentStatusInternal.pending : "paid" in value ? PaymentStatusInternal.paid : "refunded" in value ? PaymentStatusInternal.refunded : value;
 }
-function from_candid_vec_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Booking>): Array<Booking> {
-    return value.map((x)=>from_candid_Booking_n4(_uploadFile, _downloadFile, x));
+function from_candid_variant_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    emergency: null;
+} | {
+    routine: null;
+} | {
+    urgent: null;
+}): BookingUrgency {
+    return "emergency" in value ? BookingUrgency.emergency : "routine" in value ? BookingUrgency.routine : "urgent" in value ? BookingUrgency.urgent : value;
 }
-function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ToothRecord>): Array<ToothRecord> {
-    return value.map((x)=>from_candid_ToothRecord_n17(_uploadFile, _downloadFile, x));
+function from_candid_variant_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    reimbursement: null;
+} | {
+    bookingFee: null;
+}): PaymentKind {
+    return "reimbursement" in value ? PaymentKind.reimbursement : "bookingFee" in value ? PaymentKind.bookingFee : value;
 }
-function from_candid_vec_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ScanResult>): Array<ScanResult> {
-    return value.map((x)=>from_candid_ScanResult_n14(_uploadFile, _downloadFile, x));
+function from_candid_variant_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    pending: null;
+} | {
+    paid: null;
+} | {
+    refunded: null;
+} | {
+    failed: null;
+}): PaymentState {
+    return "pending" in value ? PaymentState.pending : "paid" in value ? PaymentState.paid : "refunded" in value ? PaymentState.refunded : "failed" in value ? PaymentState.failed : value;
 }
-function from_candid_vec_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ReimbursementRequest>): Array<ReimbursementRequest> {
-    return value.map((x)=>from_candid_ReimbursementRequest_n29(_uploadFile, _downloadFile, x));
+function from_candid_variant_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    risk: null;
+} | {
+    healthy: null;
+} | {
+    cavity: null;
+}): ToothStatus {
+    return "risk" in value ? ToothStatus.risk : "healthy" in value ? ToothStatus.healthy : "cavity" in value ? ToothStatus.cavity : value;
 }
-function to_candid_BookingUrgency_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BookingUrgency): _BookingUrgency {
-    return to_candid_variant_n36(_uploadFile, _downloadFile, value);
+function from_candid_variant_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    mild: null;
+} | {
+    severe: null;
+} | {
+    moderate: null;
+}): ScanSeverity {
+    return "mild" in value ? ScanSeverity.mild : "severe" in value ? ScanSeverity.severe : "moderate" in value ? ScanSeverity.moderate : value;
 }
-function to_candid_PaymentStatusInternal_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PaymentStatusInternal): _PaymentStatusInternal {
-    return to_candid_variant_n45(_uploadFile, _downloadFile, value);
+function from_candid_variant_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    patient: null;
+} | {
+    admin: null;
+} | {
+    dentist: null;
+} | {
+    anonymous: null;
+}): UserRole {
+    return "patient" in value ? UserRole.patient : "admin" in value ? UserRole.admin : "dentist" in value ? UserRole.dentist : "anonymous" in value ? UserRole.anonymous : value;
 }
-function to_candid_ScanSeverity_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ScanSeverity): _ScanSeverity {
-    return to_candid_variant_n43(_uploadFile, _downloadFile, value);
+function from_candid_variant_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    pro: null;
+} | {
+    free: null;
+} | {
+    elite: null;
+}): SubscriptionTier {
+    return "pro" in value ? SubscriptionTier.pro : "free" in value ? SubscriptionTier.free : "elite" in value ? SubscriptionTier.elite : value;
 }
-function to_candid_ToothRecord_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ToothRecord): _ToothRecord {
-    return to_candid_record_n39(_uploadFile, _downloadFile, value);
+function from_candid_variant_n51(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    active: null;
+} | {
+    cancelled: null;
+} | {
+    expired: null;
+}): SubscriptionState {
+    return "active" in value ? SubscriptionState.active : "cancelled" in value ? SubscriptionState.cancelled : "expired" in value ? SubscriptionState.expired : value;
 }
-function to_candid_ToothStatus_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ToothStatus): _ToothStatus {
-    return to_candid_variant_n41(_uploadFile, _downloadFile, value);
+function from_candid_variant_n57(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    settled: null;
+} | {
+    pending: null;
+} | {
+    approved: null;
+} | {
+    declined: null;
+}): ReimbursementStatus {
+    return "settled" in value ? ReimbursementStatus.settled : "pending" in value ? ReimbursementStatus.pending : "approved" in value ? ReimbursementStatus.approved : "declined" in value ? ReimbursementStatus.declined : value;
 }
-function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
-    return to_candid_variant_n2(_uploadFile, _downloadFile, value);
+function from_candid_vec_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Booking>): Array<Booking> {
+    return value.map((x)=>from_candid_Booking_n14(_uploadFile, _downloadFile, x));
 }
-function to_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_vec_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ToothRecord>): Array<ToothRecord> {
+    return value.map((x)=>from_candid_ToothRecord_n35(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ScanResult>): Array<ScanResult> {
+    return value.map((x)=>from_candid_ScanResult_n32(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n52(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_PaymentRecord>): Array<PaymentRecord> {
+    return value.map((x)=>from_candid_PaymentRecord_n23(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n53(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ReimbursementRequest>): Array<ReimbursementRequest> {
+    return value.map((x)=>from_candid_ReimbursementRequest_n54(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n59(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_TierInfo>): Array<TierInfo> {
+    return value.map((x)=>from_candid_TierInfo_n60(_uploadFile, _downloadFile, x));
+}
+function to_candid_BookingStatus_n65(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BookingStatus): _BookingStatus {
+    return to_candid_variant_n66(_uploadFile, _downloadFile, value);
+}
+function to_candid_BookingUrgency_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BookingUrgency): _BookingUrgency {
+    return to_candid_variant_n11(_uploadFile, _downloadFile, value);
+}
+function to_candid_PaymentStatusInternal_n67(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PaymentStatusInternal): _PaymentStatusInternal {
+    return to_candid_variant_n68(_uploadFile, _downloadFile, value);
+}
+function to_candid_ReimbursementStatus_n69(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ReimbursementStatus): _ReimbursementStatus {
+    return to_candid_variant_n70(_uploadFile, _downloadFile, value);
+}
+function to_candid_ScanSeverity_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ScanSeverity): _ScanSeverity {
+    return to_candid_variant_n7(_uploadFile, _downloadFile, value);
+}
+function to_candid_SubscriptionTier_n63(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SubscriptionTier): _SubscriptionTier {
+    return to_candid_variant_n64(_uploadFile, _downloadFile, value);
+}
+function to_candid_ToothRecord_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ToothRecord): _ToothRecord {
+    return to_candid_record_n3(_uploadFile, _downloadFile, value);
+}
+function to_candid_ToothStatus_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ToothStatus): _ToothStatus {
+    return to_candid_variant_n5(_uploadFile, _downloadFile, value);
+}
+function to_candid_UserRole_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
+    return to_candid_variant_n9(_uploadFile, _downloadFile, value);
+}
+function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     status: ToothStatus;
     recommendation: string;
     toothNumber: bigint;
@@ -1431,13 +2050,130 @@ function to_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     condition: string;
 } {
     return {
-        status: to_candid_ToothStatus_n40(_uploadFile, _downloadFile, value.status),
+        status: to_candid_ToothStatus_n4(_uploadFile, _downloadFile, value.status),
         recommendation: value.recommendation,
         toothNumber: value.toothNumber,
         condition: value.condition
     };
 }
-function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
+function to_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BookingUrgency): {
+    emergency: null;
+} | {
+    routine: null;
+} | {
+    urgent: null;
+} {
+    return value == BookingUrgency.emergency ? {
+        emergency: null
+    } : value == BookingUrgency.routine ? {
+        routine: null
+    } : value == BookingUrgency.urgent ? {
+        urgent: null
+    } : value;
+}
+function to_candid_variant_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ToothStatus): {
+    risk: null;
+} | {
+    healthy: null;
+} | {
+    cavity: null;
+} {
+    return value == ToothStatus.risk ? {
+        risk: null
+    } : value == ToothStatus.healthy ? {
+        healthy: null
+    } : value == ToothStatus.cavity ? {
+        cavity: null
+    } : value;
+}
+function to_candid_variant_n64(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SubscriptionTier): {
+    pro: null;
+} | {
+    free: null;
+} | {
+    elite: null;
+} {
+    return value == SubscriptionTier.pro ? {
+        pro: null
+    } : value == SubscriptionTier.free ? {
+        free: null
+    } : value == SubscriptionTier.elite ? {
+        elite: null
+    } : value;
+}
+function to_candid_variant_n66(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BookingStatus): {
+    cancelled: null;
+} | {
+    pending: null;
+} | {
+    completed: null;
+} | {
+    approved: null;
+} | {
+    declined: null;
+} {
+    return value == BookingStatus.cancelled ? {
+        cancelled: null
+    } : value == BookingStatus.pending ? {
+        pending: null
+    } : value == BookingStatus.completed ? {
+        completed: null
+    } : value == BookingStatus.approved ? {
+        approved: null
+    } : value == BookingStatus.declined ? {
+        declined: null
+    } : value;
+}
+function to_candid_variant_n68(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PaymentStatusInternal): {
+    pending: null;
+} | {
+    paid: null;
+} | {
+    refunded: null;
+} {
+    return value == PaymentStatusInternal.pending ? {
+        pending: null
+    } : value == PaymentStatusInternal.paid ? {
+        paid: null
+    } : value == PaymentStatusInternal.refunded ? {
+        refunded: null
+    } : value;
+}
+function to_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ScanSeverity): {
+    mild: null;
+} | {
+    severe: null;
+} | {
+    moderate: null;
+} {
+    return value == ScanSeverity.mild ? {
+        mild: null
+    } : value == ScanSeverity.severe ? {
+        severe: null
+    } : value == ScanSeverity.moderate ? {
+        moderate: null
+    } : value;
+}
+function to_candid_variant_n70(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ReimbursementStatus): {
+    settled: null;
+} | {
+    pending: null;
+} | {
+    approved: null;
+} | {
+    declined: null;
+} {
+    return value == ReimbursementStatus.settled ? {
+        settled: null
+    } : value == ReimbursementStatus.pending ? {
+        pending: null
+    } : value == ReimbursementStatus.approved ? {
+        approved: null
+    } : value == ReimbursementStatus.declined ? {
+        declined: null
+    } : value;
+}
+function to_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
     patient: null;
 } | {
     admin: null;
@@ -1456,68 +2192,8 @@ function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         anonymous: null
     } : value;
 }
-function to_candid_variant_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BookingUrgency): {
-    emergency: null;
-} | {
-    routine: null;
-} | {
-    urgent: null;
-} {
-    return value == BookingUrgency.emergency ? {
-        emergency: null
-    } : value == BookingUrgency.routine ? {
-        routine: null
-    } : value == BookingUrgency.urgent ? {
-        urgent: null
-    } : value;
-}
-function to_candid_variant_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ToothStatus): {
-    risk: null;
-} | {
-    healthy: null;
-} | {
-    cavity: null;
-} {
-    return value == ToothStatus.risk ? {
-        risk: null
-    } : value == ToothStatus.healthy ? {
-        healthy: null
-    } : value == ToothStatus.cavity ? {
-        cavity: null
-    } : value;
-}
-function to_candid_variant_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ScanSeverity): {
-    mild: null;
-} | {
-    severe: null;
-} | {
-    moderate: null;
-} {
-    return value == ScanSeverity.mild ? {
-        mild: null
-    } : value == ScanSeverity.severe ? {
-        severe: null
-    } : value == ScanSeverity.moderate ? {
-        moderate: null
-    } : value;
-}
-function to_candid_variant_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PaymentStatusInternal): {
-    pending: null;
-} | {
-    paid: null;
-} | {
-    refunded: null;
-} {
-    return value == PaymentStatusInternal.pending ? {
-        pending: null
-    } : value == PaymentStatusInternal.paid ? {
-        paid: null
-    } : value == PaymentStatusInternal.refunded ? {
-        refunded: null
-    } : value;
-}
-function to_candid_vec_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<ToothRecord>): Array<_ToothRecord> {
-    return value.map((x)=>to_candid_ToothRecord_n38(_uploadFile, _downloadFile, x));
+function to_candid_vec_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<ToothRecord>): Array<_ToothRecord> {
+    return value.map((x)=>to_candid_ToothRecord_n2(_uploadFile, _downloadFile, x));
 }
 export interface CreateActorOptions {
     agent?: Agent;

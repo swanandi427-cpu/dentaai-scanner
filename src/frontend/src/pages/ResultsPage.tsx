@@ -19,7 +19,7 @@ import {
   Share2,
   XCircle,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useAnimation } from "motion/react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -53,9 +53,13 @@ function IssueCard({ tooth, index }: { tooth: ToothRecord; index: number }) {
   const isCavity = tooth.status === "cavity";
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.4 }}
+      transition={{
+        delay: 0.3 + index * 0.15,
+        duration: 0.45,
+        ease: "easeOut",
+      }}
       className={`glass-card rounded-3xl p-4 border ${config.border} transition-smooth hover-lift`}
       style={
         isCavity
@@ -294,34 +298,34 @@ function ReportBox({ teeth }: { teeth: ToothRecord[] }) {
 
 function TriageBanner({ score }: { score: number }) {
   const navigate = useNavigate();
+  const controls = useAnimation();
   const severity = score >= 70 ? "Mild" : score >= 40 ? "Moderate" : "Severe";
   const config = {
     Mild: {
       message:
         "Your dental health looks good! Keep up your excellent oral hygiene routine.",
-      borderColor: "border-l-green-500",
       bgStyle: {
         background: "oklch(0.55 0.2 145 / 0.07)",
         borderLeft: "4px solid oklch(0.55 0.2 145)",
       },
       textColor: "text-green-400",
       Icon: CheckCircle2,
+      iconBg: "bg-green-500/15 border border-green-500/30",
     },
     Moderate: {
       message:
         "Moderate issues detected — see a dentist soon to prevent further damage.",
-      borderColor: "border-l-yellow-500",
       bgStyle: {
         background: "oklch(0.78 0.2 80 / 0.07)",
         borderLeft: "4px solid oklch(0.78 0.2 80)",
       },
       textColor: "text-yellow-400",
       Icon: AlertTriangle,
+      iconBg: "bg-yellow-500/15 border border-yellow-500/30",
     },
     Severe: {
       message:
         "URGENT: Severe dental issues detected — seek emergency care immediately.",
-      borderColor: "border-l-red-500",
       bgStyle: {
         background: "oklch(0.63 0.26 27 / 0.12)",
         borderLeft: "4px solid oklch(0.63 0.26 27)",
@@ -329,70 +333,90 @@ function TriageBanner({ score }: { score: number }) {
       },
       textColor: "text-red-400",
       Icon: XCircle,
+      iconBg: "bg-red-500/15 border border-red-500/30",
     },
   }[severity];
 
-  const { Icon, bgStyle, textColor, message } = config;
+  const { Icon, bgStyle, textColor, message, iconBg } = config;
+
+  // 3x flash pulse on mount for Moderate/Severe
+  useEffect(() => {
+    if (severity === "Mild") return;
+    const pulseColor =
+      severity === "Severe"
+        ? "oklch(0.63 0.26 27 / 0.4)"
+        : "oklch(0.78 0.2 80 / 0.35)";
+    const sequence = async () => {
+      for (let n = 0; n < 3; n++) {
+        await controls.start({
+          boxShadow: `0 0 24px 6px ${pulseColor}`,
+          transition: { duration: 0.22 },
+        });
+        await controls.start({
+          boxShadow: "0 0 0px 0px transparent",
+          transition: { duration: 0.22 },
+        });
+      }
+    };
+    const t = setTimeout(() => {
+      sequence();
+    }, 300);
+    return () => clearTimeout(t);
+  }, [severity, controls]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -16 }}
+      initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.15, duration: 0.5 }}
       className="glass-card rounded-3xl p-5"
       style={bgStyle}
       data-ocid="results.triage.card"
     >
-      <div className="flex items-start gap-3">
-        <div
-          className={`circle-icon w-10 h-10 flex-shrink-0 ${
-            severity === "Mild"
-              ? "bg-green-500/15 border border-green-500/30"
-              : severity === "Moderate"
-                ? "bg-yellow-500/15 border border-yellow-500/30"
-                : "bg-red-500/15 border border-red-500/30"
-          }`}
-        >
-          <Icon className={`w-5 h-5 ${textColor}`} />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span
-              className={`text-xs font-bold uppercase tracking-wider hud-telemetry ${textColor}`}
-            >
-              {severity} — Health Score: {score}/100
-            </span>
+      <motion.div animate={controls} className="rounded-3xl">
+        <div className="flex items-start gap-3">
+          <div className={`circle-icon w-10 h-10 flex-shrink-0 ${iconBg}`}>
+            <Icon className={`w-5 h-5 ${textColor}`} />
           </div>
-          <p className="text-sm text-foreground/80 leading-relaxed">
-            {message}
-          </p>
-          {(severity === "Moderate" || severity === "Severe") && (
-            <Button
-              size="sm"
-              className="mt-3 rounded-full text-xs px-4"
-              variant="outline"
-              style={
-                severity === "Severe"
-                  ? {
-                      background: "oklch(0.63 0.26 27 / 0.15)",
-                      borderColor: "oklch(0.63 0.26 27 / 0.5)",
-                      color: "oklch(0.82 0.2 27)",
-                    }
-                  : {
-                      background: "oklch(0.78 0.2 80 / 0.1)",
-                      borderColor: "oklch(0.78 0.2 80 / 0.4)",
-                      color: "oklch(0.88 0.18 80)",
-                    }
-              }
-              onClick={() => navigate({ to: "/find-dentist" })}
-              data-ocid="results.find_dentist.button"
-            >
-              <MapPin className="w-3.5 h-3.5 mr-1.5" />
-              Find Emergency Dentist
-            </Button>
-          )}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className={`text-xs font-bold uppercase tracking-wider hud-telemetry ${textColor}`}
+              >
+                {severity} — Health Score: {score}/100
+              </span>
+            </div>
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {message}
+            </p>
+            {(severity === "Moderate" || severity === "Severe") && (
+              <Button
+                size="sm"
+                className="mt-3 rounded-full text-xs px-4"
+                variant="outline"
+                style={
+                  severity === "Severe"
+                    ? {
+                        background: "oklch(0.63 0.26 27 / 0.15)",
+                        borderColor: "oklch(0.63 0.26 27 / 0.5)",
+                        color: "oklch(0.82 0.2 27)",
+                      }
+                    : {
+                        background: "oklch(0.78 0.2 80 / 0.1)",
+                        borderColor: "oklch(0.78 0.2 80 / 0.4)",
+                        color: "oklch(0.88 0.18 80)",
+                      }
+                }
+                onClick={() => navigate({ to: "/find-dentist" })}
+                data-ocid="results.find_dentist.button"
+              >
+                <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                Find Emergency Dentist
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -538,31 +562,33 @@ export default function ResultsPage() {
           transition={{ duration: 0.5 }}
           className="flex flex-col sm:flex-row items-center gap-6 glass-card rounded-3xl p-6 neon-border"
         >
-          <HealthScoreGauge score={score} />
+          <HealthScoreGauge score={score} severity={scanResult.severity} />
           <div className="flex-1 grid grid-cols-3 gap-4 w-full">
-            {[
-              {
-                count: healthyCount,
-                label: "Healthy",
-                color: "text-green-400",
-                bg: "bg-green-500/10",
-                border: "border-green-500/25",
-              },
-              {
-                count: riskCount,
-                label: "At Risk",
-                color: "text-yellow-400",
-                bg: "bg-yellow-500/10",
-                border: "border-yellow-500/25",
-              },
-              {
-                count: cavityCount,
-                label: "Cavities",
-                color: "text-red-400",
-                bg: "bg-red-500/10",
-                border: "border-red-500/25",
-              },
-            ].map((item) => (
+            {(
+              [
+                {
+                  count: healthyCount,
+                  label: "Healthy",
+                  color: "text-green-400",
+                  bg: "bg-green-500/10",
+                  border: "border-green-500/25",
+                },
+                {
+                  count: riskCount,
+                  label: "At Risk",
+                  color: "text-yellow-400",
+                  bg: "bg-yellow-500/10",
+                  border: "border-yellow-500/25",
+                },
+                {
+                  count: cavityCount,
+                  label: "Cavities",
+                  color: "text-red-400",
+                  bg: "bg-red-500/10",
+                  border: "border-red-500/25",
+                },
+              ] as const
+            ).map((item) => (
               <div key={item.label} className="flex flex-col items-center">
                 <div
                   className={`circle-icon w-14 h-14 ${item.bg} border ${item.border} mb-2`}
@@ -579,7 +605,7 @@ export default function ResultsPage() {
           </div>
         </motion.div>
 
-        {/* Triage Banner */}
+        {/* Triage Banner — flashes 3x on mount for Moderate/Severe */}
         <TriageBanner score={score} />
 
         {/* 3D Arch */}
@@ -598,11 +624,13 @@ export default function ResultsPage() {
           </div>
           <DentalArch3D teeth={scanResult.teeth} />
           <div className="flex gap-3 justify-center mt-4 flex-wrap">
-            {[
-              { color: "bg-green-500", label: "Healthy" },
-              { color: "bg-yellow-500", label: "Risk Detected" },
-              { color: "bg-red-500", label: "Cavity / Decay" },
-            ].map((item) => (
+            {(
+              [
+                { color: "bg-green-500", label: "Healthy" },
+                { color: "bg-yellow-500", label: "Risk Detected" },
+                { color: "bg-red-500", label: "Cavity / Decay" },
+              ] as const
+            ).map((item) => (
               <div
                 key={item.label}
                 className="flex items-center gap-1.5 bg-muted/30 px-3 py-1 rounded-full"
@@ -619,7 +647,7 @@ export default function ResultsPage() {
         {/* Full Report Box — RED when cavities present */}
         {issueTeeth.length > 0 && <ReportBox teeth={scanResult.teeth} />}
 
-        {/* Issues list (detailed cards) */}
+        {/* Issues list — staggered slide-up reveal */}
         {issueTeeth.length > 0 ? (
           <div>
             <h2 className="font-display font-semibold text-base mb-3">

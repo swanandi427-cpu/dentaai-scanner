@@ -14,6 +14,9 @@ import {
   Calendar,
   CalendarCheck,
   CheckCircle2,
+  Clock,
+  CreditCard,
+  IndianRupee,
   Loader2,
   MapPin,
   Search,
@@ -31,22 +34,31 @@ const URGENCY_OPTS = [
     label: "Routine",
     color: "bg-primary/20 border-primary/60 text-primary",
     icon: "📅",
+    fee: 499,
   },
   {
     value: "urgent",
     label: "Urgent",
     color: "bg-yellow-500/20 border-yellow-500/60 text-yellow-400",
     icon: "⚡",
+    fee: 999,
   },
   {
     value: "emergency",
     label: "Emergency",
     color: "bg-red-500/20 border-red-500/60 text-red-400",
     icon: "🚨",
+    fee: 999,
   },
 ] as const;
 
 type UrgencyKey = "routine" | "urgent" | "emergency";
+
+const URGENCY_FEE: Record<UrgencyKey, number> = {
+  routine: 499,
+  urgent: 999,
+  emergency: 999,
+};
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -67,6 +79,8 @@ const URGENCY_ENUM: Record<UrgencyKey, BookingUrgency> = {
   emergency: BookingUrgency.emergency,
 };
 
+type PaymentState = "idle" | "recording" | "confirmed";
+
 export default function BookByCodePage() {
   const navigate = useNavigate();
   const { identity, login } = useInternetIdentity();
@@ -80,6 +94,8 @@ export default function BookByCodePage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [notes, setNotes] = useState("");
   const [urgency, setUrgency] = useState<UrgencyKey>("routine");
+  const [paymentState, setPaymentState] = useState<PaymentState>("idle");
+  const [paymentRecordId, setPaymentRecordId] = useState<bigint | null>(null);
 
   const { data: allDentists = [] } = useQuery<DentistProfile[]>({
     queryKey: ["allDentists"],
@@ -94,6 +110,8 @@ export default function BookByCodePage() {
   const rating = dentist
     ? 4 + (dentist.name.charCodeAt(0) % 2 === 0 ? 0 : 1)
     : 4;
+
+  const bookingFee = URGENCY_FEE[urgency];
 
   const bookAppointment = async () => {
     if (!actor || !identity || !dentistEmail || !selectedDate) return;
@@ -117,6 +135,26 @@ export default function BookByCodePage() {
     }
   };
 
+  const handlePayNow = async () => {
+    if (!actor || !bookingId) return;
+    setPaymentState("recording");
+    try {
+      const payId = await actor.recordBookingPayment(
+        bookingId,
+        BigInt(bookingFee),
+        "pending-stripe-session",
+      );
+      setPaymentRecordId(payId);
+      setPaymentState("confirmed");
+      toast.success(
+        "Payment recorded — complete payment at your dentist visit",
+      );
+    } catch {
+      setPaymentState("idle");
+      toast.error("Failed to record payment. Please try again.");
+    }
+  };
+
   if (!identity) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-6 px-4">
@@ -136,47 +174,146 @@ export default function BookByCodePage() {
   }
 
   if (bookingId !== null) {
+    const urgencyOpt = URGENCY_OPTS.find((u) => u.value === urgency);
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-6 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-6 px-4 py-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="glass-card rounded-3xl p-10 max-w-md w-full text-center border border-primary/30"
+          className="glass-card rounded-3xl p-8 max-w-md w-full flex flex-col gap-5 border border-primary/30"
         >
-          <div className="circle-icon w-20 h-20 bg-primary/10 border-2 border-primary/40 mx-auto mb-5 circle-glow-ring animate-pulse-glow">
-            <CheckCircle2 className="w-10 h-10 text-primary" />
-          </div>
-          <h2 className="text-2xl font-display font-bold text-gradient-gold mb-3">
-            Booking Confirmed!
-          </h2>
-          <p className="text-muted-foreground text-sm mb-4">
-            Your appointment request has been sent to{" "}
-            <span className="text-primary">
-              {dentist?.name ?? dentistEmail}
-            </span>
-            .
-          </p>
-          <div className="border border-primary/30 bg-primary/5 rounded-2xl p-4 mb-3">
-            <p className="text-xs text-muted-foreground mb-1">Booking ID</p>
-            <p className="text-2xl font-bold font-display text-gradient-gold">
-              #{String(bookingId)}
+          <div className="text-center">
+            <div className="circle-icon w-20 h-20 bg-primary/10 border-2 border-primary/40 mx-auto mb-4 circle-glow-ring animate-pulse-glow">
+              <CheckCircle2 className="w-10 h-10 text-primary" />
+            </div>
+            <h2 className="text-2xl font-display font-bold text-gradient-gold mb-2">
+              Booking Confirmed!
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Your appointment request has been sent to{" "}
+              <span className="text-primary">
+                {dentist?.name ?? dentistEmail}
+              </span>
+              .
             </p>
           </div>
-          <div className="flex items-center justify-center gap-2 mb-6">
-            {URGENCY_OPTS.find((u) => u.value === urgency) && (
-              <Badge
-                className={`text-xs ${urgency === "emergency" ? "bg-red-500/15 text-red-400 border-red-500/30" : urgency === "urgent" ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/30" : "bg-primary/10 text-primary border-primary/30"}`}
-              >
-                {URGENCY_OPTS.find((u) => u.value === urgency)?.icon} {urgency}
-              </Badge>
-            )}
-            <span className="text-xs text-muted-foreground">
-              {selectedDate}
-            </span>
+
+          {/* Booking reference card */}
+          <div className="border border-primary/30 bg-primary/5 rounded-2xl p-4 flex flex-col gap-2">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+              Booking Reference
+            </p>
+            <p className="text-3xl font-bold font-display text-gradient-gold">
+              #{String(bookingId)}
+            </p>
+            <div className="flex items-center gap-2 flex-wrap mt-1">
+              {urgencyOpt && (
+                <Badge
+                  className={`text-xs ${urgency === "emergency" ? "bg-red-500/15 text-red-400 border-red-500/30" : urgency === "urgent" ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/30" : "bg-primary/10 text-primary border-primary/30"}`}
+                >
+                  {urgencyOpt.icon} {urgency}
+                </Badge>
+              )}
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {selectedDate}
+              </span>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground mb-5">
+
+          {/* Payment section */}
+          <div
+            className="rounded-2xl p-5 flex flex-col gap-3"
+            style={{
+              background: "oklch(0.12 0.06 85 / 0.4)",
+              border: "1.5px solid oklch(0.72 0.15 85 / 0.4)",
+            }}
+            data-ocid="book.payment_section"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold">Booking Fee</span>
+              </div>
+              <span className="text-xl font-bold text-gradient-gold font-display">
+                ₹{bookingFee.toLocaleString("en-IN")}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {urgency === "routine"
+                ? "Routine appointment — standard consultation fee."
+                : "Urgent/emergency appointment — priority fee applies."}
+            </p>
+
+            {paymentState === "idle" && (
+              <Button
+                className="w-full rounded-full glow-primary shimmer-button font-semibold"
+                onClick={handlePayNow}
+                data-ocid="book.pay_now_button"
+              >
+                <IndianRupee className="w-4 h-4 mr-1.5" />
+                Pay Now — ₹{bookingFee.toLocaleString("en-IN")}
+              </Button>
+            )}
+
+            {paymentState === "recording" && (
+              <Button
+                className="w-full rounded-full opacity-70"
+                disabled
+                data-ocid="book.payment_loading_state"
+              >
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Recording payment...
+              </Button>
+            )}
+
+            {paymentState === "confirmed" && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col gap-2"
+                data-ocid="book.payment_success_state"
+              >
+                <div
+                  className="flex items-center gap-2 rounded-2xl px-4 py-3"
+                  style={{
+                    background: "oklch(0.22 0.08 85 / 0.3)",
+                    border: "1px solid oklch(0.72 0.15 85 / 0.5)",
+                  }}
+                >
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-primary">
+                      Payment Confirmed
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Record #
+                      {paymentRecordId !== null ? Number(paymentRecordId) : "—"}{" "}
+                      · Complete payment at your visit
+                    </p>
+                  </div>
+                  <Badge className="bg-primary/10 text-primary border-primary/30 text-xs shrink-0">
+                    Pending
+                  </Badge>
+                </div>
+              </motion.div>
+            )}
+
+            {paymentState === "idle" && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock className="w-3 h-3 shrink-0" />
+                <span>
+                  Payment status:{" "}
+                  <strong className="text-yellow-400">Payment Pending</strong>
+                </span>
+              </div>
+            )}
+          </div>
+
+          <p className="text-xs text-muted-foreground text-center">
             Track your appointment under My Bookings.
           </p>
+
           <Button
             className="w-full rounded-full glow-primary"
             onClick={() => navigate({ to: "/my-bookings" })}
@@ -378,7 +515,7 @@ export default function BookByCodePage() {
                   className="grid grid-cols-3 gap-2 border-0 p-0 m-0"
                   aria-labelledby="urgency-label"
                 >
-                  {URGENCY_OPTS.map(({ value, label, icon }) => (
+                  {URGENCY_OPTS.map(({ value, label, icon, fee }) => (
                     <button
                       key={value}
                       type="button"
@@ -388,10 +525,30 @@ export default function BookByCodePage() {
                     >
                       <span>{icon}</span>
                       <span>{label}</span>
+                      <span className="text-[10px] opacity-70">₹{fee}</span>
                     </button>
                   ))}
                 </fieldset>
               </div>
+
+              {/* Fee preview */}
+              {dentist && (
+                <div
+                  className="flex items-center justify-between rounded-xl px-3 py-2 text-xs"
+                  style={{
+                    background: "oklch(0.12 0.06 85 / 0.3)",
+                    border: "1px solid oklch(0.72 0.15 85 / 0.25)",
+                  }}
+                >
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    <IndianRupee className="w-3 h-3" />
+                    Booking fee
+                  </span>
+                  <span className="font-bold text-primary">
+                    ₹{bookingFee.toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
 
               <div>
                 <label
@@ -414,7 +571,7 @@ export default function BookByCodePage() {
           </motion.div>
         )}
 
-        {/* Confirm button — visible even if dentist not found so user sees it needs a date */}
+        {/* Confirm button */}
         {dentistEmail && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -440,7 +597,7 @@ export default function BookByCodePage() {
                   ? "Enter a Valid Dentist Email"
                   : !selectedDate
                     ? "Select a Date to Continue"
-                    : `Confirm ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} Appointment`}
+                    : `Confirm ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} — ₹${bookingFee.toLocaleString("en-IN")}`}
             </Button>
             {!selectedDate && dentist && (
               <p className="text-center text-xs text-muted-foreground mt-2">

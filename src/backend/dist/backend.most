@@ -35,6 +35,16 @@ type DentistProfile__642545049 =
     name : Text;
     specialties : [Text]
   };
+type DentistSubscription__395969940 =
+  {
+    dentistId : Principal;
+    monthlyAmountRupees : Nat;
+    renewsAt : ?Time__900049286;
+    startedAt : Time__900049286;
+    state : SubscriptionState__415640946;
+    stripeSubscriptionId : Text;
+    tier : SubscriptionTier__672185844
+  };
 type FeedbackEntry__271733681 =
   {author : Principal; id : Nat; text : Text; timestamp : Time__900049286};
 type Int__270357528 = Int__616954475;
@@ -74,6 +84,20 @@ type PassportRecord__1042929136 =
     preApprovedBudget : Nat;
     treatmentHistory : Text
   };
+type PaymentKind__224441873 = {#bookingFee; #reimbursement};
+type PaymentRecord__879948694 =
+  {
+    amountRupees : Nat;
+    createdAt : Time__900049286;
+    id : Nat;
+    kind : PaymentKind__224441873;
+    payer : Principal;
+    referenceId : Nat;
+    settledAt : ?Time__900049286;
+    state : PaymentState__819475960;
+    stripeSessionId : Text
+  };
+type PaymentState__819475960 = {#failed; #paid; #pending; #refunded};
 type PaymentStatusInternal__608942324 = {#paid; #pending; #refunded};
 type ReimbursementRequest__309717813 =
   {
@@ -99,6 +123,8 @@ type ScanResult__571685448 =
     timestamp : Time__900049286
   };
 type ScanSeverity__546739403 = {#mild; #moderate; #severe};
+type SubscriptionState__415640946 = {#active; #cancelled; #expired};
+type SubscriptionTier__672185844 = {#elite; #free; #pro};
 type Testimonial__393323594 =
   {
     author : Principal;
@@ -149,6 +175,11 @@ actor {
       var root : Node__46230540<Principal, DentistProfile__642545049>;
       var size : Nat__490723111
     };
+  stable dentistSubscriptions :
+    {
+      var root : Node__46230540<Principal, DentistSubscription__395969940>;
+      var size : Nat__490723111
+    };
   stable emailToDentistPrincipal :
     {var root : Node__46230540<Text, Principal>; var size : Nat__490723111};
   stable var feedbackCount : Nat;
@@ -165,6 +196,7 @@ actor {
   stable var nextBookingId : Nat;
   stable var nextMessageId : Nat;
   stable var nextPassportId : Nat;
+  stable nextPaymentIdRef : {var id : Nat};
   stable var nextReimbursementId : Nat;
   stable var nextScanId : Nat;
   stable var nextSlotId : Nat;
@@ -178,6 +210,12 @@ actor {
     };
   stable patientPassportMap :
     {var root : Node__46230540<Principal, Nat>; var size : Nat__490723111};
+  stable paymentRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?PaymentRecord__879948694]];
+      var elementIndex : Nat__490723111
+    };
   stable reimbursementRequests :
     {
       var root : Node__46230540<Nat, ReimbursementRequest__309717813>;

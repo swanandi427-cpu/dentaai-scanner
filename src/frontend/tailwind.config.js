@@ -78,7 +78,10 @@ export default {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgba(0,0,0,0.05)",
-        glow: "0 0 20px oklch(0.73 0.19 200 / 0.35), 0 0 60px oklch(0.73 0.19 200 / 0.15)",
+        glow: "0 0 20px oklch(0.88 0.18 85 / 0.4), 0 0 60px oklch(0.88 0.18 85 / 0.15)",
+        "glow-sm": "0 0 12px oklch(0.88 0.18 85 / 0.3)",
+        "glow-lg": "0 0 40px oklch(0.88 0.18 85 / 0.5), 0 0 80px oklch(0.88 0.18 85 / 0.2)",
+        elevated: "0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
       },
       keyframes: {
         "accordion-down": {
@@ -89,10 +92,37 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "shimmer-sweep": {
+          "0%": { backgroundPosition: "-1000px 0" },
+          "100%": { backgroundPosition: "1000px 0" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 20px oklch(0.88 0.18 85 / 0.4), 0 0 60px oklch(0.88 0.18 85 / 0.15)" },
+          "50%": { boxShadow: "0 0 30px oklch(0.88 0.18 85 / 0.6), 0 0 80px oklch(0.88 0.18 85 / 0.25)" },
+        },
+        "scan-line": {
+          "0%": { top: "-100%" },
+          "100%": { top: "100%" },
+        },
+        "particle-rise": {
+          "0%": { opacity: "1", transform: "translateY(0) translateX(0)" },
+          "100%": { opacity: "0", transform: "translateY(-100px) translateX(var(--tx, 0))" },
+        },
+        "orb-drift": {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "25%": { transform: "translate(30px, -20px)" },
+          "50%": { transform: "translate(-10px, 30px)" },
+          "75%": { transform: "translate(-25px, -15px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "shimmer-sweep": "shimmer-sweep 2.2s infinite",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "scan-line": "scan-line 2.5s linear infinite",
+        "particle-rise": "particle-rise 3s ease-out forwards",
+        "orb-drift": "orb-drift 8s ease-in-out infinite",
       },
     },
   },

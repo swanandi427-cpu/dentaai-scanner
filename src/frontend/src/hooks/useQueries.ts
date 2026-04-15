@@ -1,3 +1,4 @@
+import type { PaymentRecord } from "@/backend.d";
 import { useActor } from "@/hooks/useActor";
 import type { ScanResult, ScanSeverity, ToothRecord } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -148,5 +149,84 @@ export function useVisitorCount() {
       }
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+// ─── Payment Queries ──────────────────────────────────────────────────────────
+
+export function useMyPayments() {
+  const { actor, isFetching } = useActor();
+  return useQuery<PaymentRecord[]>({
+    queryKey: ["myPayments"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getMyPayments();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useBookingPayment(bookingId: bigint | null) {
+  const { actor, isFetching } = useActor();
+  return useQuery<PaymentRecord | null>({
+    queryKey: ["bookingPayment", bookingId?.toString()],
+    queryFn: async () => {
+      if (!actor || !bookingId) return null;
+      return actor.getBookingPayment(bookingId);
+    },
+    enabled: !!actor && !isFetching && !!bookingId,
+  });
+}
+
+export function useRecordBookingPayment() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      bookingId,
+      amountRupees,
+      stripeSessionId,
+    }: {
+      bookingId: bigint;
+      amountRupees: bigint;
+      stripeSessionId: string;
+    }) => {
+      if (!actor) throw new Error("Not authenticated");
+      return actor.recordBookingPayment(
+        bookingId,
+        amountRupees,
+        stripeSessionId,
+      );
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["myPayments"] });
+      qc.invalidateQueries({ queryKey: ["myBookings"] });
+    },
+  });
+}
+
+export function useRecordReimbursementPayment() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      reimbursementId,
+      amountRupees,
+      stripeSessionId,
+    }: {
+      reimbursementId: bigint;
+      amountRupees: bigint;
+      stripeSessionId: string;
+    }) => {
+      if (!actor) throw new Error("Not authenticated");
+      return actor.recordReimbursementPayment(
+        reimbursementId,
+        amountRupees,
+        stripeSessionId,
+      );
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["myPayments"] });
+    },
   });
 }

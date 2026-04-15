@@ -42,6 +42,44 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+// ── PRESS STRIP DATA ──────────────────────────────────────────────────────────
+const PRESS_LOGOS = [
+  { name: "TechCrunch", abbr: "TC", color: "oklch(0.72 0.18 25)" },
+  { name: "Forbes", abbr: "F", color: "oklch(0.82 0.18 85)" },
+  { name: "Wired", abbr: "W/D", color: "oklch(0.85 0.01 85)" },
+  { name: "Y Combinator", abbr: "YC", color: "oklch(0.78 0.18 50)" },
+  { name: "Health Tech Weekly", abbr: "HTW", color: "oklch(0.65 0.16 145)" },
+  { name: "Dental Tribune", abbr: "DT", color: "oklch(0.72 0.14 230)" },
+];
+
+// ── IMPACT STATS DATA ─────────────────────────────────────────────────────────
+const IMPACT_STATS = [
+  {
+    end: 12500,
+    suffix: "+",
+    label: "Scans Completed",
+    prefix: "",
+    icon: ScanLine,
+    duration: 2000,
+  },
+  {
+    end: 850,
+    suffix: "+",
+    label: "Dentists Onboarded",
+    prefix: "",
+    icon: Stethoscope,
+    duration: 2000,
+  },
+  {
+    end: 98,
+    suffix: "%",
+    label: "Patient Satisfaction",
+    prefix: "",
+    icon: Star,
+    duration: 1500,
+  },
+];
+
 // ── DATA ─────────────────────────────────────────────────────────────────────
 
 const STATS = [
@@ -187,6 +225,36 @@ function useReveal() {
   return { ref, visible };
 }
 
+// Animated counter hook — counts from 0 to `end` over `duration` ms when triggered
+function useCountUp(end: number, trigger: boolean, duration = 2000) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!trigger) return;
+    // Respect prefers-reduced-motion
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduced) {
+      setValue(end);
+      return;
+    }
+    let start: number | null = null;
+    let frameId: number;
+    function step(ts: number) {
+      if (start === null) start = ts;
+      const elapsed = ts - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - (1 - progress) * (1 - progress) * (1 - progress);
+      setValue(Math.round(eased * end));
+      if (progress < 1) frameId = requestAnimationFrame(step);
+    }
+    frameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frameId);
+  }, [end, duration, trigger]);
+  return value;
+}
+
 const sV: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7 } },
@@ -244,7 +312,123 @@ function StarPicker({
   );
 }
 
-// ── HERO CANVASES ─────────────────────────────────────────────────────────────
+// ── STAT COUNTER CARD ─────────────────────────────────────────────────────────
+
+function StatCounter({
+  end,
+  suffix,
+  label,
+  icon: Icon,
+  trigger,
+  delay = 0,
+  duration = 2200,
+}: {
+  end: number;
+  suffix: string;
+  label: string;
+  icon: React.ElementType<{ className?: string; style?: React.CSSProperties }>;
+  trigger: boolean;
+  delay?: number;
+  duration?: number;
+}) {
+  const [started, setStarted] = useState(false);
+  useEffect(() => {
+    if (!trigger) return;
+    const t = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(t);
+  }, [trigger, delay]);
+  const count = useCountUp(end, started, duration);
+  const displayNum =
+    end >= 1000 ? count.toLocaleString("en-IN") : count.toString();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{
+        scale: 1.04,
+        rotateX: 3,
+        rotateY: -3,
+        transition: { duration: 0.2 },
+      }}
+      transition={{ delay: delay / 1000, duration: 0.6 }}
+      className="rounded-3xl p-8 flex flex-col items-center text-center gap-4 card-glow-border cursor-default"
+      style={{
+        background: "oklch(0.12 0.05 85/0.75)",
+        transformPerspective: 800,
+      }}
+      data-ocid="impact_stats.card"
+    >
+      <div
+        className="w-14 h-14 rounded-full flex items-center justify-center"
+        style={{
+          background: "oklch(0.22 0.08 85/0.6)",
+          border: "2px solid oklch(0.72 0.15 85/0.55)",
+          boxShadow: "0 0 20px oklch(0.72 0.15 85/0.25)",
+        }}
+      >
+        <Icon className="w-6 h-6" style={{ color: "oklch(0.88 0.18 85)" }} />
+      </div>
+      <div>
+        <p className="font-display text-5xl md:text-6xl font-black text-gradient-gold leading-none">
+          {displayNum}
+          {suffix}
+        </p>
+        <p className="text-sm text-muted-foreground mt-2 uppercase tracking-wider font-semibold">
+          {label}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── IMPACT COUNTER SECTION ────────────────────────────────────────────────────
+
+function ImpactCounterSection() {
+  const { ref, visible } = useReveal();
+  return (
+    <motion.section
+      ref={ref}
+      variants={sV}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      className="w-full max-w-5xl px-6 py-16"
+      data-ocid="impact_stats.section"
+    >
+      <div className="text-center mb-12">
+        <p
+          className="text-xs font-bold uppercase tracking-[0.25em] mb-3"
+          style={{ color: "oklch(0.82 0.16 85)" }}
+        >
+          Platform Impact
+        </p>
+        <h2 className="font-display text-3xl md:text-4xl font-bold text-gradient-gold mb-3">
+          Growing Every Day
+        </h2>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Real numbers from our community — updated as DantaNova scales across
+          the globe.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {IMPACT_STATS.map((stat, i) => (
+          <StatCounter
+            key={stat.label}
+            end={stat.end}
+            suffix={stat.suffix}
+            label={stat.label}
+            icon={stat.icon}
+            trigger={visible}
+            delay={i * 200}
+            duration={stat.duration}
+          />
+        ))}
+      </div>
+      <div className="gold-divider mt-12" />
+    </motion.section>
+  );
+}
 
 function HeroParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1281,6 +1465,94 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── AS SEEN IN PRESS STRIP — MARQUEE ── */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.6 }}
+        className="w-full py-10 overflow-hidden"
+        style={{
+          background: "oklch(0.09 0.025 80/0.8)",
+          borderTop: "1px solid oklch(0.72 0.15 85/0.1)",
+          borderBottom: "1px solid oklch(0.72 0.15 85/0.1)",
+        }}
+        data-ocid="press_strip.section"
+      >
+        <p
+          className="text-center text-[10px] font-bold uppercase tracking-[0.35em] mb-7"
+          style={{ color: "oklch(0.58 0.06 80)" }}
+        >
+          As featured in
+        </p>
+        {/* Marquee track */}
+        <div
+          className="relative overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%)",
+          }}
+        >
+          <div
+            className="flex gap-4 w-max"
+            style={{
+              animation: "marquee-press 28s linear infinite",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.animationPlayState =
+                "paused";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.animationPlayState =
+                "running";
+            }}
+          >
+            {/* Duplicate for seamless loop */}
+            {[...PRESS_LOGOS, ...PRESS_LOGOS].map((pub, i) => (
+              <div
+                key={`${pub.name}-${i}`}
+                className="flex items-center gap-2.5 px-5 py-3 rounded-xl select-none cursor-default flex-shrink-0"
+                style={{
+                  background: "oklch(0.12 0.04 85/0.5)",
+                  border: "1px solid oklch(0.72 0.15 85/0.18)",
+                  transition: "border-color 0.2s ease, filter 0.2s ease",
+                  filter: "saturate(0.7) brightness(0.88)",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.filter = "saturate(1.3) brightness(1.15)";
+                  el.style.borderColor = "oklch(0.72 0.15 85/0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.filter = "saturate(0.7) brightness(0.88)";
+                  el.style.borderColor = "oklch(0.72 0.15 85/0.18)";
+                }}
+                data-ocid={`press_strip.item.${(i % PRESS_LOGOS.length) + 1}`}
+              >
+                <span
+                  className="font-mono font-black text-xs rounded-md px-2 py-1"
+                  style={{
+                    background: `${pub.color}22`,
+                    border: `1px solid ${pub.color}55`,
+                    color: pub.color,
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {pub.abbr}
+                </span>
+                <span
+                  className="font-display font-bold text-sm tracking-tight"
+                  style={{ color: "oklch(0.78 0.06 80)" }}
+                >
+                  {pub.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
       {/* ── STATS SECTION ── */}
       <motion.section
         variants={sV}
@@ -1341,6 +1613,9 @@ export default function HomePage() {
       </div>
 
       <main className="flex-1 flex flex-col items-center">
+        {/* ── IMPACT STATS COUNTER ── */}
+        <ImpactCounterSection />
+
         {/* ── SCAN OUTPUT PREVIEW ── */}
         <motion.section
           variants={sV}
