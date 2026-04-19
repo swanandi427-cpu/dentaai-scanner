@@ -32,6 +32,7 @@ type TierInfo =
    monthlyAmountRupees: nat;
    name: text;
    tier: SubscriptionTier;
+   yearlyAmountRupees: nat;
  };
 type Testimonial = 
  record {
@@ -89,6 +90,12 @@ type ReimbursementRequest =
    requestedBy: text;
    status: ReimbursementStatus;
    treatmentDetails: text;
+ };
+type ReimbursementFeeBreakdown = 
+ record {
+   grossAmountRupees: nat;
+   netAmountRupees: nat;
+   platformFeeRupees: nat;
  };
 type PaymentStatusInternal = 
  variant {
@@ -186,6 +193,13 @@ type BookingStatus =
    declined;
    pending;
  };
+type BookingFeeBreakdown = 
+ record {
+   baseAmountRupees: nat;
+   platformFeeRupees: nat;
+   totalAmountRupees: nat;
+   urgency: BookingUrgency;
+ };
 type Booking = 
  record {
    amountRupees: nat;
@@ -238,6 +252,7 @@ service : {
   /// getAvailableSlots: return unbooked slots for a given dentist
   getAvailableSlots: (dentistId: principal) -> (vec AvailabilitySlot) query;
   getBooking: (bookingId: nat) -> (opt Booking) query;
+  getBookingFee: (urgency: BookingUrgency) -> (BookingFeeBreakdown) query;
   getBookingPayment: (bookingId: nat) -> (opt PaymentRecord) query;
   /// Alias for getDentistBookings
   getBookingsByDentist: () -> (vec Booking) query;
@@ -271,6 +286,8 @@ service : {
   getMySubscription: () -> (opt DentistSubscription) query;
   getPassportByCode: (code: text) -> (opt PassportRecord) query;
   getPricingTiers: () -> (vec TierInfo) query;
+  getReimbursementFee: (grossAmountRupees: nat) ->
+   (ReimbursementFeeBreakdown) query;
   getReimbursementPayment: (reimbursementId: nat) ->
    (opt PaymentRecord) query;
   getReimbursementRequests: () -> (vec ReimbursementRequest) query;

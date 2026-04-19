@@ -26,37 +26,11 @@ export interface PaymentRecord {
     stripeSessionId: string;
     settledAt?: Time;
 }
-export interface PassportRecord {
-    id: bigint;
-    patientEmail: string;
-    treatmentHistory: string;
-    preApprovedBudget: bigint;
-    passportCode: string;
-    isActive: boolean;
-    currentConditions: string;
-    patientPrincipal: string;
-    notes: string;
-    issuedAt: Time;
-    issuedBy: string;
-    allergies: string;
-}
-export interface TierInfo {
-    features: Array<string>;
-    name: string;
-    tier: SubscriptionTier;
-    monthlyAmountRupees: bigint;
-}
 export interface FeedbackEntry {
     id: bigint;
     text: string;
     author: Principal;
     timestamp: Time;
-}
-export interface ToothRecord {
-    status: ToothStatus;
-    recommendation: string;
-    toothNumber: bigint;
-    condition: string;
 }
 export interface DentistSubscription {
     startedAt: Time;
@@ -67,29 +41,18 @@ export interface DentistSubscription {
     state: SubscriptionState;
     dentistId: Principal;
 }
-export interface DentistProfile {
-    bio: string;
+export interface TierInfo {
+    features: Array<string>;
     name: string;
-    email: string;
-    available: boolean;
-    isVerified: boolean;
-    licenseNumber: string;
-    specialties: Array<string>;
-    location: string;
+    tier: SubscriptionTier;
+    monthlyAmountRupees: bigint;
+    yearlyAmountRupees: bigint;
 }
-export interface AvailabilitySlot {
-    dateTimeLabel: string;
-    slotId: bigint;
-    isBooked: boolean;
-    dentistId: Principal;
-}
-export interface Message {
-    id: bigint;
-    content: string;
-    bookingId: bigint;
-    createdAt: Time;
-    senderPrincipal: string;
-    senderName: string;
+export interface ToothRecord {
+    status: ToothStatus;
+    recommendation: string;
+    toothNumber: bigint;
+    condition: string;
 }
 export interface Booking {
     status: BookingStatus;
@@ -114,6 +77,55 @@ export interface ReimbursementRequest {
     netAmountRupees: bigint;
     platformFeeRupees: bigint;
     requestedBy: string;
+}
+export interface BookingFeeBreakdown {
+    urgency: BookingUrgency;
+    totalAmountRupees: bigint;
+    platformFeeRupees: bigint;
+    baseAmountRupees: bigint;
+}
+export interface AvailabilitySlot {
+    dateTimeLabel: string;
+    slotId: bigint;
+    isBooked: boolean;
+    dentistId: Principal;
+}
+export interface PassportRecord {
+    id: bigint;
+    patientEmail: string;
+    treatmentHistory: string;
+    preApprovedBudget: bigint;
+    passportCode: string;
+    isActive: boolean;
+    currentConditions: string;
+    patientPrincipal: string;
+    notes: string;
+    issuedAt: Time;
+    issuedBy: string;
+    allergies: string;
+}
+export interface DentistProfile {
+    bio: string;
+    name: string;
+    email: string;
+    available: boolean;
+    isVerified: boolean;
+    licenseNumber: string;
+    specialties: Array<string>;
+    location: string;
+}
+export interface Message {
+    id: bigint;
+    content: string;
+    bookingId: bigint;
+    createdAt: Time;
+    senderPrincipal: string;
+    senderName: string;
+}
+export interface ReimbursementFeeBreakdown {
+    netAmountRupees: bigint;
+    platformFeeRupees: bigint;
+    grossAmountRupees: bigint;
 }
 export interface UserProfile {
     name: string;
@@ -229,6 +241,7 @@ export interface backendInterface {
      */
     getAvailableSlots(dentistId: Principal): Promise<Array<AvailabilitySlot>>;
     getBooking(bookingId: bigint): Promise<Booking | null>;
+    getBookingFee(urgency: BookingUrgency): Promise<BookingFeeBreakdown>;
     getBookingPayment(bookingId: bigint): Promise<PaymentRecord | null>;
     /**
      * / Alias for getDentistBookings
@@ -273,6 +286,7 @@ export interface backendInterface {
     getMySubscription(): Promise<DentistSubscription | null>;
     getPassportByCode(code: string): Promise<PassportRecord | null>;
     getPricingTiers(): Promise<Array<TierInfo>>;
+    getReimbursementFee(grossAmountRupees: bigint): Promise<ReimbursementFeeBreakdown>;
     getReimbursementPayment(reimbursementId: bigint): Promise<PaymentRecord | null>;
     getReimbursementRequests(): Promise<Array<ReimbursementRequest>>;
     getReimbursementRequestsForMe(): Promise<Array<ReimbursementRequest>>;

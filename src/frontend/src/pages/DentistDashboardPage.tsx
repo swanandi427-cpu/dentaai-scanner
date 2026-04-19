@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActor } from "@/hooks/useActor";
 import { useInternetIdentity } from "@/hooks/useInternetIdentity";
+import { useMySubscription } from "@/hooks/useQueries";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -21,10 +22,12 @@ import {
   Check,
   CheckCircle,
   Copy,
+  Crown,
   IndianRupee,
   Loader2,
   MessageSquare,
   Shield,
+  Star,
   Stethoscope,
   Trash2,
   User,
@@ -127,6 +130,7 @@ export default function DentistDashboardPage() {
   const navigate = useNavigate();
   const { identity, login } = useInternetIdentity();
   const { actor, isFetching } = useActor();
+  const { data: mySubscription } = useMySubscription();
 
   const [profile, setProfile] = useState<DentistProfile | null>(null);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
@@ -444,6 +448,90 @@ export default function DentistDashboardPage() {
                       <Copy className="w-4 h-4" />
                     </Button>
                   </div>
+                </div>
+
+                {/* Subscription Tier */}
+                <div
+                  className="glass-card rounded-3xl p-5 flex flex-col gap-3"
+                  style={{
+                    border:
+                      mySubscription?.tier === "elite"
+                        ? "1.5px solid oklch(0.72 0.18 75 / 0.5)"
+                        : mySubscription?.tier === "pro"
+                          ? "1.5px solid oklch(0.78 0.16 80 / 0.5)"
+                          : "1px solid oklch(0.35 0.03 70 / 0.5)",
+                  }}
+                  data-ocid="dentist_dashboard.subscription_panel"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gradient-gold">
+                      Subscription Plan
+                    </p>
+                    <Badge
+                      className={`text-xs font-bold uppercase tracking-wider ${mySubscription?.tier === "elite" ? "bg-amber-500/20 text-amber-300 border-amber-500/40" : mySubscription?.tier === "pro" ? "bg-primary/15 text-primary border-primary/40" : "bg-muted/50 text-muted-foreground border-border"}`}
+                      style={
+                        mySubscription?.tier === "elite"
+                          ? { boxShadow: "0 0 10px oklch(0.72 0.18 75 / 0.3)" }
+                          : mySubscription?.tier === "pro"
+                            ? {
+                                boxShadow: "0 0 10px oklch(0.78 0.16 80 / 0.3)",
+                              }
+                            : {}
+                      }
+                    >
+                      {mySubscription?.tier === "elite" ? (
+                        <>
+                          <Crown className="w-3 h-3 mr-1" />
+                          Elite
+                        </>
+                      ) : mySubscription?.tier === "pro" ? (
+                        <>
+                          <Star className="w-3 h-3 mr-1" />
+                          Pro
+                        </>
+                      ) : (
+                        "Free"
+                      )}
+                    </Badge>
+                  </div>
+                  {mySubscription ? (
+                    <div className="text-xs text-muted-foreground flex flex-col gap-0.5">
+                      <p>
+                        <span className="text-foreground font-medium">
+                          ₹
+                          {Number(
+                            mySubscription.monthlyAmountRupees,
+                          ).toLocaleString("en-IN")}
+                        </span>
+                        /month ·{" "}
+                        <span
+                          className={
+                            mySubscription.state === "active"
+                              ? "text-green-400"
+                              : "text-yellow-400"
+                          }
+                        >
+                          {mySubscription.state}
+                        </span>
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      You are on the Free plan.
+                    </p>
+                  )}
+                  <Link to="/pricing">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full border-primary/30 text-primary text-xs w-full"
+                      data-ocid="dentist_dashboard.upgrade_plan"
+                    >
+                      {mySubscription?.tier === "free" || !mySubscription
+                        ? "Upgrade to Pro"
+                        : "Manage Plan"}
+                    </Button>
+                  </Link>
                 </div>
 
                 {/* Passport Quick Links */}

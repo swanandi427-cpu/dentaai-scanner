@@ -28,6 +28,12 @@ export interface Booking {
   'notes' : string,
   'requestedDate' : string,
 }
+export interface BookingFeeBreakdown {
+  'urgency' : BookingUrgency,
+  'totalAmountRupees' : bigint,
+  'platformFeeRupees' : bigint,
+  'baseAmountRupees' : bigint,
+}
 export type BookingStatus = { 'cancelled' : null } |
   { 'pending' : null } |
   { 'completed' : null } |
@@ -103,6 +109,11 @@ export type PaymentState = { 'pending' : null } |
 export type PaymentStatusInternal = { 'pending' : null } |
   { 'paid' : null } |
   { 'refunded' : null };
+export interface ReimbursementFeeBreakdown {
+  'netAmountRupees' : bigint,
+  'platformFeeRupees' : bigint,
+  'grossAmountRupees' : bigint,
+}
 export interface ReimbursementRequest {
   'id' : bigint,
   'status' : ReimbursementStatus,
@@ -150,6 +161,7 @@ export interface TierInfo {
   'name' : string,
   'tier' : SubscriptionTier,
   'monthlyAmountRupees' : bigint,
+  'yearlyAmountRupees' : bigint,
 }
 export type Time = bigint;
 export interface ToothRecord {
@@ -220,6 +232,7 @@ export interface _SERVICE {
    */
   'getAvailableSlots' : ActorMethod<[Principal], Array<AvailabilitySlot>>,
   'getBooking' : ActorMethod<[bigint], [] | [Booking]>,
+  'getBookingFee' : ActorMethod<[BookingUrgency], BookingFeeBreakdown>,
   'getBookingPayment' : ActorMethod<[bigint], [] | [PaymentRecord]>,
   /**
    * / Alias for getDentistBookings
@@ -267,6 +280,7 @@ export interface _SERVICE {
   'getMySubscription' : ActorMethod<[], [] | [DentistSubscription]>,
   'getPassportByCode' : ActorMethod<[string], [] | [PassportRecord]>,
   'getPricingTiers' : ActorMethod<[], Array<TierInfo>>,
+  'getReimbursementFee' : ActorMethod<[bigint], ReimbursementFeeBreakdown>,
   'getReimbursementPayment' : ActorMethod<[bigint], [] | [PaymentRecord]>,
   'getReimbursementRequests' : ActorMethod<[], Array<ReimbursementRequest>>,
   'getReimbursementRequestsForMe' : ActorMethod<

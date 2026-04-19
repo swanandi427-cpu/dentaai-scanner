@@ -86,6 +86,12 @@ export const Booking = IDL.Record({
   'notes' : IDL.Text,
   'requestedDate' : IDL.Text,
 });
+export const BookingFeeBreakdown = IDL.Record({
+  'urgency' : BookingUrgency,
+  'totalAmountRupees' : IDL.Nat,
+  'platformFeeRupees' : IDL.Nat,
+  'baseAmountRupees' : IDL.Nat,
+});
 export const PaymentKind = IDL.Variant({
   'reimbursement' : IDL.Null,
   'bookingFee' : IDL.Null,
@@ -190,6 +196,12 @@ export const TierInfo = IDL.Record({
   'name' : IDL.Text,
   'tier' : SubscriptionTier,
   'monthlyAmountRupees' : IDL.Nat,
+  'yearlyAmountRupees' : IDL.Nat,
+});
+export const ReimbursementFeeBreakdown = IDL.Record({
+  'netAmountRupees' : IDL.Nat,
+  'platformFeeRupees' : IDL.Nat,
+  'grossAmountRupees' : IDL.Nat,
 });
 
 export const idlService = IDL.Service({
@@ -238,6 +250,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getBooking' : IDL.Func([IDL.Nat], [IDL.Opt(Booking)], ['query']),
+  'getBookingFee' : IDL.Func(
+      [BookingUrgency],
+      [BookingFeeBreakdown],
+      ['query'],
+    ),
   'getBookingPayment' : IDL.Func(
       [IDL.Nat],
       [IDL.Opt(PaymentRecord)],
@@ -284,6 +301,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getPricingTiers' : IDL.Func([], [IDL.Vec(TierInfo)], ['query']),
+  'getReimbursementFee' : IDL.Func(
+      [IDL.Nat],
+      [ReimbursementFeeBreakdown],
+      ['query'],
+    ),
   'getReimbursementPayment' : IDL.Func(
       [IDL.Nat],
       [IDL.Opt(PaymentRecord)],
@@ -509,6 +531,12 @@ export const idlFactory = ({ IDL }) => {
     'notes' : IDL.Text,
     'requestedDate' : IDL.Text,
   });
+  const BookingFeeBreakdown = IDL.Record({
+    'urgency' : BookingUrgency,
+    'totalAmountRupees' : IDL.Nat,
+    'platformFeeRupees' : IDL.Nat,
+    'baseAmountRupees' : IDL.Nat,
+  });
   const PaymentKind = IDL.Variant({
     'reimbursement' : IDL.Null,
     'bookingFee' : IDL.Null,
@@ -613,6 +641,12 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'tier' : SubscriptionTier,
     'monthlyAmountRupees' : IDL.Nat,
+    'yearlyAmountRupees' : IDL.Nat,
+  });
+  const ReimbursementFeeBreakdown = IDL.Record({
+    'netAmountRupees' : IDL.Nat,
+    'platformFeeRupees' : IDL.Nat,
+    'grossAmountRupees' : IDL.Nat,
   });
   
   return IDL.Service({
@@ -661,6 +695,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getBooking' : IDL.Func([IDL.Nat], [IDL.Opt(Booking)], ['query']),
+    'getBookingFee' : IDL.Func(
+        [BookingUrgency],
+        [BookingFeeBreakdown],
+        ['query'],
+      ),
     'getBookingPayment' : IDL.Func(
         [IDL.Nat],
         [IDL.Opt(PaymentRecord)],
@@ -711,6 +750,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getPricingTiers' : IDL.Func([], [IDL.Vec(TierInfo)], ['query']),
+    'getReimbursementFee' : IDL.Func(
+        [IDL.Nat],
+        [ReimbursementFeeBreakdown],
+        ['query'],
+      ),
     'getReimbursementPayment' : IDL.Func(
         [IDL.Nat],
         [IDL.Opt(PaymentRecord)],

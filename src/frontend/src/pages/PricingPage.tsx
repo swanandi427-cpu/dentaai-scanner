@@ -1,17 +1,24 @@
+import { SubscriptionTier } from "@/backend.d";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useInternetIdentity } from "@/hooks/useInternetIdentity";
+import {
+  useMySubscription,
+  useSetDentistSubscription,
+} from "@/hooks/useQueries";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   BarChart3,
   Calendar,
   Check,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
   Crown,
   Headphones,
+  Loader2,
   Minus,
   Shield,
   Sparkles,
@@ -216,6 +223,8 @@ export default function PricingPage() {
   const { loginStatus } = useInternetIdentity();
   const [annual, setAnnual] = useState(false);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const setSubscription = useSetDentistSubscription();
+  const { data: _mySubscription } = useMySubscription();
 
   async function handleSubscribe(tier: Tier) {
     if (tier.id === "free") return;
@@ -233,11 +242,36 @@ export default function PricingPage() {
     setLoadingTier(tier.id);
     try {
       const priceId = annual ? tier.stripePriceAnnual : tier.stripePriceMonthly;
+      const monthlyAmount = annual ? tier.annualPrice : tier.monthlyPrice;
+      const tierEnum =
+        tier.id === "pro" ? SubscriptionTier.pro : SubscriptionTier.elite;
+
       const { createCheckout } = await import("@/lib/stripe");
       await createCheckout({
         priceId: priceId!,
+        currency: "inr",
+        productName: `DantaNova ${tier.name} Plan`,
         successUrl: `${window.location.origin}/dentist-dashboard?subscription=${tier.id}`,
         cancelUrl: `${window.location.origin}/pricing`,
+        onSuccess: async (sessionId: string) => {
+          try {
+            await setSubscription.mutateAsync({
+              tier: tierEnum,
+              stripeSubscriptionId: sessionId,
+              monthlyAmountRupees: BigInt(monthlyAmount),
+            });
+            toast.success(
+              `Welcome to ${tier.name}! Your subscription is now active.`,
+            );
+          } catch {
+            toast.success(
+              `Payment received for ${tier.name}. Subscription will activate shortly.`,
+            );
+          }
+        },
+        onCancel: () => {
+          toast.info("Subscription cancelled. You can try again anytime.");
+        },
       });
     } catch {
       toast.error("Checkout could not be opened. Please try again.");

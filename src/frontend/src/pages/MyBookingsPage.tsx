@@ -16,13 +16,17 @@ import {
   ArrowLeft,
   Calendar,
   CalendarCheck,
+  CheckCircle2,
   CreditCard,
   IndianRupee,
+  Loader2,
   MessageSquare,
   Plus,
+  XCircle,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 function getStatusStr(status: unknown): string {
@@ -44,11 +48,17 @@ const URGENCY_COLORS: Record<string, string> = {
   emergency: "bg-red-500/15 text-red-400 border-red-500/30",
 };
 
-// Map PaymentState from payment records to display info
-function paymentChipInfo(payState: PaymentState | null): {
-  label: string;
-  cls: string;
-} {
+// Booking fee based on urgency
+const URGENCY_FEE: Record<string, number> = {
+  routine: 499,
+  urgent: 999,
+  emergency: 999,
+};
+const PLATFORM_FEE_PCT = 0.08;
+
+type PaymentChipInfo = { label: string; cls: string; icon?: React.ReactNode };
+
+function paymentChipInfo(payState: PaymentState | null): PaymentChipInfo {
   if (!payState || payState === PaymentState.pending)
     return {
       label: "Pending",
@@ -70,6 +80,132 @@ function paymentChipInfo(payState: PaymentState | null): {
       cls: "bg-red-500/15 text-red-400 border-red-500/30",
     };
   return { label: "N/A", cls: "bg-muted text-muted-foreground border-border" };
+}
+
+import type React from "react";
+
+type BookingPayFlow = "idle" | "opening" | "confirmed" | "failed";
+
+function PayNowButton({
+  booking,
+  urgencyStr,
+  actor,
+  onSuccess,
+}: {
+  booking: Booking;
+  urgencyStr: string;
+  actor: ReturnType<typeof useActor>["actor"];
+  onSuccess: () => void;
+}) {
+  const [flow, setFlow] = useState<BookingPayFlow>("idle");
+
+  const baseFee = URGENCY_FEE[urgencyStr] ?? 499;
+  const platformFee = Math.round(baseFee * PLATFORM_FEE_PCT);
+  const totalFee = baseFee + platformFee;
+
+  const handlePay = async () => {
+    if (!actor) return;
+    setFlow("opening");
+
+    // Capture session ID before checkout so it's available in catch
+    let capturedSessionId: string | null = null;
+
+    try {
+      const { createCheckout } = await import("@/lib/stripe");
+      await createCheckout({
+        amountRupees: totalFee,
+        currency: "inr",
+        productName: `DantaNova ${urgencyStr.charAt(0).toUpperCase() + urgencyStr.slice(1)} Appointment`,
+        successUrl: `${window.location.origin}/my-bookings?payment=success`,
+        cancelUrl: `${window.location.origin}/my-bookings`,
+        onSuccess: async (sessionId: string) => {
+          capturedSessionId = sessionId;
+          try {
+            await actor.recordBookingPayment(
+              booking.bookingId,
+              BigInt(totalFee),
+              sessionId,
+            );
+            await actor.confirmPayment(sessionId);
+            setFlow("confirmed");
+            onSuccess();
+            toast.success("Payment confirmed!");
+          } catch {
+            setFlow("confirmed");
+            onSuccess();
+            toast.success("Payment received!");
+          }
+        },
+        onCancel: () => {
+          setFlow("idle");
+          toast.info("Payment cancelled.");
+        },
+      });
+      if (flow === "opening") setFlow("idle");
+    } catch {
+      setFlow("failed");
+      // Transition backend record to #failed when session ID is known
+      if (capturedSessionId) {
+        try {
+          await actor.failPayment(capturedSessionId);
+        } catch {
+          /* best-effort */
+        }
+      }
+      toast.error("Could not open checkout.");
+    }
+  };
+
+  if (flow === "confirmed")
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-green-400">
+        <CheckCircle2 className="w-3.5 h-3.5" />
+        Payment confirmed
+      </div>
+    );
+
+  if (flow === "failed")
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-red-400 flex items-center gap-1">
+          <XCircle className="w-3.5 h-3.5" />
+          Failed
+        </span>
+        <Button
+          size="sm"
+          className="rounded-full glow-primary text-xs px-3 h-7"
+          onClick={handlePay}
+          data-ocid="my_bookings.retry_payment"
+        >
+          Retry
+        </Button>
+      </div>
+    );
+
+  return (
+    <Button
+      size="sm"
+      className="rounded-full glow-primary shimmer-button text-xs px-3 h-7"
+      onClick={handlePay}
+      disabled={flow === "opening"}
+      data-ocid="my_bookings.pay_now"
+    >
+      {flow === "opening" ? (
+        <>
+          <Loader2
+            className="w-3 h-3 animate-spin mr-1"
+            style={{ color: "oklch(0.88 0.18 85)" }}
+          />
+          Opening…
+        </>
+      ) : (
+        <>
+          <IndianRupee className="w-3 h-3 mr-1" />
+          Pay ₹{totalFee.toLocaleString("en-IN")}
+        </>
+      )}
+    </Button>
+  );
 }
 
 export default function MyBookingsPage() {
@@ -101,7 +237,6 @@ export default function MyBookingsPage() {
   const paymentByBookingId: Record<string, PaymentState> = {};
   for (const p of myPayments) {
     const key = p.referenceId.toString();
-    // Keep the most "settled" state if multiple payments exist for same booking
     const existing = paymentByBookingId[key];
     if (!existing || p.state === PaymentState.paid) {
       paymentByBookingId[key] = p.state;
@@ -122,6 +257,11 @@ export default function MyBookingsPage() {
     } catch {
       toast.error("Failed to update payment");
     }
+  };
+
+  const refreshPayments = () => {
+    queryClient.invalidateQueries({ queryKey: ["myPayments"] });
+    queryClient.invalidateQueries({ queryKey: ["myBookings"] });
   };
 
   if (!identity) {
@@ -259,11 +399,10 @@ export default function MyBookingsPage() {
                 URGENCY_COLORS[urgencyStr] ?? URGENCY_COLORS.routine;
               const isApproved = statusStr === BookingStatus.approved;
 
-              // Resolve payment state: prefer payment records, fall back to booking.paymentStatus
+              // Resolve payment state
               const payRecordState =
                 paymentByBookingId[bk.bookingId.toString()] ?? null;
               const internalPayStr = getStatusStr(bk.paymentStatus);
-              // Determine chip: use payment record if available
               let chipPayState: PaymentState | null = payRecordState;
               if (!chipPayState) {
                 if (internalPayStr === "paid") chipPayState = PaymentState.paid;
@@ -272,6 +411,7 @@ export default function MyBookingsPage() {
                 else chipPayState = PaymentState.pending;
               }
               const chip = paymentChipInfo(chipPayState);
+              const isPaid = chipPayState === PaymentState.paid;
 
               return (
                 <motion.div
@@ -280,6 +420,13 @@ export default function MyBookingsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06 }}
                   className="glass-card rounded-3xl p-4 flex flex-col gap-3 border border-border/20"
+                  style={
+                    isApproved && !isPaid
+                      ? {
+                          border: "1px solid oklch(0.72 0.15 85 / 0.35)",
+                        }
+                      : {}
+                  }
                   data-ocid={`my_bookings.item.${i + 1}`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -309,9 +456,21 @@ export default function MyBookingsPage() {
                       <Badge className={`text-xs ${statusColor}`}>
                         {statusStr}
                       </Badge>
-                      {/* Payment status chip */}
+                      {/* Payment status HUD chip */}
                       <Badge
                         className={`text-xs flex items-center gap-1 ${chip.cls}`}
+                        style={
+                          chipPayState === PaymentState.paid
+                            ? {
+                                boxShadow: "0 0 8px oklch(0.55 0.18 145 / 0.4)",
+                              }
+                            : chipPayState === PaymentState.pending
+                              ? {
+                                  boxShadow:
+                                    "0 0 8px oklch(0.72 0.15 85 / 0.3)",
+                                }
+                              : {}
+                        }
                         data-ocid={`my_bookings.payment_chip.${i + 1}`}
                       >
                         <CreditCard className="w-2.5 h-2.5" />
@@ -327,22 +486,33 @@ export default function MyBookingsPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {isApproved && chipPayState !== PaymentState.paid && (
+                    {/* Stripe pay-now for approved unpaid bookings */}
+                    {isApproved && !isPaid && actor && (
+                      <PayNowButton
+                        booking={bk}
+                        urgencyStr={urgencyStr}
+                        actor={actor}
+                        onSuccess={refreshPayments}
+                      />
+                    )}
+
+                    {/* Legacy mark paid (fallback if Stripe not available) */}
+                    {isApproved && !isPaid && (
                       <Button
                         size="sm"
-                        className="rounded-full bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 text-xs px-3"
+                        className="rounded-full bg-muted/50 text-muted-foreground border border-border/30 hover:bg-muted text-xs px-3 h-7"
                         onClick={() => markPaid(bk.bookingId, 0n)}
                         data-ocid={`my_bookings.mark_paid.${i + 1}`}
                       >
-                        <IndianRupee className="w-3 h-3 mr-1" />
-                        Mark Paid
+                        Mark Paid Manually
                       </Button>
                     )}
+
                     {(isApproved || statusStr === "completed") && (
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="rounded-full text-primary hover:bg-primary/10 text-xs px-3"
+                        className="rounded-full text-primary hover:bg-primary/10 text-xs px-3 h-7"
                         onClick={() =>
                           navigate({
                             to: "/messages/$bookingId",

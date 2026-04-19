@@ -20,6 +20,22 @@ mixin (
     PaymentsLib.getTierCatalogue();
   };
 
+  // ─── Fee computation queries ──────────────────────────────────────────────
+
+  /// Compute the total booking fee for the given urgency level.
+  /// Routine → ₹499 base + 8 % platform fee = ₹539.
+  /// Urgent / Emergency → ₹999 base + 8 % platform fee = ₹1079.
+  /// Call this before creating a Stripe Checkout session on the frontend.
+  public query func getBookingFee(urgency : T.BookingUrgency) : async T.BookingFeeBreakdown {
+    PaymentsLib.computeBookingFee(urgency);
+  };
+
+  /// Compute the reimbursement net payout for a given gross amount.
+  /// Platform deducts 8 %; home dentist receives the net amount.
+  public query func getReimbursementFee(grossAmountRupees : Nat) : async T.ReimbursementFeeBreakdown {
+    PaymentsLib.computeReimbursementFee(grossAmountRupees);
+  };
+
   // ─── Subscription management ─────────────────────────────────────────────
 
   /// Return the calling dentist's active subscription, or null.
@@ -36,7 +52,7 @@ mixin (
   };
 
   /// Upsert a dentist subscription after Stripe webhook confirmation.
-  /// Called by the frontend after a successful Stripe subscription event.
+  /// Called by the frontend after a successful Stripe subscription checkout.
   public shared ({ caller }) func setDentistSubscription(
     dentistId            : Principal,
     tier                 : T.SubscriptionTier,
@@ -74,7 +90,9 @@ mixin (
     PaymentsLib.getPaymentByReference(payments, #reimbursement, reimbursementId);
   };
 
-  /// Record a new booking-fee payment intent (called by frontend after creating Stripe session).
+  /// Record a new booking-fee payment intent.
+  /// amountRupees MUST equal getBookingFee(urgency).totalAmountRupees for the booking.
+  /// stripeSessionId is obtained by the frontend from the Stripe Checkout Session API.
   public shared ({ caller }) func recordBookingPayment(
     bookingId       : Nat,
     amountRupees    : Nat,
@@ -82,6 +100,9 @@ mixin (
   ) : async Nat {
     if (caller.isAnonymous()) {
       Runtime.trap("Must be authenticated to record a payment");
+    };
+    if (stripeSessionId.size() == 0) {
+      Runtime.trap("stripeSessionId must not be empty");
     };
     let id = PaymentsLib.createPaymentRecord(
       payments,
@@ -97,6 +118,8 @@ mixin (
   };
 
   /// Record a new reimbursement payment intent.
+  /// amountRupees is the gross amount; platform deducts 8 % at settlement.
+  /// stripeSessionId is obtained by the frontend from the Stripe Checkout Session API.
   public shared ({ caller }) func recordReimbursementPayment(
     reimbursementId : Nat,
     amountRupees    : Nat,
@@ -104,6 +127,9 @@ mixin (
   ) : async Nat {
     if (caller.isAnonymous()) {
       Runtime.trap("Must be authenticated to record a payment");
+    };
+    if (stripeSessionId.size() == 0) {
+      Runtime.trap("stripeSessionId must not be empty");
     };
     let id = PaymentsLib.createPaymentRecord(
       payments,
@@ -118,7 +144,9 @@ mixin (
     id;
   };
 
-  /// Mark a payment as paid by Stripe session ID (called on Stripe webhook / success redirect).
+  /// Mark a payment as paid by Stripe session ID.
+  /// Called on Stripe success redirect or webhook reconciliation.
+  /// Transitions state: #pending → #paid.
   public shared ({ caller }) func confirmPayment(stripeSessionId : Text) : async () {
     if (caller.isAnonymous()) {
       Runtime.trap("Must be authenticated to confirm a payment");
@@ -127,6 +155,8 @@ mixin (
   };
 
   /// Mark a payment as failed by Stripe session ID.
+  /// Called on Stripe cancel redirect or webhook reconciliation.
+  /// Transitions state: #pending → #failed.
   public shared ({ caller }) func failPayment(stripeSessionId : Text) : async () {
     if (caller.isAnonymous()) {
       Runtime.trap("Must be authenticated to fail a payment");

@@ -49,10 +49,17 @@ function paymentStateColor(s: PaymentState): string {
   return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30";
 }
 
+function paymentStateLabel(s: PaymentState): string {
+  if (s === PaymentState.paid) return "Paid";
+  if (s === PaymentState.failed) return "Failed";
+  if (s === PaymentState.refunded) return "Refunded";
+  return "Pending";
+}
+
 const GOLD_BORDER = "1.5px solid oklch(0.72 0.15 85 / 0.6)";
 const GOLD_GLOW = "0 0 40px oklch(0.72 0.15 85 / 0.15)";
 
-type ReimbursePayState = "idle" | "recording" | "confirmed";
+type ReimbursePayFlow = "idle" | "opening" | "confirmed" | "failed";
 
 export default function PassportLookupPage() {
   const navigate = useNavigate();
@@ -69,8 +76,8 @@ export default function PassportLookupPage() {
   const [submitting, setSubmitting] = useState(false);
   const [billingSuccess, setBillingSuccess] = useState<bigint | null>(null);
   const [lastReimburseId, setLastReimburseId] = useState<bigint | null>(null);
-  const [reimbursePayState, setReimbursePayState] =
-    useState<ReimbursePayState>("idle");
+  const [reimbursePayFlow, setReimbursePayFlow] =
+    useState<ReimbursePayFlow>("idle");
   const [reimbursePayRecordId, setReimbursePayRecordId] = useState<
     bigint | null
   >(null);
@@ -120,7 +127,7 @@ export default function PassportLookupPage() {
     setLookupError(false);
     setBillingSuccess(null);
     setLastReimburseId(null);
-    setReimbursePayState("idle");
+    setReimbursePayFlow("idle");
     try {
       const code = codeInput.trim().toUpperCase();
       const result = await actor.lookupPassportByCode(code);
@@ -181,21 +188,59 @@ export default function PassportLookupPage() {
 
   const handleReimbursePayNow = async () => {
     if (!actor || !lastReimburseId) return;
-    setReimbursePayState("recording");
+    setReimbursePayFlow("opening");
+
+    // Capture session ID before checkout so it's available in catch
+    let capturedSessionId: string | null = null;
+
     try {
-      const payId = await actor.recordReimbursementPayment(
-        lastReimburseId,
-        BigInt(Math.round(amountNum || 0)),
-        "pending-stripe-session",
-      );
-      setReimbursePayRecordId(payId);
-      setReimbursePayState("confirmed");
-      toast.success(
-        "Reimbursement request submitted — home dentist will be notified",
-      );
+      const { createCheckout } = await import("@/lib/stripe");
+      const reimburseAmount = Math.round(netAmount); // net amount (after platform fee)
+
+      await createCheckout({
+        amountRupees: reimburseAmount,
+        currency: "inr",
+        productName: "DantaNova Dental Passport Reimbursement",
+        successUrl: `${window.location.origin}/passport-lookup?payment=success`,
+        cancelUrl: `${window.location.origin}/passport-lookup`,
+        onSuccess: async (sessionId: string) => {
+          capturedSessionId = sessionId;
+          try {
+            const payId = await actor.recordReimbursementPayment(
+              lastReimburseId,
+              BigInt(Math.round(amountNum)),
+              sessionId,
+            );
+            setReimbursePayRecordId(payId);
+            // Confirm the payment in the backend
+            await actor.confirmPayment(sessionId);
+            setReimbursePayFlow("confirmed");
+            toast.success("Reimbursement payment confirmed!");
+          } catch {
+            setReimbursePayFlow("confirmed");
+            toast.success("Payment recorded — home dentist will be notified.");
+          }
+        },
+        onCancel: () => {
+          setReimbursePayFlow("idle");
+          toast.info("Payment cancelled.");
+        },
+      });
+
+      if (reimbursePayFlow === "opening") {
+        setReimbursePayFlow("idle");
+      }
     } catch {
-      setReimbursePayState("idle");
-      toast.error("Failed to record payment intent. Please try again.");
+      setReimbursePayFlow("failed");
+      // Transition backend record to #failed when session ID is known
+      if (capturedSessionId) {
+        try {
+          await actor.failPayment(capturedSessionId);
+        } catch {
+          /* best-effort */
+        }
+      }
+      toast.error("Could not open checkout. Please try again.");
     }
   };
 
@@ -488,33 +533,70 @@ export default function PassportLookupPage() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Home dentist will be notified to approve and settle
-                    reimbursement. You can also record the payment intent now.
+                    Collect the net reimbursement (after 8% platform fee) via
+                    Stripe. Home dentist will be notified upon payment.
                   </p>
 
-                  {reimbursePayState === "idle" && (
+                  {/* Idle — show pay button */}
+                  {reimbursePayFlow === "idle" && (
                     <Button
                       className="w-full rounded-full glow-primary font-semibold"
                       onClick={handleReimbursePayNow}
                       data-ocid="passport_lookup.reimburse_pay_button"
                     >
                       <IndianRupee className="w-4 h-4 mr-1.5" />
-                      Record Payment Intent
+                      Collect ₹{Math.round(netAmount).toLocaleString("en-IN")}{" "}
+                      via Stripe
                     </Button>
                   )}
 
-                  {reimbursePayState === "recording" && (
+                  {/* Opening Stripe */}
+                  {reimbursePayFlow === "opening" && (
                     <Button
                       className="w-full rounded-full opacity-70"
                       disabled
                       data-ocid="passport_lookup.reimburse_pay_loading_state"
                     >
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Recording...
+                      <Loader2
+                        className="w-4 h-4 animate-spin mr-2"
+                        style={{ color: "oklch(0.88 0.18 85)" }}
+                      />
+                      Opening Stripe Checkout…
                     </Button>
                   )}
 
-                  {reimbursePayState === "confirmed" && (
+                  {/* Failed */}
+                  {reimbursePayFlow === "failed" && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex flex-col gap-2"
+                    >
+                      <div
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3"
+                        style={{
+                          background: "oklch(0.35 0.18 20 / 0.12)",
+                          border: "1px solid oklch(0.55 0.18 20 / 0.4)",
+                        }}
+                        data-ocid="passport_lookup.reimburse_pay_error_state"
+                      >
+                        <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                        <p className="text-xs text-red-300">
+                          Could not open checkout. Please try again.
+                        </p>
+                      </div>
+                      <Button
+                        className="w-full rounded-full glow-primary"
+                        onClick={() => setReimbursePayFlow("idle")}
+                        data-ocid="passport_lookup.reimburse_retry_button"
+                      >
+                        Retry Payment
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  {/* Confirmed */}
+                  {reimbursePayFlow === "confirmed" && (
                     <motion.div
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -528,16 +610,19 @@ export default function PassportLookupPage() {
                       <CheckCircle className="w-4 h-4 text-primary shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-primary">
-                          Reimbursement request submitted — home dentist will be
-                          notified
+                          Payment Confirmed
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Payment record #
+                          Record #
                           {reimbursePayRecordId !== null
                             ? Number(reimbursePayRecordId)
-                            : "—"}
+                            : "—"}{" "}
+                          · Home dentist notified
                         </p>
                       </div>
+                      <Badge className="bg-green-500/15 text-green-400 border-green-500/30 text-xs shrink-0">
+                        Paid
+                      </Badge>
                     </motion.div>
                   )}
                 </div>
@@ -549,7 +634,7 @@ export default function PassportLookupPage() {
                     setBillingSuccess(null);
                     setPassport(null);
                     setCodeInput("");
-                    setReimbursePayState("idle");
+                    setReimbursePayFlow("idle");
                     setLastReimburseId(null);
                   }}
                   data-ocid="passport_lookup.new_lookup_button"
@@ -725,9 +810,10 @@ export default function PassportLookupPage() {
                         {payRec && (
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full border font-semibold flex items-center gap-1 ${paymentStateColor(payRec.state)}`}
+                            data-ocid={`passport_lookup.payment_chip.${i + 1}`}
                           >
                             <CreditCard className="w-2.5 h-2.5" />
-                            {payRec.state}
+                            {paymentStateLabel(payRec.state)}
                           </span>
                         )}
                       </div>

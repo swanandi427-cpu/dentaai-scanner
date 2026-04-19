@@ -1,5 +1,10 @@
-import type { PaymentRecord } from "@/backend.d";
+import type {
+  DentistSubscription,
+  PaymentRecord,
+  SubscriptionTier,
+} from "@/backend.d";
 import { useActor } from "@/hooks/useActor";
+import { useInternetIdentity } from "@/hooks/useInternetIdentity";
 import type { ScanResult, ScanSeverity, ToothRecord } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -227,6 +232,74 @@ export function useRecordReimbursementPayment() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["myPayments"] });
+    },
+  });
+}
+
+export function useConfirmPayment() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (stripeSessionId: string) => {
+      if (!actor) throw new Error("Not authenticated");
+      return actor.confirmPayment(stripeSessionId);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["myPayments"] });
+      qc.invalidateQueries({ queryKey: ["myBookings"] });
+      qc.invalidateQueries({ queryKey: ["mySubscription"] });
+    },
+  });
+}
+
+export function useFailPayment() {
+  const { actor } = useActor();
+  return useMutation({
+    mutationFn: async (stripeSessionId: string) => {
+      if (!actor) throw new Error("Not authenticated");
+      return actor.failPayment(stripeSessionId);
+    },
+  });
+}
+
+// ─── Subscription Queries ─────────────────────────────────────────────────────
+
+export function useMySubscription() {
+  const { actor, isFetching } = useActor();
+  return useQuery<DentistSubscription | null>({
+    queryKey: ["mySubscription"],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getMySubscription();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetDentistSubscription() {
+  const { actor } = useActor();
+  const { identity } = useInternetIdentity();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      tier,
+      stripeSubscriptionId,
+      monthlyAmountRupees,
+    }: {
+      tier: SubscriptionTier;
+      stripeSubscriptionId: string;
+      monthlyAmountRupees: bigint;
+    }) => {
+      if (!actor || !identity) throw new Error("Not authenticated");
+      return actor.setDentistSubscription(
+        identity.getPrincipal(),
+        tier,
+        stripeSubscriptionId,
+        monthlyAmountRupees,
+      );
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["mySubscription"] });
     },
   });
 }

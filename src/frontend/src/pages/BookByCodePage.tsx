@@ -22,6 +22,7 @@ import {
   Search,
   Shield,
   Star,
+  XCircle,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -32,21 +33,18 @@ const URGENCY_OPTS = [
   {
     value: "routine",
     label: "Routine",
-    color: "bg-primary/20 border-primary/60 text-primary",
     icon: "📅",
     fee: 499,
   },
   {
     value: "urgent",
     label: "Urgent",
-    color: "bg-yellow-500/20 border-yellow-500/60 text-yellow-400",
     icon: "⚡",
     fee: 999,
   },
   {
     value: "emergency",
     label: "Emergency",
-    color: "bg-red-500/20 border-red-500/60 text-red-400",
     icon: "🚨",
     fee: 999,
   },
@@ -59,6 +57,9 @@ const URGENCY_FEE: Record<UrgencyKey, number> = {
   urgent: 999,
   emergency: 999,
 };
+
+// 8% platform fee on top
+const PLATFORM_FEE_PCT = 0.08;
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -79,7 +80,12 @@ const URGENCY_ENUM: Record<UrgencyKey, BookingUrgency> = {
   emergency: BookingUrgency.emergency,
 };
 
-type PaymentState = "idle" | "recording" | "confirmed";
+type PaymentFlowState =
+  | "idle"
+  | "opening"
+  | "recorded"
+  | "confirmed"
+  | "failed";
 
 export default function BookByCodePage() {
   const navigate = useNavigate();
@@ -94,7 +100,7 @@ export default function BookByCodePage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [notes, setNotes] = useState("");
   const [urgency, setUrgency] = useState<UrgencyKey>("routine");
-  const [paymentState, setPaymentState] = useState<PaymentState>("idle");
+  const [paymentFlow, setPaymentFlow] = useState<PaymentFlowState>("idle");
   const [paymentRecordId, setPaymentRecordId] = useState<bigint | null>(null);
 
   const { data: allDentists = [] } = useQuery<DentistProfile[]>({
@@ -111,7 +117,9 @@ export default function BookByCodePage() {
     ? 4 + (dentist.name.charCodeAt(0) % 2 === 0 ? 0 : 1)
     : 4;
 
-  const bookingFee = URGENCY_FEE[urgency];
+  const baseFee = URGENCY_FEE[urgency];
+  const platformFee = Math.round(baseFee * PLATFORM_FEE_PCT);
+  const totalFee = baseFee + platformFee;
 
   const bookAppointment = async () => {
     if (!actor || !identity || !dentistEmail || !selectedDate) return;
@@ -137,22 +145,64 @@ export default function BookByCodePage() {
 
   const handlePayNow = async () => {
     if (!actor || !bookingId) return;
-    setPaymentState("recording");
+    setPaymentFlow("opening");
+
+    // Capture session ID before checkout so it's available in catch
+    let capturedSessionId: string | null = null;
+
     try {
-      const payId = await actor.recordBookingPayment(
-        bookingId,
-        BigInt(bookingFee),
-        "pending-stripe-session",
-      );
-      setPaymentRecordId(payId);
-      setPaymentState("confirmed");
-      toast.success(
-        "Payment recorded — complete payment at your dentist visit",
-      );
+      const { createCheckout } = await import("@/lib/stripe");
+      await createCheckout({
+        amountRupees: totalFee,
+        currency: "inr",
+        productName: `DantaNova ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} Appointment`,
+        successUrl: `${window.location.origin}/my-bookings?payment=success`,
+        cancelUrl: `${window.location.origin}/book`,
+        onSuccess: async (sessionId: string) => {
+          capturedSessionId = sessionId;
+          try {
+            // Record the payment with the real Stripe session ID
+            const payId = await actor.recordBookingPayment(
+              bookingId,
+              BigInt(totalFee),
+              sessionId,
+            );
+            setPaymentRecordId(payId);
+            // Confirm the payment in the backend
+            await actor.confirmPayment(sessionId);
+            setPaymentFlow("confirmed");
+            toast.success("Payment confirmed! Your booking is now active.");
+          } catch {
+            setPaymentFlow("recorded");
+            toast.success("Payment received — booking recorded.");
+          }
+        },
+        onCancel: () => {
+          setPaymentFlow("idle");
+          toast.info("Payment cancelled. You can try again.");
+        },
+      });
+
+      // If no onSuccess was triggered (fallback flow), set to idle
+      if (paymentFlow === "opening") {
+        setPaymentFlow("idle");
+      }
     } catch {
-      setPaymentState("idle");
-      toast.error("Failed to record payment. Please try again.");
+      setPaymentFlow("failed");
+      // Transition backend record to #failed when session ID is known
+      if (capturedSessionId) {
+        try {
+          await actor.failPayment(capturedSessionId);
+        } catch {
+          /* best-effort */
+        }
+      }
+      toast.error("Could not open checkout. Please try again.");
     }
+  };
+
+  const retryPayment = () => {
+    setPaymentFlow("idle");
   };
 
   if (!identity) {
@@ -236,38 +286,94 @@ export default function BookByCodePage() {
                 <span className="text-sm font-semibold">Booking Fee</span>
               </div>
               <span className="text-xl font-bold text-gradient-gold font-display">
-                ₹{bookingFee.toLocaleString("en-IN")}
+                ₹{totalFee.toLocaleString("en-IN")}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {urgency === "routine"
-                ? "Routine appointment — standard consultation fee."
-                : "Urgent/emergency appointment — priority fee applies."}
-            </p>
 
-            {paymentState === "idle" && (
+            {/* Fee breakdown */}
+            <div className="flex flex-col gap-1 text-xs">
+              <div className="flex justify-between text-muted-foreground">
+                <span>
+                  {urgency.charAt(0).toUpperCase() + urgency.slice(1)}{" "}
+                  appointment fee
+                </span>
+                <span>₹{baseFee.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Platform fee (8%)</span>
+                <span>₹{platformFee.toLocaleString("en-IN")}</span>
+              </div>
+              <div
+                className="flex justify-between font-semibold pt-1.5 mt-0.5"
+                style={{ borderTop: "1px solid oklch(0.72 0.15 85 / 0.2)" }}
+              >
+                <span style={{ color: "oklch(0.88 0.18 85)" }}>Total</span>
+                <span style={{ color: "oklch(0.88 0.18 85)" }}>
+                  ₹{totalFee.toLocaleString("en-IN")}
+                </span>
+              </div>
+            </div>
+
+            {/* Idle — show pay button */}
+            {paymentFlow === "idle" && (
               <Button
                 className="w-full rounded-full glow-primary shimmer-button font-semibold"
                 onClick={handlePayNow}
                 data-ocid="book.pay_now_button"
               >
                 <IndianRupee className="w-4 h-4 mr-1.5" />
-                Pay Now — ₹{bookingFee.toLocaleString("en-IN")}
+                Pay Now — ₹{totalFee.toLocaleString("en-IN")}
               </Button>
             )}
 
-            {paymentState === "recording" && (
+            {/* Opening Stripe */}
+            {paymentFlow === "opening" && (
               <Button
                 className="w-full rounded-full opacity-70"
                 disabled
                 data-ocid="book.payment_loading_state"
               >
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Recording payment...
+                <Loader2
+                  className="w-4 h-4 animate-spin mr-2"
+                  style={{ color: "oklch(0.88 0.18 85)" }}
+                />
+                Opening Stripe Checkout…
               </Button>
             )}
 
-            {paymentState === "confirmed" && (
+            {/* Failed */}
+            {paymentFlow === "failed" && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col gap-2"
+                data-ocid="book.payment_error_state"
+              >
+                <div
+                  className="flex items-center gap-2 rounded-2xl px-4 py-3"
+                  style={{
+                    background: "oklch(0.35 0.18 20 / 0.12)",
+                    border: "1px solid oklch(0.55 0.18 20 / 0.4)",
+                  }}
+                >
+                  <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                  <p className="text-xs text-red-300 flex-1">
+                    Payment could not be opened. Please try again.
+                  </p>
+                </div>
+                <Button
+                  className="w-full rounded-full glow-primary"
+                  onClick={retryPayment}
+                  data-ocid="book.retry_payment_button"
+                >
+                  <IndianRupee className="w-4 h-4 mr-1.5" />
+                  Retry Payment
+                </Button>
+              </motion.div>
+            )}
+
+            {/* Recorded / Confirmed */}
+            {(paymentFlow === "recorded" || paymentFlow === "confirmed") && (
               <motion.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -284,22 +390,25 @@ export default function BookByCodePage() {
                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-primary">
-                      Payment Confirmed
+                      {paymentFlow === "confirmed"
+                        ? "Payment Confirmed"
+                        : "Payment Recorded"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Record #
-                      {paymentRecordId !== null ? Number(paymentRecordId) : "—"}{" "}
-                      · Complete payment at your visit
+                      {paymentRecordId !== null ? Number(paymentRecordId) : "—"}
                     </p>
                   </div>
-                  <Badge className="bg-primary/10 text-primary border-primary/30 text-xs shrink-0">
-                    Pending
+                  <Badge
+                    className={`text-xs shrink-0 ${paymentFlow === "confirmed" ? "bg-green-500/15 text-green-400 border-green-500/30" : "bg-primary/10 text-primary border-primary/30"}`}
+                  >
+                    {paymentFlow === "confirmed" ? "Paid" : "Pending"}
                   </Badge>
                 </div>
               </motion.div>
             )}
 
-            {paymentState === "idle" && (
+            {paymentFlow === "idle" && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3 shrink-0" />
                 <span>
@@ -534,19 +643,33 @@ export default function BookByCodePage() {
               {/* Fee preview */}
               {dentist && (
                 <div
-                  className="flex items-center justify-between rounded-xl px-3 py-2 text-xs"
+                  className="flex flex-col gap-1 rounded-xl px-3 py-2.5 text-xs"
                   style={{
                     background: "oklch(0.12 0.06 85 / 0.3)",
                     border: "1px solid oklch(0.72 0.15 85 / 0.25)",
                   }}
                 >
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <IndianRupee className="w-3 h-3" />
-                    Booking fee
-                  </span>
-                  <span className="font-bold text-primary">
-                    ₹{bookingFee.toLocaleString("en-IN")}
-                  </span>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <IndianRupee className="w-3 h-3" />
+                      Appointment fee
+                    </span>
+                    <span>₹{baseFee.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Platform fee (8%)</span>
+                    <span>₹{platformFee.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div
+                    className="flex justify-between font-bold pt-1.5 mt-0.5"
+                    style={{
+                      borderTop: "1px solid oklch(0.72 0.15 85 / 0.2)",
+                      color: "oklch(0.88 0.18 85)",
+                    }}
+                  >
+                    <span>Total</span>
+                    <span>₹{totalFee.toLocaleString("en-IN")}</span>
+                  </div>
                 </div>
               )}
 
@@ -597,7 +720,7 @@ export default function BookByCodePage() {
                   ? "Enter a Valid Dentist Email"
                   : !selectedDate
                     ? "Select a Date to Continue"
-                    : `Confirm ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} — ₹${bookingFee.toLocaleString("en-IN")}`}
+                    : `Confirm ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} — ₹${totalFee.toLocaleString("en-IN")}`}
             </Button>
             {!selectedDate && dentist && (
               <p className="text-center text-xs text-muted-foreground mt-2">

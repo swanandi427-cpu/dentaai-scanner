@@ -9,6 +9,48 @@ import T "../types/payments";
 /// Receives state slices as parameters — no state owned here.
 module {
 
+  // ─── Fee constants (INR) ─────────────────────────────────────────────────
+
+  /// Base booking fee for Routine appointments (₹499).
+  let ROUTINE_BASE_FEE : Nat = 499;
+
+  /// Base booking fee for Urgent / Emergency appointments (₹999).
+  let URGENT_BASE_FEE : Nat = 999;
+
+  /// Platform fee rate: 8 %.
+  let PLATFORM_FEE_BPS : Nat = 8;
+
+  // ─── Fee computation ─────────────────────────────────────────────────────
+
+  /// Compute the total booking fee for a given urgency level.
+  /// Returns a breakdown: base + 8 % platform fee + total.
+  public func computeBookingFee(urgency : T.BookingUrgency) : T.BookingFeeBreakdown {
+    let base = switch (urgency) {
+      case (#routine)   { ROUTINE_BASE_FEE };
+      case (#urgent)    { URGENT_BASE_FEE };
+      case (#emergency) { URGENT_BASE_FEE };
+    };
+    let fee  = base * PLATFORM_FEE_BPS / 100;
+    let total = base + fee;
+    {
+      baseAmountRupees  = base;
+      platformFeeRupees = fee;
+      totalAmountRupees = total;
+      urgency;
+    };
+  };
+
+  /// Compute the reimbursement fee breakdown for a gross amount.
+  /// Platform deducts 8 %; home dentist receives net.
+  public func computeReimbursementFee(grossAmountRupees : Nat) : T.ReimbursementFeeBreakdown {
+    let fee = grossAmountRupees * PLATFORM_FEE_BPS / 100;
+    {
+      grossAmountRupees;
+      platformFeeRupees = fee;
+      netAmountRupees   = grossAmountRupees - fee;
+    };
+  };
+
   // ─── Tier catalogue (static) ─────────────────────────────────────────────
 
   /// Return the static pricing catalogue for all three tiers.
@@ -18,6 +60,7 @@ module {
         tier = #free;
         name = "Free";
         monthlyAmountRupees = 0;
+        yearlyAmountRupees  = 0;
         features = [
           "Up to 5 patient bookings/month",
           "Basic profile listing",
@@ -29,6 +72,7 @@ module {
         tier = #pro;
         name = "Pro";
         monthlyAmountRupees = 2499;
+        yearlyAmountRupees  = 1999;
         features = [
           "Unlimited patient bookings",
           "Priority listing in search",
@@ -42,6 +86,7 @@ module {
         tier = #elite;
         name = "Elite";
         monthlyAmountRupees = 5999;
+        yearlyAmountRupees  = 4799;
         features = [
           "Everything in Pro",
           "Featured dentist badge",

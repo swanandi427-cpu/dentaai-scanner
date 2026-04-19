@@ -25,6 +25,28 @@ module {
     #refunded;
   };
 
+  /// Booking urgency — mirrors main.mo BookingUrgency for fee computation.
+  public type BookingUrgency = {
+    #routine;
+    #urgent;
+    #emergency;
+  };
+
+  /// Breakdown of a computed booking fee.
+  public type BookingFeeBreakdown = {
+    baseAmountRupees   : Nat;
+    platformFeeRupees  : Nat;
+    totalAmountRupees  : Nat;
+    urgency            : BookingUrgency;
+  };
+
+  /// Breakdown of a computed reimbursement fee.
+  public type ReimbursementFeeBreakdown = {
+    grossAmountRupees  : Nat;
+    platformFeeRupees  : Nat;
+    netAmountRupees    : Nat;
+  };
+
   /// Stored per booking-fee or reimbursement payment.
   public type PaymentRecord = {
     id : Nat;
@@ -71,6 +93,7 @@ module {
     tier : SubscriptionTier;
     name : Text;
     monthlyAmountRupees : Nat;
+    yearlyAmountRupees  : Nat;
     features : [Text];
   };
 
