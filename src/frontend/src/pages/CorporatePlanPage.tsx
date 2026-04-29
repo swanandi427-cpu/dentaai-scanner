@@ -133,16 +133,16 @@ const PLAN_FEATURES: PlanFeature[] = [
 const PLANS = [
   {
     name: "Starter",
-    price: "₹499",
-    unit: "/employee/month",
+    price: "Free",
+    unit: "to get started",
     range: "10–50 employees",
     highlight: false,
     badge: null,
   },
   {
     name: "Growth",
-    price: "₹399",
-    unit: "/employee/month",
+    price: "Contact Us",
+    unit: "for pricing",
     range: "50–200 employees",
     highlight: true,
     badge: "Best Value",
@@ -150,7 +150,7 @@ const PLANS = [
   {
     name: "Enterprise",
     price: "Custom",
-    unit: "pricing",
+    unit: "plan",
     range: "200+ employees",
     highlight: false,
     badge: "Contact Us",
@@ -598,9 +598,9 @@ export default function CorporatePlanPage() {
                       {plan.unit}
                     </span>
                   </div>
-                  {plan.price !== "Custom" && (
+                  {plan.price === "Free" && (
                     <p className="text-xs text-muted-foreground">
-                      Billed monthly. Annual pricing available.
+                      Get connected. No payment required to start.
                     </p>
                   )}
                 </div>
@@ -1125,8 +1125,8 @@ export default function CorporatePlanPage() {
         </motion.div>
 
         <p className="text-center text-xs text-muted-foreground/50">
-          All prices in Indian Rupees (₹). Enterprise pricing available on
-          request. Contact{" "}
+          DantaNova connects employees with dentists globally. Financial
+          arrangements are made directly. Contact{" "}
           <a
             href="mailto:DANTANOVA.14@gmail.com"
             className="underline hover:text-primary"

@@ -26,14 +26,6 @@ type ToothRecord =
    toothNumber: nat;
  };
 type Time = int;
-type TierInfo = 
- record {
-   features: vec text;
-   monthlyAmountRupees: nat;
-   name: text;
-   tier: SubscriptionTier;
-   yearlyAmountRupees: nat;
- };
 type Testimonial = 
  record {
    author: principal;
@@ -44,18 +36,6 @@ type Testimonial =
    role: text;
    testimonialId: nat;
    timestamp: Time;
- };
-type SubscriptionTier = 
- variant {
-   elite;
-   free;
-   pro;
- };
-type SubscriptionState = 
- variant {
-   active;
-   cancelled;
-   expired;
  };
 type ScanSeverity = 
  variant {
@@ -91,42 +71,6 @@ type ReimbursementRequest =
    status: ReimbursementStatus;
    treatmentDetails: text;
  };
-type ReimbursementFeeBreakdown = 
- record {
-   grossAmountRupees: nat;
-   netAmountRupees: nat;
-   platformFeeRupees: nat;
- };
-type PaymentStatusInternal = 
- variant {
-   paid;
-   pending;
-   refunded;
- };
-type PaymentState = 
- variant {
-   failed;
-   paid;
-   pending;
-   refunded;
- };
-type PaymentRecord = 
- record {
-   amountRupees: nat;
-   createdAt: Time;
-   id: nat;
-   kind: PaymentKind;
-   payer: principal;
-   referenceId: nat;
-   settledAt: opt Time;
-   state: PaymentState;
-   stripeSessionId: text;
- };
-type PaymentKind = 
- variant {
-   bookingFee;
-   reimbursement;
- };
 type PassportRecord = 
  record {
    allergies: text;
@@ -158,15 +102,11 @@ type FeedbackEntry =
    "text": text;
    timestamp: Time;
  };
-type DentistSubscription = 
- record {
-   dentistId: principal;
-   monthlyAmountRupees: nat;
-   renewsAt: opt Time;
-   startedAt: Time;
-   state: SubscriptionState;
-   stripeSubscriptionId: text;
-   tier: SubscriptionTier;
+type DentistTier = 
+ variant {
+   elite;
+   free;
+   pro;
  };
 type DentistProfile = 
  record {
@@ -178,6 +118,22 @@ type DentistProfile =
    location: text;
    name: text;
    specialties: vec text;
+ };
+type ConnectionStatus = 
+ variant {
+   accepted;
+   declined;
+   pending;
+ };
+type ConnectionRequest = 
+ record {
+   createdAt: Time;
+   dentistEmail: text;
+   fromPrincipal: principal;
+   id: nat;
+   message: text;
+   respondedAt: opt Time;
+   status: ConnectionStatus;
  };
 type BookingUrgency = 
  variant {
@@ -193,22 +149,13 @@ type BookingStatus =
    declined;
    pending;
  };
-type BookingFeeBreakdown = 
- record {
-   baseAmountRupees: nat;
-   platformFeeRupees: nat;
-   totalAmountRupees: nat;
-   urgency: BookingUrgency;
- };
 type Booking = 
  record {
-   amountRupees: nat;
    bookingId: nat;
    createdAt: Time;
    dentistEmail: text;
    notes: text;
    patientId: principal;
-   paymentStatus: PaymentStatusInternal;
    requestedDate: text;
    status: BookingStatus;
    urgency: BookingUrgency;
@@ -228,8 +175,6 @@ service : {
   approveBooking: (bookingId: nat) -> ();
   approveReimbursementRequest: (requestId: nat) -> ();
   assignCallerUserRole: (user: principal, role: UserRole) -> ();
-  cancelMySubscription: () -> ();
-  confirmPayment: (stripeSessionId: text) -> ();
   /// createAvailabilitySlot: alias for registerAvailabilitySlot
   createAvailabilitySlot: (dateTimeLabel: text) -> (nat);
   /// createBooking: alias for requestBooking
@@ -242,7 +187,6 @@ service : {
   declineReimbursementRequest: (requestId: nat, reason: text) -> ();
   deleteTestimonial: (id: nat) -> ();
   deleteUserScans: () -> ();
-  failPayment: (stripeSessionId: text) -> ();
   /// findDentistByEmail: look up a dentist profile by email address
   findDentistByEmail: (email: text) -> (opt DentistProfile) query;
   getAllDentists: () -> (vec DentistProfile) query;
@@ -252,8 +196,6 @@ service : {
   /// getAvailableSlots: return unbooked slots for a given dentist
   getAvailableSlots: (dentistId: principal) -> (vec AvailabilitySlot) query;
   getBooking: (bookingId: nat) -> (opt Booking) query;
-  getBookingFee: (urgency: BookingUrgency) -> (BookingFeeBreakdown) query;
-  getBookingPayment: (bookingId: nat) -> (opt PaymentRecord) query;
   /// Alias for getDentistBookings
   getBookingsByDentist: () -> (vec Booking) query;
   /// Alias for getCallerBookings
@@ -269,27 +211,24 @@ service : {
   getCallerScanHistory: () -> (vec ScanResult) query;
   getCallerUserProfile: () -> (opt UserProfile) query;
   getCallerUserRole: () -> (UserRole) query;
+  getConnectionRequest: (id: nat) -> (opt ConnectionRequest) query;
   getDentistBookings: () -> (vec Booking) query;
   getDentistProfile: (dentist: principal) -> (opt DentistProfile) query;
   /// Alias for getAllDentists
   getDentistProfiles: () -> (vec DentistProfile) query;
-  getDentistSubscription: (dentistId: principal) ->
-   (opt DentistSubscription) query;
+  getDentistTier: (dentistId: principal) -> (DentistTier) query;
   getFeedbackList: () -> (vec FeedbackEntry) query;
+  getIncomingConnectionRequests: (dentistEmail: text) ->
+   (vec ConnectionRequest) query;
   getMessages: (bookingId: nat) -> (vec Message) query;
   /// Alias for getMessages
   getMessagesByBooking: (bookingId: nat) -> (vec Message) query;
   getMyBookings: () -> (vec Booking) query;
+  getMyConnectionRequests: () -> (vec ConnectionRequest) query;
   getMyPassports: () -> (vec PassportRecord) query;
-  getMyPayments: () -> (vec PaymentRecord) query;
   getMyReimbursementRequests: () -> (vec ReimbursementRequest) query;
-  getMySubscription: () -> (opt DentistSubscription) query;
+  getMyTier: () -> (DentistTier) query;
   getPassportByCode: (code: text) -> (opt PassportRecord) query;
-  getPricingTiers: () -> (vec TierInfo) query;
-  getReimbursementFee: (grossAmountRupees: nat) ->
-   (ReimbursementFeeBreakdown) query;
-  getReimbursementPayment: (reimbursementId: nat) ->
-   (opt PaymentRecord) query;
   getReimbursementRequests: () -> (vec ReimbursementRequest) query;
   getReimbursementRequestsForMe: () -> (vec ReimbursementRequest) query;
   /// getReimbursementsByPassportCode: return all reimbursement requests for a given passport code
@@ -308,10 +247,6 @@ service : {
    currentConditions: text, allergies: text, preApprovedBudget: nat, notes:
    text) -> (text);
   lookupPassportByCode: (code: text) -> (opt PassportRecord) query;
-  recordBookingPayment: (bookingId: nat, amountRupees: nat, stripeSessionId:
-   text) -> (nat);
-  recordReimbursementPayment: (reimbursementId: nat, amountRupees: nat,
-   stripeSessionId: text) -> (nat);
   recordVisit: () -> ();
   registerAvailabilitySlot: (dateTimeLabel: text) -> (nat);
   /// Alias for registerDentistProfile
@@ -325,13 +260,14 @@ service : {
   requestBooking: (dentistEmail: text, requestedDate: text, notes: text,
    urgency: BookingUrgency) -> (nat);
   respondToBooking: (bookingId: nat, accept: bool) -> ();
+  respondToConnectionRequest: (id: nat, accept: bool) -> ();
   saveCallerUserProfile: (name: text, email: text) -> ();
   /// Alias for registerAvailabilitySlot
   saveDentistAvailability: (dateTimeLabel: text) -> (nat);
   selfIssuePassport: (treatmentHistory: text, currentConditions: text,
    allergies: text, preApprovedBudget: nat, notes: text) -> (text);
-  setDentistSubscription: (dentistId: principal, tier: SubscriptionTier,
-   stripeSubscriptionId: text, monthlyAmountRupees: nat) -> ();
+  sendConnectionRequest: (dentistEmail: text, message: text) -> (nat);
+  setMyTier: (tier: DentistTier) -> ();
   settleReimbursement: (requestId: nat, amountRupees: nat) -> ();
   submitFeedback: ("text": text) -> ();
   submitMessage: (bookingId: nat, content: text) -> (nat);
@@ -348,8 +284,6 @@ service : {
   updateBookingStatus: (bookingId: nat, status: BookingStatus) -> ();
   updateDentistProfile: (name: text, email: text, licenseNumber: text,
    specialties: vec text, location: text, bio: text, available: bool) -> ();
-  updatePaymentStatus: (bookingId: nat, status: PaymentStatusInternal,
-   amountRupees: nat) -> ();
   /// updateReimbursementStatus: passport owner or admin updates a reimbursement status
   updateReimbursementStatus: (requestId: nat, status: ReimbursementStatus) ->
    ();

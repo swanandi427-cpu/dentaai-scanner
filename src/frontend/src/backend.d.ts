@@ -15,81 +15,6 @@ export interface ScanResult {
     severity: ScanSeverity;
     healthScore: bigint;
 }
-export interface PaymentRecord {
-    id: bigint;
-    kind: PaymentKind;
-    createdAt: Time;
-    referenceId: bigint;
-    amountRupees: bigint;
-    state: PaymentState;
-    payer: Principal;
-    stripeSessionId: string;
-    settledAt?: Time;
-}
-export interface FeedbackEntry {
-    id: bigint;
-    text: string;
-    author: Principal;
-    timestamp: Time;
-}
-export interface DentistSubscription {
-    startedAt: Time;
-    stripeSubscriptionId: string;
-    tier: SubscriptionTier;
-    renewsAt?: Time;
-    monthlyAmountRupees: bigint;
-    state: SubscriptionState;
-    dentistId: Principal;
-}
-export interface TierInfo {
-    features: Array<string>;
-    name: string;
-    tier: SubscriptionTier;
-    monthlyAmountRupees: bigint;
-    yearlyAmountRupees: bigint;
-}
-export interface ToothRecord {
-    status: ToothStatus;
-    recommendation: string;
-    toothNumber: bigint;
-    condition: string;
-}
-export interface Booking {
-    status: BookingStatus;
-    paymentStatus: PaymentStatusInternal;
-    bookingId: bigint;
-    urgency: BookingUrgency;
-    patientId: Principal;
-    dentistEmail: string;
-    createdAt: Time;
-    amountRupees: bigint;
-    notes: string;
-    requestedDate: string;
-}
-export interface ReimbursementRequest {
-    id: bigint;
-    status: ReimbursementStatus;
-    createdAt: Time;
-    passportCode: string;
-    treatmentDetails: string;
-    amountRupees: bigint;
-    passportOwnerId: string;
-    netAmountRupees: bigint;
-    platformFeeRupees: bigint;
-    requestedBy: string;
-}
-export interface BookingFeeBreakdown {
-    urgency: BookingUrgency;
-    totalAmountRupees: bigint;
-    platformFeeRupees: bigint;
-    baseAmountRupees: bigint;
-}
-export interface AvailabilitySlot {
-    dateTimeLabel: string;
-    slotId: bigint;
-    isBooked: boolean;
-    dentistId: Principal;
-}
 export interface PassportRecord {
     id: bigint;
     patientEmail: string;
@@ -104,6 +29,24 @@ export interface PassportRecord {
     issuedBy: string;
     allergies: string;
 }
+export interface FeedbackEntry {
+    id: bigint;
+    text: string;
+    author: Principal;
+    timestamp: Time;
+}
+export interface AvailabilitySlot {
+    dateTimeLabel: string;
+    slotId: bigint;
+    isBooked: boolean;
+    dentistId: Principal;
+}
+export interface ToothRecord {
+    status: ToothStatus;
+    recommendation: string;
+    toothNumber: bigint;
+    condition: string;
+}
 export interface DentistProfile {
     bio: string;
     name: string;
@@ -114,6 +57,15 @@ export interface DentistProfile {
     specialties: Array<string>;
     location: string;
 }
+export interface ConnectionRequest {
+    id: bigint;
+    status: ConnectionStatus;
+    dentistEmail: string;
+    createdAt: Time;
+    fromPrincipal: Principal;
+    message: string;
+    respondedAt?: Time;
+}
 export interface Message {
     id: bigint;
     content: string;
@@ -122,10 +74,27 @@ export interface Message {
     senderPrincipal: string;
     senderName: string;
 }
-export interface ReimbursementFeeBreakdown {
+export interface Booking {
+    status: BookingStatus;
+    bookingId: bigint;
+    urgency: BookingUrgency;
+    patientId: Principal;
+    dentistEmail: string;
+    createdAt: Time;
+    notes: string;
+    requestedDate: string;
+}
+export interface ReimbursementRequest {
+    id: bigint;
+    status: ReimbursementStatus;
+    createdAt: Time;
+    passportCode: string;
+    treatmentDetails: string;
+    amountRupees: bigint;
+    passportOwnerId: string;
     netAmountRupees: bigint;
     platformFeeRupees: bigint;
-    grossAmountRupees: bigint;
+    requestedBy: string;
 }
 export interface UserProfile {
     name: string;
@@ -155,20 +124,15 @@ export enum BookingUrgency {
     routine = "routine",
     urgent = "urgent"
 }
-export enum PaymentKind {
-    reimbursement = "reimbursement",
-    bookingFee = "bookingFee"
-}
-export enum PaymentState {
+export enum ConnectionStatus {
     pending = "pending",
-    paid = "paid",
-    refunded = "refunded",
-    failed = "failed"
+    accepted = "accepted",
+    declined = "declined"
 }
-export enum PaymentStatusInternal {
-    pending = "pending",
-    paid = "paid",
-    refunded = "refunded"
+export enum DentistTier {
+    pro = "pro",
+    free = "free",
+    elite = "elite"
 }
 export enum ReimbursementStatus {
     settled = "settled",
@@ -180,16 +144,6 @@ export enum ScanSeverity {
     mild = "mild",
     severe = "severe",
     moderate = "moderate"
-}
-export enum SubscriptionState {
-    active = "active",
-    cancelled = "cancelled",
-    expired = "expired"
-}
-export enum SubscriptionTier {
-    pro = "pro",
-    free = "free",
-    elite = "elite"
 }
 export enum ToothStatus {
     risk = "risk",
@@ -210,8 +164,6 @@ export interface backendInterface {
     approveBooking(bookingId: bigint): Promise<void>;
     approveReimbursementRequest(requestId: bigint): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    cancelMySubscription(): Promise<void>;
-    confirmPayment(stripeSessionId: string): Promise<void>;
     /**
      * / createAvailabilitySlot: alias for registerAvailabilitySlot
      */
@@ -228,7 +180,6 @@ export interface backendInterface {
     declineReimbursementRequest(requestId: bigint, reason: string): Promise<void>;
     deleteTestimonial(id: bigint): Promise<void>;
     deleteUserScans(): Promise<void>;
-    failPayment(stripeSessionId: string): Promise<void>;
     /**
      * / findDentistByEmail: look up a dentist profile by email address
      */
@@ -241,8 +192,6 @@ export interface backendInterface {
      */
     getAvailableSlots(dentistId: Principal): Promise<Array<AvailabilitySlot>>;
     getBooking(bookingId: bigint): Promise<Booking | null>;
-    getBookingFee(urgency: BookingUrgency): Promise<BookingFeeBreakdown>;
-    getBookingPayment(bookingId: bigint): Promise<PaymentRecord | null>;
     /**
      * / Alias for getDentistBookings
      */
@@ -266,28 +215,27 @@ export interface backendInterface {
     getCallerScanHistory(): Promise<Array<ScanResult>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getConnectionRequest(id: bigint): Promise<ConnectionRequest | null>;
     getDentistBookings(): Promise<Array<Booking>>;
     getDentistProfile(dentist: Principal): Promise<DentistProfile | null>;
     /**
      * / Alias for getAllDentists
      */
     getDentistProfiles(): Promise<Array<DentistProfile>>;
-    getDentistSubscription(dentistId: Principal): Promise<DentistSubscription | null>;
+    getDentistTier(dentistId: Principal): Promise<DentistTier>;
     getFeedbackList(): Promise<Array<FeedbackEntry>>;
+    getIncomingConnectionRequests(dentistEmail: string): Promise<Array<ConnectionRequest>>;
     getMessages(bookingId: bigint): Promise<Array<Message>>;
     /**
      * / Alias for getMessages
      */
     getMessagesByBooking(bookingId: bigint): Promise<Array<Message>>;
     getMyBookings(): Promise<Array<Booking>>;
+    getMyConnectionRequests(): Promise<Array<ConnectionRequest>>;
     getMyPassports(): Promise<Array<PassportRecord>>;
-    getMyPayments(): Promise<Array<PaymentRecord>>;
     getMyReimbursementRequests(): Promise<Array<ReimbursementRequest>>;
-    getMySubscription(): Promise<DentistSubscription | null>;
+    getMyTier(): Promise<DentistTier>;
     getPassportByCode(code: string): Promise<PassportRecord | null>;
-    getPricingTiers(): Promise<Array<TierInfo>>;
-    getReimbursementFee(grossAmountRupees: bigint): Promise<ReimbursementFeeBreakdown>;
-    getReimbursementPayment(reimbursementId: bigint): Promise<PaymentRecord | null>;
     getReimbursementRequests(): Promise<Array<ReimbursementRequest>>;
     getReimbursementRequestsForMe(): Promise<Array<ReimbursementRequest>>;
     /**
@@ -309,8 +257,6 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     issuePassport(patientEmail: string, treatmentHistory: string, currentConditions: string, allergies: string, preApprovedBudget: bigint, notes: string): Promise<string>;
     lookupPassportByCode(code: string): Promise<PassportRecord | null>;
-    recordBookingPayment(bookingId: bigint, amountRupees: bigint, stripeSessionId: string): Promise<bigint>;
-    recordReimbursementPayment(reimbursementId: bigint, amountRupees: bigint, stripeSessionId: string): Promise<bigint>;
     recordVisit(): Promise<void>;
     registerAvailabilitySlot(dateTimeLabel: string): Promise<bigint>;
     /**
@@ -324,13 +270,15 @@ export interface backendInterface {
     requestAppointment(dentistEmail: string, requestedDate: string, notes: string, urgency: BookingUrgency): Promise<bigint>;
     requestBooking(dentistEmail: string, requestedDate: string, notes: string, urgency: BookingUrgency): Promise<bigint>;
     respondToBooking(bookingId: bigint, accept: boolean): Promise<void>;
+    respondToConnectionRequest(id: bigint, accept: boolean): Promise<void>;
     saveCallerUserProfile(name: string, email: string): Promise<void>;
     /**
      * / Alias for registerAvailabilitySlot
      */
     saveDentistAvailability(dateTimeLabel: string): Promise<bigint>;
     selfIssuePassport(treatmentHistory: string, currentConditions: string, allergies: string, preApprovedBudget: bigint, notes: string): Promise<string>;
-    setDentistSubscription(dentistId: Principal, tier: SubscriptionTier, stripeSubscriptionId: string, monthlyAmountRupees: bigint): Promise<void>;
+    sendConnectionRequest(dentistEmail: string, message: string): Promise<bigint>;
+    setMyTier(tier: DentistTier): Promise<void>;
     settleReimbursement(requestId: bigint, amountRupees: bigint): Promise<void>;
     submitFeedback(text: string): Promise<void>;
     submitMessage(bookingId: bigint, content: string): Promise<bigint>;
@@ -347,7 +295,6 @@ export interface backendInterface {
      */
     updateBookingStatus(bookingId: bigint, status: BookingStatus): Promise<void>;
     updateDentistProfile(name: string, email: string, licenseNumber: string, specialties: Array<string>, location: string, bio: string, available: boolean): Promise<void>;
-    updatePaymentStatus(bookingId: bigint, status: PaymentStatusInternal, amountRupees: bigint): Promise<void>;
     /**
      * / updateReimbursementStatus: passport owner or admin updates a reimbursement status
      */

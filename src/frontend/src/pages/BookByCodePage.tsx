@@ -14,15 +14,12 @@ import {
   Calendar,
   CalendarCheck,
   CheckCircle2,
-  Clock,
-  CreditCard,
-  IndianRupee,
+  Info,
   Loader2,
   MapPin,
   Search,
   Shield,
   Star,
-  XCircle,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -34,32 +31,23 @@ const URGENCY_OPTS = [
     value: "routine",
     label: "Routine",
     icon: "📅",
-    fee: 499,
+    desc: "Regular check-up or scheduled treatment",
   },
   {
     value: "urgent",
     label: "Urgent",
     icon: "⚡",
-    fee: 999,
+    desc: "Needs attention within 24-48 hours",
   },
   {
     value: "emergency",
     label: "Emergency",
     icon: "🚨",
-    fee: 999,
+    desc: "Immediate care required",
   },
 ] as const;
 
 type UrgencyKey = "routine" | "urgent" | "emergency";
-
-const URGENCY_FEE: Record<UrgencyKey, number> = {
-  routine: 499,
-  urgent: 999,
-  emergency: 999,
-};
-
-// 8% platform fee on top
-const PLATFORM_FEE_PCT = 0.08;
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -80,13 +68,6 @@ const URGENCY_ENUM: Record<UrgencyKey, BookingUrgency> = {
   emergency: BookingUrgency.emergency,
 };
 
-type PaymentFlowState =
-  | "idle"
-  | "opening"
-  | "recorded"
-  | "confirmed"
-  | "failed";
-
 export default function BookByCodePage() {
   const navigate = useNavigate();
   const { identity, login } = useInternetIdentity();
@@ -100,8 +81,6 @@ export default function BookByCodePage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [notes, setNotes] = useState("");
   const [urgency, setUrgency] = useState<UrgencyKey>("routine");
-  const [paymentFlow, setPaymentFlow] = useState<PaymentFlowState>("idle");
-  const [paymentRecordId, setPaymentRecordId] = useState<bigint | null>(null);
 
   const { data: allDentists = [] } = useQuery<DentistProfile[]>({
     queryKey: ["allDentists"],
@@ -117,10 +96,6 @@ export default function BookByCodePage() {
     ? 4 + (dentist.name.charCodeAt(0) % 2 === 0 ? 0 : 1)
     : 4;
 
-  const baseFee = URGENCY_FEE[urgency];
-  const platformFee = Math.round(baseFee * PLATFORM_FEE_PCT);
-  const totalFee = baseFee + platformFee;
-
   const bookAppointment = async () => {
     if (!actor || !identity || !dentistEmail || !selectedDate) return;
     setBooking(true);
@@ -132,7 +107,7 @@ export default function BookByCodePage() {
         URGENCY_ENUM[urgency],
       );
       setBookingId(id);
-      toast.success(`Appointment booked! ID: #${Number(id)}`);
+      toast.success(`Request sent! Booking ID: #${Number(id)}`);
     } catch (err: unknown) {
       toast.error(
         (err instanceof Error ? err.message : null) ||
@@ -141,68 +116,6 @@ export default function BookByCodePage() {
     } finally {
       setBooking(false);
     }
-  };
-
-  const handlePayNow = async () => {
-    if (!actor || !bookingId) return;
-    setPaymentFlow("opening");
-
-    // Capture session ID before checkout so it's available in catch
-    let capturedSessionId: string | null = null;
-
-    try {
-      const { createCheckout } = await import("@/lib/stripe");
-      await createCheckout({
-        amountRupees: totalFee,
-        currency: "inr",
-        productName: `DantaNova ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} Appointment`,
-        successUrl: `${window.location.origin}/my-bookings?payment=success`,
-        cancelUrl: `${window.location.origin}/book`,
-        onSuccess: async (sessionId: string) => {
-          capturedSessionId = sessionId;
-          try {
-            // Record the payment with the real Stripe session ID
-            const payId = await actor.recordBookingPayment(
-              bookingId,
-              BigInt(totalFee),
-              sessionId,
-            );
-            setPaymentRecordId(payId);
-            // Confirm the payment in the backend
-            await actor.confirmPayment(sessionId);
-            setPaymentFlow("confirmed");
-            toast.success("Payment confirmed! Your booking is now active.");
-          } catch {
-            setPaymentFlow("recorded");
-            toast.success("Payment received — booking recorded.");
-          }
-        },
-        onCancel: () => {
-          setPaymentFlow("idle");
-          toast.info("Payment cancelled. You can try again.");
-        },
-      });
-
-      // If no onSuccess was triggered (fallback flow), set to idle
-      if (paymentFlow === "opening") {
-        setPaymentFlow("idle");
-      }
-    } catch {
-      setPaymentFlow("failed");
-      // Transition backend record to #failed when session ID is known
-      if (capturedSessionId) {
-        try {
-          await actor.failPayment(capturedSessionId);
-        } catch {
-          /* best-effort */
-        }
-      }
-      toast.error("Could not open checkout. Please try again.");
-    }
-  };
-
-  const retryPayment = () => {
-    setPaymentFlow("idle");
   };
 
   if (!identity) {
@@ -237,14 +150,14 @@ export default function BookByCodePage() {
               <CheckCircle2 className="w-10 h-10 text-primary" />
             </div>
             <h2 className="text-2xl font-display font-bold text-gradient-gold mb-2">
-              Booking Confirmed!
+              Request Sent!
             </h2>
             <p className="text-muted-foreground text-sm">
               Your appointment request has been sent to{" "}
               <span className="text-primary">
                 {dentist?.name ?? dentistEmail}
               </span>
-              .
+              . You'll be notified once they confirm.
             </p>
           </div>
 
@@ -271,152 +184,26 @@ export default function BookByCodePage() {
             </div>
           </div>
 
-          {/* Payment section */}
+          {/* Connection info */}
           <div
-            className="rounded-2xl p-5 flex flex-col gap-3"
+            className="rounded-2xl px-4 py-3 flex items-start gap-2.5"
             style={{
-              background: "oklch(0.12 0.06 85 / 0.4)",
-              border: "1.5px solid oklch(0.72 0.15 85 / 0.4)",
+              background: "oklch(0.14 0.06 85/0.35)",
+              border: "1px solid oklch(0.72 0.15 85/0.3)",
             }}
-            data-ocid="book.payment_section"
+            data-ocid="book.connection_info"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold">Booking Fee</span>
-              </div>
-              <span className="text-xl font-bold text-gradient-gold font-display">
-                ₹{totalFee.toLocaleString("en-IN")}
-              </span>
+            <Info
+              className="w-4 h-4 shrink-0 mt-0.5"
+              style={{ color: "oklch(0.88 0.18 85)" }}
+            />
+            <div className="text-xs" style={{ color: "oklch(0.82 0.14 85)" }}>
+              <p className="font-semibold mb-0.5">What happens next?</p>
+              <p>
+                Your dentist will confirm via DantaNova. Payment and treatment
+                details are arranged directly between you and the dentist.
+              </p>
             </div>
-
-            {/* Fee breakdown */}
-            <div className="flex flex-col gap-1 text-xs">
-              <div className="flex justify-between text-muted-foreground">
-                <span>
-                  {urgency.charAt(0).toUpperCase() + urgency.slice(1)}{" "}
-                  appointment fee
-                </span>
-                <span>₹{baseFee.toLocaleString("en-IN")}</span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Platform fee (8%)</span>
-                <span>₹{platformFee.toLocaleString("en-IN")}</span>
-              </div>
-              <div
-                className="flex justify-between font-semibold pt-1.5 mt-0.5"
-                style={{ borderTop: "1px solid oklch(0.72 0.15 85 / 0.2)" }}
-              >
-                <span style={{ color: "oklch(0.88 0.18 85)" }}>Total</span>
-                <span style={{ color: "oklch(0.88 0.18 85)" }}>
-                  ₹{totalFee.toLocaleString("en-IN")}
-                </span>
-              </div>
-            </div>
-
-            {/* Idle — show pay button */}
-            {paymentFlow === "idle" && (
-              <Button
-                className="w-full rounded-full glow-primary shimmer-button font-semibold"
-                onClick={handlePayNow}
-                data-ocid="book.pay_now_button"
-              >
-                <IndianRupee className="w-4 h-4 mr-1.5" />
-                Pay Now — ₹{totalFee.toLocaleString("en-IN")}
-              </Button>
-            )}
-
-            {/* Opening Stripe */}
-            {paymentFlow === "opening" && (
-              <Button
-                className="w-full rounded-full opacity-70"
-                disabled
-                data-ocid="book.payment_loading_state"
-              >
-                <Loader2
-                  className="w-4 h-4 animate-spin mr-2"
-                  style={{ color: "oklch(0.88 0.18 85)" }}
-                />
-                Opening Stripe Checkout…
-              </Button>
-            )}
-
-            {/* Failed */}
-            {paymentFlow === "failed" && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col gap-2"
-                data-ocid="book.payment_error_state"
-              >
-                <div
-                  className="flex items-center gap-2 rounded-2xl px-4 py-3"
-                  style={{
-                    background: "oklch(0.35 0.18 20 / 0.12)",
-                    border: "1px solid oklch(0.55 0.18 20 / 0.4)",
-                  }}
-                >
-                  <XCircle className="w-4 h-4 text-red-400 shrink-0" />
-                  <p className="text-xs text-red-300 flex-1">
-                    Payment could not be opened. Please try again.
-                  </p>
-                </div>
-                <Button
-                  className="w-full rounded-full glow-primary"
-                  onClick={retryPayment}
-                  data-ocid="book.retry_payment_button"
-                >
-                  <IndianRupee className="w-4 h-4 mr-1.5" />
-                  Retry Payment
-                </Button>
-              </motion.div>
-            )}
-
-            {/* Recorded / Confirmed */}
-            {(paymentFlow === "recorded" || paymentFlow === "confirmed") && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col gap-2"
-                data-ocid="book.payment_success_state"
-              >
-                <div
-                  className="flex items-center gap-2 rounded-2xl px-4 py-3"
-                  style={{
-                    background: "oklch(0.22 0.08 85 / 0.3)",
-                    border: "1px solid oklch(0.72 0.15 85 / 0.5)",
-                  }}
-                >
-                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-primary">
-                      {paymentFlow === "confirmed"
-                        ? "Payment Confirmed"
-                        : "Payment Recorded"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Record #
-                      {paymentRecordId !== null ? Number(paymentRecordId) : "—"}
-                    </p>
-                  </div>
-                  <Badge
-                    className={`text-xs shrink-0 ${paymentFlow === "confirmed" ? "bg-green-500/15 text-green-400 border-green-500/30" : "bg-primary/10 text-primary border-primary/30"}`}
-                  >
-                    {paymentFlow === "confirmed" ? "Paid" : "Pending"}
-                  </Badge>
-                </div>
-              </motion.div>
-            )}
-
-            {paymentFlow === "idle" && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Clock className="w-3 h-3 shrink-0" />
-                <span>
-                  Payment status:{" "}
-                  <strong className="text-yellow-400">Payment Pending</strong>
-                </span>
-              </div>
-            )}
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
@@ -451,12 +238,34 @@ export default function BookByCodePage() {
         <div className="flex-1">
           <h1 className="font-display font-bold text-base">Book Appointment</h1>
           <p className="text-xs text-muted-foreground">
-            Enter dentist email to book
+            Enter dentist email to request
           </p>
         </div>
       </header>
 
       <main className="flex-1 px-4 py-8 max-w-lg mx-auto w-full flex flex-col gap-5">
+        {/* Platform info banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-2.5 rounded-2xl px-4 py-3"
+          style={{
+            background: "oklch(0.14 0.06 85/0.35)",
+            border: "1px solid oklch(0.72 0.15 85/0.3)",
+          }}
+          data-ocid="book.info_banner"
+        >
+          <Info
+            className="w-4 h-4 shrink-0 mt-0.5"
+            style={{ color: "oklch(0.88 0.18 85)" }}
+          />
+          <p className="text-xs" style={{ color: "oklch(0.82 0.14 85)" }}>
+            DantaNova connects you directly with dentists. Your request will be
+            sent to the dentist, who will confirm via the platform. Payment is
+            arranged directly between you and your dentist.
+          </p>
+        </motion.div>
+
         {/* Dentist Search */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -618,13 +427,13 @@ export default function BookByCodePage() {
                   className="text-xs text-muted-foreground mb-1.5"
                   id="urgency-label"
                 >
-                  Urgency
+                  Urgency Level
                 </p>
                 <fieldset
                   className="grid grid-cols-3 gap-2 border-0 p-0 m-0"
                   aria-labelledby="urgency-label"
                 >
-                  {URGENCY_OPTS.map(({ value, label, icon, fee }) => (
+                  {URGENCY_OPTS.map(({ value, label, icon }) => (
                     <button
                       key={value}
                       type="button"
@@ -634,44 +443,15 @@ export default function BookByCodePage() {
                     >
                       <span>{icon}</span>
                       <span>{label}</span>
-                      <span className="text-[10px] opacity-70">₹{fee}</span>
                     </button>
                   ))}
                 </fieldset>
+                {urgency && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {URGENCY_OPTS.find((u) => u.value === urgency)?.desc}
+                  </p>
+                )}
               </div>
-
-              {/* Fee preview */}
-              {dentist && (
-                <div
-                  className="flex flex-col gap-1 rounded-xl px-3 py-2.5 text-xs"
-                  style={{
-                    background: "oklch(0.12 0.06 85 / 0.3)",
-                    border: "1px solid oklch(0.72 0.15 85 / 0.25)",
-                  }}
-                >
-                  <div className="flex justify-between text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <IndianRupee className="w-3 h-3" />
-                      Appointment fee
-                    </span>
-                    <span>₹{baseFee.toLocaleString("en-IN")}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Platform fee (8%)</span>
-                    <span>₹{platformFee.toLocaleString("en-IN")}</span>
-                  </div>
-                  <div
-                    className="flex justify-between font-bold pt-1.5 mt-0.5"
-                    style={{
-                      borderTop: "1px solid oklch(0.72 0.15 85 / 0.2)",
-                      color: "oklch(0.88 0.18 85)",
-                    }}
-                  >
-                    <span>Total</span>
-                    <span>₹{totalFee.toLocaleString("en-IN")}</span>
-                  </div>
-                </div>
-              )}
 
               <div>
                 <label
@@ -694,7 +474,7 @@ export default function BookByCodePage() {
           </motion.div>
         )}
 
-        {/* Confirm button */}
+        {/* Send Request button */}
         {dentistEmail && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -715,16 +495,22 @@ export default function BookByCodePage() {
                 <CalendarCheck className="w-5 h-5 mr-2" />
               )}
               {booking
-                ? "Confirming..."
+                ? "Sending Request…"
                 : !dentist
                   ? "Enter a Valid Dentist Email"
                   : !selectedDate
                     ? "Select a Date to Continue"
-                    : `Confirm ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} — ₹${totalFee.toLocaleString("en-IN")}`}
+                    : `Send ${urgency.charAt(0).toUpperCase() + urgency.slice(1)} Request to Dentist`}
             </Button>
             {!selectedDate && dentist && (
               <p className="text-center text-xs text-muted-foreground mt-2">
                 ↑ Pick a date and time above to confirm
+              </p>
+            )}
+            {dentist && selectedDate && (
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                Your request will be sent to the dentist. They will confirm via
+                the platform.
               </p>
             )}
           </motion.div>

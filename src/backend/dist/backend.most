@@ -1,4 +1,4 @@
-// Version: 1.0.0
+// Version: 3.0.0
 type AvailabilitySlot__182297899 =
   {
     dateTimeLabel : Text;
@@ -11,17 +11,26 @@ type BookingStatus__163633778 =
 type BookingUrgency__789987877 = {#emergency; #routine; #urgent};
 type Booking__519012722 =
   {
-    amountRupees : Nat;
     bookingId : Nat;
     createdAt : Time__900049286;
     dentistEmail : Text;
     notes : Text;
     patientId : Principal;
-    paymentStatus : PaymentStatusInternal__608942324;
     requestedDate : Text;
     status : BookingStatus__163633778;
     urgency : BookingUrgency__789987877
   };
+type ConnectionRequest__830195371 =
+  {
+    createdAt : Time__900049286;
+    dentistEmail : Text;
+    fromPrincipal : Principal;
+    id : Nat;
+    message : Text;
+    respondedAt : ?Time__900049286;
+    status : ConnectionStatus__22897142
+  };
+type ConnectionStatus__22897142 = {#accepted; #declined; #pending};
 type Data__791452850<K, V> =
   {var count : Nat__490723111; kvs : [var ?(K, V)]};
 type DentistProfile__642545049 =
@@ -35,16 +44,7 @@ type DentistProfile__642545049 =
     name : Text;
     specialties : [Text]
   };
-type DentistSubscription__395969940 =
-  {
-    dentistId : Principal;
-    monthlyAmountRupees : Nat;
-    renewsAt : ?Time__900049286;
-    startedAt : Time__900049286;
-    state : SubscriptionState__415640946;
-    stripeSubscriptionId : Text;
-    tier : SubscriptionTier__672185844
-  };
+type DentistTier__315967841 = {#elite; #free; #pro};
 type FeedbackEntry__271733681 =
   {author : Principal; id : Nat; text : Text; timestamp : Time__900049286};
 type Int__270357528 = Int__616954475;
@@ -52,6 +52,13 @@ type Int__616954475 = Int;
 type Internal__8484328<K, V> =
   {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
 type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type List__415060402<T> = List__790383201<T>;
+type List__790383201<T> =
+  {
+    var blockIndex : Nat__490723111;
+    var blocks : [var [var ?T]];
+    var elementIndex : Nat__490723111
+  };
 type Map__158565046<K, V> = Map__297112838<K, V>;
 type Map__297112838<K, V> =
   {var root : Node__46230540<K, V>; var size : Nat__490723111};
@@ -69,6 +76,49 @@ type Nat__490723111 = Nat__920180692;
 type Nat__920180692 = Nat;
 type Node__46230540<K, V> =
   {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type OldBookingStatus__846941108 =
+  {#approved; #cancelled; #completed; #declined; #pending};
+type OldBookingUrgency__214679419 = {#emergency; #routine; #urgent};
+type OldBooking__221110599 =
+  {
+    amountRupees : Nat;
+    bookingId : Nat;
+    createdAt : Time__900049286;
+    dentistEmail : Text;
+    notes : Text;
+    patientId : Principal;
+    paymentStatus : OldPaymentStatus__257022736;
+    requestedDate : Text;
+    status : OldBookingStatus__846941108;
+    urgency : OldBookingUrgency__214679419
+  };
+type OldDentistSubscription__545245683 =
+  {
+    dentistId : Principal;
+    monthlyAmountRupees : Nat;
+    renewsAt : ?Time__900049286;
+    startedAt : Time__900049286;
+    state : OldSubscriptionState__636326899;
+    stripeSubscriptionId : Text;
+    tier : OldSubscriptionTier__962298809
+  };
+type OldPaymentKind__47838281 = {#bookingFee; #reimbursement};
+type OldPaymentRecord__674492288 =
+  {
+    amountRupees : Nat;
+    createdAt : Time__900049286;
+    id : Nat;
+    kind : OldPaymentKind__47838281;
+    payer : Principal;
+    referenceId : Nat;
+    settledAt : ?Time__900049286;
+    state : OldPaymentState__173072511;
+    stripeSessionId : Text
+  };
+type OldPaymentState__173072511 = {#failed; #paid; #pending; #refunded};
+type OldPaymentStatus__257022736 = {#paid; #pending; #refunded};
+type OldSubscriptionState__636326899 = {#active; #cancelled; #expired};
+type OldSubscriptionTier__962298809 = {#elite; #free; #pro};
 type PassportRecord__1042929136 =
   {
     allergies : Text;
@@ -84,21 +134,6 @@ type PassportRecord__1042929136 =
     preApprovedBudget : Nat;
     treatmentHistory : Text
   };
-type PaymentKind__224441873 = {#bookingFee; #reimbursement};
-type PaymentRecord__879948694 =
-  {
-    amountRupees : Nat;
-    createdAt : Time__900049286;
-    id : Nat;
-    kind : PaymentKind__224441873;
-    payer : Principal;
-    referenceId : Nat;
-    settledAt : ?Time__900049286;
-    state : PaymentState__819475960;
-    stripeSessionId : Text
-  };
-type PaymentState__819475960 = {#failed; #paid; #pending; #refunded};
-type PaymentStatusInternal__608942324 = {#paid; #pending; #refunded};
 type ReimbursementRequest__309717813 =
   {
     amountRupees : Nat;
@@ -123,8 +158,6 @@ type ScanResult__571685448 =
     timestamp : Time__900049286
   };
 type ScanSeverity__546739403 = {#mild; #moderate; #severe};
-type SubscriptionState__415640946 = {#active; #cancelled; #expired};
-type SubscriptionTier__672185844 = {#elite; #free; #pro};
 type Testimonial__393323594 =
   {
     author : Principal;
@@ -154,7 +187,7 @@ type UserProfile__491224006 =
     principalId : Text
   };
 type UserRole__599675725 = {#admin; #anonymous; #dentist; #patient};
-actor {
+actor ({
   stable accessControlState :
     {
       var adminAssigned : Bool;
@@ -165,19 +198,23 @@ actor {
       var root : Node__46230540<Nat, AvailabilitySlot__182297899>;
       var size : Nat__490723111
     };
-  stable bookings :
+  in bookings : Map__605269027<Nat, OldBooking__221110599>;
+  stable connectionRequests :
     {
-      var root : Node__46230540<Nat, Booking__519012722>;
-      var size : Nat__490723111
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ConnectionRequest__830195371]];
+      var elementIndex : Nat__490723111
     };
   stable dentistProfiles :
     {
       var root : Node__46230540<Principal, DentistProfile__642545049>;
       var size : Nat__490723111
     };
-  stable dentistSubscriptions :
+  in dentistSubscriptions :
+    Map__605269027<Principal, OldDentistSubscription__545245683>;
+  stable dentistTiers :
     {
-      var root : Node__46230540<Principal, DentistSubscription__395969940>;
+      var root : Node__46230540<Principal, DentistTier__315967841>;
       var size : Nat__490723111
     };
   stable emailToDentistPrincipal :
@@ -194,9 +231,10 @@ actor {
       var size : Nat__490723111
     };
   stable var nextBookingId : Nat;
+  stable nextConnectionIdRef : {var id : Nat};
   stable var nextMessageId : Nat;
   stable var nextPassportId : Nat;
-  stable nextPaymentIdRef : {var id : Nat};
+  in nextPaymentIdRef : {var id : Nat};
   stable var nextReimbursementId : Nat;
   stable var nextScanId : Nat;
   stable var nextSlotId : Nat;
@@ -210,12 +248,7 @@ actor {
     };
   stable patientPassportMap :
     {var root : Node__46230540<Principal, Nat>; var size : Nat__490723111};
-  stable paymentRecords :
-    {
-      var blockIndex : Nat__490723111;
-      var blocks : [var [var ?PaymentRecord__879948694]];
-      var elementIndex : Nat__490723111
-    };
+  in paymentRecords : List__415060402<OldPaymentRecord__674492288>;
   stable reimbursementRequests :
     {
       var root : Node__46230540<Nat, ReimbursementRequest__309717813>;
@@ -239,4 +272,89 @@ actor {
   stable var visitorCount : Nat;
   stable visitors :
     {var root : Node__46230540<Principal, Bool>; var size : Nat__490723111}
-};
+}, {
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__599675725>
+    };
+  stable availabilitySlots :
+    {
+      var root : Node__46230540<Nat, AvailabilitySlot__182297899>;
+      var size : Nat__490723111
+    };
+  stable bookings :
+    {
+      var root : Node__46230540<Nat, Booking__519012722>;
+      var size : Nat__490723111
+    };
+  stable connectionRequests :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ConnectionRequest__830195371]];
+      var elementIndex : Nat__490723111
+    };
+  stable dentistProfiles :
+    {
+      var root : Node__46230540<Principal, DentistProfile__642545049>;
+      var size : Nat__490723111
+    };
+  stable dentistTiers :
+    {
+      var root : Node__46230540<Principal, DentistTier__315967841>;
+      var size : Nat__490723111
+    };
+  stable emailToDentistPrincipal :
+    {var root : Node__46230540<Text, Principal>; var size : Nat__490723111};
+  stable var feedbackCount : Nat;
+  stable feedbackList :
+    {
+      var root : Node__46230540<Nat, FeedbackEntry__271733681>;
+      var size : Nat__490723111
+    };
+  stable messages :
+    {
+      var root : Node__46230540<Nat, Message__19119041>;
+      var size : Nat__490723111
+    };
+  stable var nextBookingId : Nat;
+  stable nextConnectionIdRef : {var id : Nat};
+  stable var nextMessageId : Nat;
+  stable var nextPassportId : Nat;
+  stable var nextReimbursementId : Nat;
+  stable var nextScanId : Nat;
+  stable var nextSlotId : Nat;
+  stable var nextTestimonialId : Nat;
+  stable passportCodeMap :
+    {var root : Node__46230540<Text, Nat>; var size : Nat__490723111};
+  stable passports :
+    {
+      var root : Node__46230540<Nat, PassportRecord__1042929136>;
+      var size : Nat__490723111
+    };
+  stable patientPassportMap :
+    {var root : Node__46230540<Principal, Nat>; var size : Nat__490723111};
+  stable reimbursementRequests :
+    {
+      var root : Node__46230540<Nat, ReimbursementRequest__309717813>;
+      var size : Nat__490723111
+    };
+  stable testimonials :
+    {
+      var root : Node__46230540<Nat, Testimonial__393323594>;
+      var size : Nat__490723111
+    };
+  stable userProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    };
+  stable userScanResults :
+    {
+      var root : Node__46230540<Principal, [ScanResult__571685448]>;
+      var size : Nat__490723111
+    };
+  stable var visitorCount : Nat;
+  stable visitors :
+    {var root : Node__46230540<Principal, Bool>; var size : Nat__490723111}
+}) ;

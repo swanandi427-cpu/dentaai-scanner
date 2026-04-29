@@ -6,11 +6,11 @@ import Text "mo:core/Text";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Prim "mo:prim";
-import PaymentsMixin "mixins/payments-api";
-import PaymentsTypes "types/payments";
+import DirectoryMixin "mixins/payments-api";
+import DirectoryTypes "types/payments";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   // ===================== AUTH TYPES ==============================
 
@@ -135,12 +135,6 @@ actor {
     #cancelled;
   };
 
-  type PaymentStatusInternal = {
-    #pending;
-    #paid;
-    #refunded;
-  };
-
   public type Booking = {
     bookingId : Nat;
     patientId : Principal;
@@ -149,8 +143,6 @@ actor {
     notes : Text;
     urgency : BookingUrgency;
     status : BookingStatus;
-    paymentStatus : PaymentStatusInternal;
-    amountRupees : Nat;
     createdAt : Time.Time;
   };
 
@@ -238,12 +230,12 @@ actor {
   var nextReimbursementId : Nat = 1;
   var nextScanId : Nat = 1;
 
-  // ─── Payment state ────────────────────────────────────────────────────────
-  let paymentRecords = List.empty<PaymentsTypes.PaymentRecord>();
-  let dentistSubscriptions = Map.empty<Principal, PaymentsTypes.DentistSubscription>();
-  let nextPaymentIdRef = { var id : Nat = 1 };
+  // ─── Directory state (tier badges + connection requests) ─────────────────
+  let dentistTiers = Map.empty<Principal, DirectoryTypes.DentistTier>();
+  let connectionRequests = List.empty<DirectoryTypes.ConnectionRequest>();
+  let nextConnectionIdRef = { var id : Nat = 1 };
 
-  include PaymentsMixin(paymentRecords, dentistSubscriptions, nextPaymentIdRef);
+  include DirectoryMixin(dentistTiers, connectionRequests, nextConnectionIdRef);
 
   // ===================== AUTH MIXIN ENDPOINTS ==============================
 
@@ -517,8 +509,6 @@ actor {
       notes;
       urgency;
       status = #pending;
-      paymentStatus = #pending;
-      amountRupees = 0;
       createdAt = Time.now();
     };
     bookings.add(nextBookingId, booking);
@@ -629,23 +619,6 @@ actor {
 
   public query func getBooking(bookingId : Nat) : async ?Booking {
     bookings.get(bookingId);
-  };
-
-  public shared ({ caller }) func updatePaymentStatus(
-    bookingId : Nat,
-    status : PaymentStatusInternal,
-    amountRupees : Nat
-  ) : async () {
-    switch (bookings.get(bookingId)) {
-      case (null) { Runtime.trap("Booking does not exist") };
-      case (?booking) {
-        if (booking.patientId != caller and not acIsAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Cannot update payment status");
-        };
-        let updatedBooking : Booking = { booking with paymentStatus = status; amountRupees };
-        bookings.add(bookingId, updatedBooking);
-      };
-    };
   };
 
   // ==================== MESSAGING ===========================
@@ -882,8 +855,6 @@ actor {
           case (null) { Runtime.trap("Passport not found") };
           case (?passport) {
             if (not passport.isActive) { Runtime.trap("Passport is not active") };
-            let platformFeeRupees = amountRupees * 8 / 100;
-            let netAmountRupees = amountRupees - platformFeeRupees;
             let combined = treatmentDetails # " | " # notes;
             let req : ReimbursementRequest = {
               id = nextReimbursementId;
@@ -891,8 +862,8 @@ actor {
               requestedBy = caller.toText();
               treatmentDetails = combined;
               amountRupees;
-              platformFeeRupees;
-              netAmountRupees;
+              platformFeeRupees = 0;
+              netAmountRupees = amountRupees;
               status = #pending;
               createdAt = Time.now();
               passportOwnerId = passport.patientPrincipal;
@@ -948,14 +919,12 @@ actor {
           Runtime.trap("Unauthorized: Only the passport owner can settle this request");
         };
         if (req.status != #approved) { Runtime.trap("Request must be approved before settling") };
-        let platformFeeRupees = amountRupees * 8 / 100;
-        let netAmountRupees = amountRupees - platformFeeRupees;
         let updatedReq : ReimbursementRequest = {
           req with
           status = #settled;
           amountRupees;
-          platformFeeRupees;
-          netAmountRupees;
+          platformFeeRupees = 0;
+          netAmountRupees = amountRupees;
         };
         reimbursementRequests.add(requestId, updatedReq);
       };
@@ -1085,8 +1054,6 @@ actor {
       notes;
       urgency;
       status = #pending;
-      paymentStatus = #pending;
-      amountRupees = 0;
       createdAt = Time.now();
     };
     bookings.add(nextBookingId, booking);
@@ -1265,8 +1232,6 @@ actor {
       notes;
       urgency;
       status = #pending;
-      paymentStatus = #pending;
-      amountRupees = 0;
       createdAt = Time.now();
     };
     bookings.add(nextBookingId, booking);

@@ -1,9 +1,5 @@
-import type {
-  PassportRecord,
-  PaymentRecord,
-  ReimbursementRequest,
-} from "@/backend.d";
-import { PaymentState, ReimbursementStatus } from "@/backend.d";
+import type { PassportRecord, ReimbursementRequest } from "@/backend.d";
+import { ReimbursementStatus } from "@/backend.d";
 import LogoCircle from "@/components/LogoCircle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,8 +12,9 @@ import {
   ArrowLeft,
   BookOpen,
   CheckCircle,
-  CreditCard,
-  IndianRupee,
+  Clock,
+  HandshakeIcon,
+  Info,
   Loader2,
   QrCode,
   Search,
@@ -39,27 +36,15 @@ function reimbStatusColor(s: ReimbursementStatus): string {
   return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30";
 }
 
-function paymentStateColor(s: PaymentState): string {
-  if (s === PaymentState.paid)
-    return "bg-green-500/15 text-green-400 border-green-500/30";
-  if (s === PaymentState.failed)
-    return "bg-red-500/15 text-red-400 border-red-500/30";
-  if (s === PaymentState.refunded)
-    return "bg-blue-500/15 text-blue-400 border-blue-500/30";
-  return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30";
-}
-
-function paymentStateLabel(s: PaymentState): string {
-  if (s === PaymentState.paid) return "Paid";
-  if (s === PaymentState.failed) return "Failed";
-  if (s === PaymentState.refunded) return "Refunded";
+function reimbStatusLabel(s: ReimbursementStatus): string {
+  if (s === ReimbursementStatus.approved) return "Accepted";
+  if (s === ReimbursementStatus.declined) return "Declined";
+  if (s === ReimbursementStatus.settled) return "Settled";
   return "Pending";
 }
 
 const GOLD_BORDER = "1.5px solid oklch(0.72 0.15 85 / 0.6)";
 const GOLD_GLOW = "0 0 40px oklch(0.72 0.15 85 / 0.15)";
-
-type ReimbursePayFlow = "idle" | "opening" | "confirmed" | "failed";
 
 export default function PassportLookupPage() {
   const navigate = useNavigate();
@@ -75,17 +60,8 @@ export default function PassportLookupPage() {
   const [amountInput, setAmountInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [billingSuccess, setBillingSuccess] = useState<bigint | null>(null);
-  const [lastReimburseId, setLastReimburseId] = useState<bigint | null>(null);
-  const [reimbursePayFlow, setReimbursePayFlow] =
-    useState<ReimbursePayFlow>("idle");
-  const [reimbursePayRecordId, setReimbursePayRecordId] = useState<
-    bigint | null
-  >(null);
 
   const [myRequests, setMyRequests] = useState<ReimbursementRequest[]>([]);
-  const [reimbPayments, setReimbPayments] = useState<
-    Record<string, PaymentRecord>
-  >({});
   const [loadingRequests, setLoadingRequests] = useState(true);
 
   useEffect(() => {
@@ -100,34 +76,12 @@ export default function PassportLookupPage() {
       .finally(() => setLoadingRequests(false));
   }, [actor, isFetching, identity]);
 
-  // Load payment records for reimbursements
-  useEffect(() => {
-    if (!actor || isFetching || !identity || myRequests.length === 0) return;
-    const fetchPayments = async () => {
-      const map: Record<string, PaymentRecord> = {};
-      await Promise.allSettled(
-        myRequests.map(async (req) => {
-          try {
-            const p = await actor.getReimbursementPayment(req.id);
-            if (p) map[req.id.toString()] = p;
-          } catch {
-            /* ignore */
-          }
-        }),
-      );
-      setReimbPayments(map);
-    };
-    fetchPayments();
-  }, [actor, isFetching, identity, myRequests]);
-
   const lookupPassport = async () => {
     if (!actor || !codeInput.trim()) return;
     setLooking(true);
     setPassport(null);
     setLookupError(false);
     setBillingSuccess(null);
-    setLastReimburseId(null);
-    setReimbursePayFlow("idle");
     try {
       const code = codeInput.trim().toUpperCase();
       const result = await actor.lookupPassportByCode(code);
@@ -146,8 +100,6 @@ export default function PassportLookupPage() {
   };
 
   const amountNum = Number.parseFloat(amountInput || "0");
-  const platformFee = amountNum > 0 ? amountNum * 0.08 : 0;
-  const netAmount = amountNum > 0 ? amountNum * 0.92 : 0;
 
   const submitReimbursement = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,9 +120,10 @@ export default function PassportLookupPage() {
         BigInt(Math.round(amountNum)),
         "",
       );
-      setLastReimburseId(requestId);
       setBillingSuccess(requestId);
-      toast.success(`Reimbursement request #${Number(requestId)} submitted!`);
+      toast.success(
+        `Reimbursement request #${Number(requestId)} sent to home dentist!`,
+      );
       setTreatmentDesc("");
       setAmountInput("");
       try {
@@ -183,64 +136,6 @@ export default function PassportLookupPage() {
       toast.error("Failed to submit reimbursement request. Please try again.");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleReimbursePayNow = async () => {
-    if (!actor || !lastReimburseId) return;
-    setReimbursePayFlow("opening");
-
-    // Capture session ID before checkout so it's available in catch
-    let capturedSessionId: string | null = null;
-
-    try {
-      const { createCheckout } = await import("@/lib/stripe");
-      const reimburseAmount = Math.round(netAmount); // net amount (after platform fee)
-
-      await createCheckout({
-        amountRupees: reimburseAmount,
-        currency: "inr",
-        productName: "DantaNova Dental Passport Reimbursement",
-        successUrl: `${window.location.origin}/passport-lookup?payment=success`,
-        cancelUrl: `${window.location.origin}/passport-lookup`,
-        onSuccess: async (sessionId: string) => {
-          capturedSessionId = sessionId;
-          try {
-            const payId = await actor.recordReimbursementPayment(
-              lastReimburseId,
-              BigInt(Math.round(amountNum)),
-              sessionId,
-            );
-            setReimbursePayRecordId(payId);
-            // Confirm the payment in the backend
-            await actor.confirmPayment(sessionId);
-            setReimbursePayFlow("confirmed");
-            toast.success("Reimbursement payment confirmed!");
-          } catch {
-            setReimbursePayFlow("confirmed");
-            toast.success("Payment recorded — home dentist will be notified.");
-          }
-        },
-        onCancel: () => {
-          setReimbursePayFlow("idle");
-          toast.info("Payment cancelled.");
-        },
-      });
-
-      if (reimbursePayFlow === "opening") {
-        setReimbursePayFlow("idle");
-      }
-    } catch {
-      setReimbursePayFlow("failed");
-      // Transition backend record to #failed when session ID is known
-      if (capturedSessionId) {
-        try {
-          await actor.failPayment(capturedSessionId);
-        } catch {
-          /* best-effort */
-        }
-      }
-      toast.error("Could not open checkout. Please try again.");
     }
   };
 
@@ -296,6 +191,28 @@ export default function PassportLookupPage() {
       </header>
 
       <main className="flex-1 px-4 py-6 max-w-2xl mx-auto w-full">
+        {/* Platform info banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-2.5 rounded-2xl px-4 py-3 mb-6"
+          style={{
+            background: "oklch(0.14 0.06 85/0.35)",
+            border: "1px solid oklch(0.72 0.15 85/0.3)",
+          }}
+          data-ocid="passport_lookup.info_banner"
+        >
+          <Info
+            className="w-4 h-4 shrink-0 mt-0.5"
+            style={{ color: "oklch(0.88 0.18 85)" }}
+          />
+          <p className="text-xs" style={{ color: "oklch(0.82 0.14 85)" }}>
+            <strong>DantaNova facilitates the connection.</strong> Submit a
+            reimbursement request to the home dentist — payment is handled
+            directly between dentists.
+          </p>
+        </motion.div>
+
         {/* Lookup Box */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
@@ -361,7 +278,7 @@ export default function PassportLookupPage() {
           )}
         </motion.div>
 
-        {/* Patient Found + Details + Billing Form */}
+        {/* Patient Found + Details + Request Form */}
         {passport && (
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
@@ -430,6 +347,9 @@ export default function PassportLookupPage() {
                     ₹
                     {Number(passport.preApprovedBudget).toLocaleString("en-IN")}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Settle directly with home dentist
+                  </p>
                 </div>
 
                 {passport.allergies && (
@@ -483,148 +403,55 @@ export default function PassportLookupPage() {
               </div>
             </div>
 
-            {/* Billing Form or Success + Reimbursement Payment */}
+            {/* Reimbursement Request Form or Success */}
             {billingSuccess !== null ? (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-card rounded-3xl p-6 flex flex-col gap-5"
+                className="glass-card rounded-3xl p-6 flex flex-col gap-5 items-center text-center"
                 style={{
                   border: "1.5px solid oklch(0.72 0.15 85 / 0.6)",
                   boxShadow: GOLD_GLOW,
                 }}
                 data-ocid="passport_lookup.billing_success"
               >
-                {/* Submission confirmation */}
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center"
-                    style={{
-                      background: "oklch(0.22 0.08 85 / 0.4)",
-                      border: "2px solid oklch(0.72 0.15 85 / 0.7)",
-                    }}
-                  >
-                    <CheckCircle className="w-7 h-7 text-yellow-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-bold text-lg">
-                      Reimbursement Request Submitted!
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Request #{Number(billingSuccess)} sent to home dentist for
-                      approval.
-                    </p>
-                  </div>
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center"
+                  style={{
+                    background: "oklch(0.22 0.08 85 / 0.4)",
+                    border: "2px solid oklch(0.72 0.15 85 / 0.7)",
+                  }}
+                >
+                  <CheckCircle className="w-7 h-7 text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-lg">
+                    Request Sent to Home Dentist!
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Request #{Number(billingSuccess)} has been submitted. The
+                    home dentist will accept or decline it directly.
+                  </p>
                 </div>
 
-                {/* Payment intent section */}
                 <div
-                  className="rounded-2xl p-4 flex flex-col gap-3"
+                  className="w-full rounded-2xl px-4 py-3 flex items-start gap-2.5"
                   style={{
-                    background: "oklch(0.12 0.06 85 / 0.4)",
-                    border: "1.5px solid oklch(0.72 0.15 85 / 0.35)",
+                    background: "oklch(0.14 0.06 85/0.35)",
+                    border: "1px solid oklch(0.72 0.15 85/0.3)",
                   }}
-                  data-ocid="passport_lookup.reimbursement_payment_section"
                 >
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold">
-                      Reimbursement Payment
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Collect the net reimbursement (after 8% platform fee) via
-                    Stripe. Home dentist will be notified upon payment.
+                  <HandshakeIcon
+                    className="w-4 h-4 shrink-0 mt-0.5"
+                    style={{ color: "oklch(0.88 0.18 85)" }}
+                  />
+                  <p
+                    className="text-xs text-left"
+                    style={{ color: "oklch(0.82 0.14 85)" }}
+                  >
+                    DantaNova facilitates the connection. Once accepted, settle
+                    payment directly with the home dentist.
                   </p>
-
-                  {/* Idle — show pay button */}
-                  {reimbursePayFlow === "idle" && (
-                    <Button
-                      className="w-full rounded-full glow-primary font-semibold"
-                      onClick={handleReimbursePayNow}
-                      data-ocid="passport_lookup.reimburse_pay_button"
-                    >
-                      <IndianRupee className="w-4 h-4 mr-1.5" />
-                      Collect ₹{Math.round(netAmount).toLocaleString("en-IN")}{" "}
-                      via Stripe
-                    </Button>
-                  )}
-
-                  {/* Opening Stripe */}
-                  {reimbursePayFlow === "opening" && (
-                    <Button
-                      className="w-full rounded-full opacity-70"
-                      disabled
-                      data-ocid="passport_lookup.reimburse_pay_loading_state"
-                    >
-                      <Loader2
-                        className="w-4 h-4 animate-spin mr-2"
-                        style={{ color: "oklch(0.88 0.18 85)" }}
-                      />
-                      Opening Stripe Checkout…
-                    </Button>
-                  )}
-
-                  {/* Failed */}
-                  {reimbursePayFlow === "failed" && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex flex-col gap-2"
-                    >
-                      <div
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3"
-                        style={{
-                          background: "oklch(0.35 0.18 20 / 0.12)",
-                          border: "1px solid oklch(0.55 0.18 20 / 0.4)",
-                        }}
-                        data-ocid="passport_lookup.reimburse_pay_error_state"
-                      >
-                        <XCircle className="w-4 h-4 text-red-400 shrink-0" />
-                        <p className="text-xs text-red-300">
-                          Could not open checkout. Please try again.
-                        </p>
-                      </div>
-                      <Button
-                        className="w-full rounded-full glow-primary"
-                        onClick={() => setReimbursePayFlow("idle")}
-                        data-ocid="passport_lookup.reimburse_retry_button"
-                      >
-                        Retry Payment
-                      </Button>
-                    </motion.div>
-                  )}
-
-                  {/* Confirmed */}
-                  {reimbursePayFlow === "confirmed" && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 rounded-2xl px-4 py-3"
-                      style={{
-                        background: "oklch(0.22 0.08 85 / 0.3)",
-                        border: "1px solid oklch(0.72 0.15 85 / 0.5)",
-                      }}
-                      data-ocid="passport_lookup.reimburse_pay_success_state"
-                    >
-                      <CheckCircle className="w-4 h-4 text-primary shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-primary">
-                          Payment Confirmed
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Record #
-                          {reimbursePayRecordId !== null
-                            ? Number(reimbursePayRecordId)
-                            : "—"}{" "}
-                          · Home dentist notified
-                        </p>
-                      </div>
-                      <Badge className="bg-green-500/15 text-green-400 border-green-500/30 text-xs shrink-0">
-                        Paid
-                      </Badge>
-                    </motion.div>
-                  )}
                 </div>
 
                 <Button
@@ -634,8 +461,6 @@ export default function PassportLookupPage() {
                     setBillingSuccess(null);
                     setPassport(null);
                     setCodeInput("");
-                    setReimbursePayFlow("idle");
-                    setLastReimburseId(null);
                   }}
                   data-ocid="passport_lookup.new_lookup_button"
                 >
@@ -649,14 +474,15 @@ export default function PassportLookupPage() {
                 data-ocid="passport_lookup.billing_form"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <IndianRupee className="w-5 h-5 text-yellow-400" />
+                  <HandshakeIcon className="w-5 h-5 text-yellow-400" />
                   <h3 className="font-display font-bold">
                     Request Reimbursement
                   </h3>
                 </div>
                 <p className="text-xs text-muted-foreground -mt-1">
                   After treating the patient, submit a reimbursement request to
-                  their home dentist. Platform fee: 8%.
+                  their home dentist. They will accept or decline it directly —
+                  no platform payment involved.
                 </p>
 
                 <div className="flex flex-col gap-2">
@@ -675,68 +501,24 @@ export default function PassportLookupPage() {
 
                 <div className="flex flex-col gap-2">
                   <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                    Treatment Amount (₹) *
+                    Treatment Amount *
                   </span>
-                  <div className="relative">
-                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-400 pointer-events-none" />
-                    <Input
-                      className="rounded-2xl bg-background/60 border-border/40 pl-9"
-                      placeholder="2500"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={amountInput}
-                      onChange={(e) => setAmountInput(e.target.value)}
-                      required
-                      data-ocid="passport_lookup.amount_input"
-                    />
-                  </div>
+                  <Input
+                    className="rounded-2xl bg-background/60 border-border/40"
+                    placeholder="Enter treatment amount (in your local currency)"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={amountInput}
+                    onChange={(e) => setAmountInput(e.target.value)}
+                    required
+                    data-ocid="passport_lookup.amount_input"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Amount is informational. Settlement is arranged directly
+                    between dentists.
+                  </p>
                 </div>
-
-                {/* Live fee breakdown */}
-                {amountNum > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl p-4 flex flex-col gap-2"
-                    style={{
-                      background: "oklch(0.15 0.06 85 / 0.2)",
-                      border: "1px solid oklch(0.72 0.15 85 / 0.3)",
-                    }}
-                    data-ocid="passport_lookup.fee_breakdown"
-                  >
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">
-                      Fee Breakdown
-                    </p>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Treatment Amount
-                      </span>
-                      <span className="font-semibold">
-                        ₹{amountNum.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Platform Fee (8%)
-                      </span>
-                      <span className="text-red-400">
-                        −₹{platformFee.toFixed(2)}
-                      </span>
-                    </div>
-                    <div
-                      className="flex items-center justify-between text-sm pt-2 mt-1"
-                      style={{
-                        borderTop: "1px solid oklch(0.72 0.15 85 / 0.2)",
-                      }}
-                    >
-                      <span className="font-bold">You Receive</span>
-                      <span className="font-bold text-yellow-400 text-base">
-                        ₹{netAmount.toFixed(2)}
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
 
                 <Button
                   type="submit"
@@ -749,9 +531,7 @@ export default function PassportLookupPage() {
                   ) : (
                     <Send className="w-4 h-4 mr-2" />
                   )}
-                  {submitting
-                    ? "Submitting..."
-                    : "Submit Reimbursement Request"}
+                  {submitting ? "Submitting..." : "Send Reimbursement Request"}
                 </Button>
               </form>
             )}
@@ -781,63 +561,57 @@ export default function PassportLookupPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {myRequests.map((req, i) => {
-                const payRec = reimbPayments[req.id.toString()];
-                return (
-                  <motion.div
-                    key={req.id.toString()}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    className="glass-card rounded-2xl p-4 flex flex-col gap-2"
-                    data-ocid={`passport_lookup.request.${i + 1}`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold">
-                          Request #{Number(req.id)}
-                        </p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {req.treatmentDetails}
-                        </p>
-                      </div>
-                      <div className="flex flex-col gap-1 items-end shrink-0">
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full border font-semibold ${reimbStatusColor(req.status)}`}
-                        >
-                          {req.status}
-                        </span>
-                        {payRec && (
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full border font-semibold flex items-center gap-1 ${paymentStateColor(payRec.state)}`}
-                            data-ocid={`passport_lookup.payment_chip.${i + 1}`}
-                          >
-                            <CreditCard className="w-2.5 h-2.5" />
-                            {paymentStateLabel(payRec.state)}
-                          </span>
-                        )}
-                      </div>
+              {myRequests.map((req, i) => (
+                <motion.div
+                  key={req.id.toString()}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  className="glass-card rounded-2xl p-4 flex flex-col gap-2"
+                  data-ocid={`passport_lookup.request.${i + 1}`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold">
+                        Request #{Number(req.id)}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {req.treatmentDetails}
+                      </p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        Amount
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full border font-semibold shrink-0 ${reimbStatusColor(req.status)}`}
+                    >
+                      {reimbStatusLabel(req.status)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      Requested amount
+                    </span>
+                    <span className="text-yellow-400 font-bold text-sm">
+                      ₹{Number(req.amountRupees).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  {req.status === ReimbursementStatus.approved && (
+                    <div
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs"
+                      style={{
+                        background: "oklch(0.14 0.06 85/0.3)",
+                        border: "1px solid oklch(0.72 0.15 85/0.25)",
+                      }}
+                    >
+                      <Clock
+                        className="w-3.5 h-3.5 shrink-0"
+                        style={{ color: "oklch(0.88 0.18 85)" }}
+                      />
+                      <span style={{ color: "oklch(0.82 0.14 85)" }}>
+                        Accepted — arrange direct payment with home dentist.
                       </span>
-                      <div className="text-right">
-                        <span className="text-yellow-400 font-bold text-sm">
-                          ₹{Number(req.amountRupees).toLocaleString("en-IN")}
-                        </span>
-                        <span className="text-xs text-muted-foreground ml-1">
-                          (−₹
-                          {Number(req.platformFeeRupees).toLocaleString(
-                            "en-IN",
-                          )}{" "}
-                          fee)
-                        </span>
-                      </div>
                     </div>
-                  </motion.div>
-                );
-              })}
+                  )}
+                </motion.div>
+              ))}
             </div>
           )}
         </div>

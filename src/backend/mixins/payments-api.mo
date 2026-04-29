@@ -3,165 +3,96 @@ import List "mo:core/List";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import T "../types/payments";
-import PaymentsLib "../lib/payments";
+import DirectoryLib "../lib/payments";
 
-/// Public API mixin for the payments domain.
-/// State slices are injected by main.mo via mixin parameters.
+/// Public API mixin for dentist tiers and connection requests.
+/// All Stripe/payment logic has been removed.
+/// The platform is purely a matchmaking directory — no money changes hands here.
 mixin (
-  payments          : List.List<T.PaymentRecord>,
-  subscriptions     : Map.Map<Principal, T.DentistSubscription>,
-  nextPaymentIdRef  : { var id : Nat },
+  dentistTiers        : Map.Map<Principal, T.DentistTier>,
+  connectionRequests  : List.List<T.ConnectionRequest>,
+  nextConnectionIdRef : { var id : Nat },
 ) {
 
-  // ─── Pricing catalogue ───────────────────────────────────────────────────
+  // ─── Dentist tier (self-select badge) ────────────────────────────────────
 
-  /// Return the static pricing tier catalogue (Free / Pro / Elite).
-  public query func getPricingTiers() : async [T.TierInfo] {
-    PaymentsLib.getTierCatalogue();
+  /// Return the calling dentist's current tier badge (defaults to #free).
+  public query ({ caller }) func getMyTier() : async T.DentistTier {
+    DirectoryLib.getTier(dentistTiers, caller);
   };
 
-  // ─── Fee computation queries ──────────────────────────────────────────────
-
-  /// Compute the total booking fee for the given urgency level.
-  /// Routine → ₹499 base + 8 % platform fee = ₹539.
-  /// Urgent / Emergency → ₹999 base + 8 % platform fee = ₹1079.
-  /// Call this before creating a Stripe Checkout session on the frontend.
-  public query func getBookingFee(urgency : T.BookingUrgency) : async T.BookingFeeBreakdown {
-    PaymentsLib.computeBookingFee(urgency);
+  /// Return any dentist's tier badge by principal.
+  public query func getDentistTier(dentistId : Principal) : async T.DentistTier {
+    DirectoryLib.getTier(dentistTiers, dentistId);
   };
 
-  /// Compute the reimbursement net payout for a given gross amount.
-  /// Platform deducts 8 %; home dentist receives the net amount.
-  public query func getReimbursementFee(grossAmountRupees : Nat) : async T.ReimbursementFeeBreakdown {
-    PaymentsLib.computeReimbursementFee(grossAmountRupees);
-  };
-
-  // ─── Subscription management ─────────────────────────────────────────────
-
-  /// Return the calling dentist's active subscription, or null.
-  public query ({ caller }) func getMySubscription() : async ?T.DentistSubscription {
-    PaymentsLib.getSubscription(subscriptions, caller);
-  };
-
-  /// Return a dentist's subscription by principal (self only).
-  public query ({ caller }) func getDentistSubscription(dentistId : Principal) : async ?T.DentistSubscription {
-    if (caller != dentistId) {
-      Runtime.trap("Unauthorized: Can only view your own subscription");
-    };
-    PaymentsLib.getSubscription(subscriptions, dentistId);
-  };
-
-  /// Upsert a dentist subscription after Stripe webhook confirmation.
-  /// Called by the frontend after a successful Stripe subscription checkout.
-  public shared ({ caller }) func setDentistSubscription(
-    dentistId            : Principal,
-    tier                 : T.SubscriptionTier,
-    stripeSubscriptionId : Text,
-    monthlyAmountRupees  : Nat,
-  ) : async () {
-    if (caller != dentistId) {
-      Runtime.trap("Unauthorized: Can only set your own subscription");
-    };
-    PaymentsLib.upsertSubscription(subscriptions, dentistId, tier, stripeSubscriptionId, monthlyAmountRupees);
-  };
-
-  /// Cancel the calling dentist's subscription.
-  public shared ({ caller }) func cancelMySubscription() : async () {
+  /// Set the calling dentist's tier badge (no payment required).
+  public shared ({ caller }) func setMyTier(tier : T.DentistTier) : async () {
     if (caller.isAnonymous()) {
-      Runtime.trap("Must be authenticated to cancel a subscription");
+      Runtime.trap("Must be authenticated to set a tier");
     };
-    PaymentsLib.cancelSubscription(subscriptions, caller);
+    DirectoryLib.setTier(dentistTiers, caller, tier);
   };
 
-  // ─── Payment records ─────────────────────────────────────────────────────
+  // ─── Connection requests ─────────────────────────────────────────────────
 
-  /// Return all payment records for the calling user.
-  public query ({ caller }) func getMyPayments() : async [T.PaymentRecord] {
-    PaymentsLib.getPaymentsByPayer(payments, caller);
-  };
-
-  /// Return the payment record for a specific booking fee.
-  public query ({ caller }) func getBookingPayment(bookingId : Nat) : async ?T.PaymentRecord {
-    PaymentsLib.getPaymentByReference(payments, #bookingFee, bookingId);
-  };
-
-  /// Return the payment record for a specific reimbursement.
-  public query ({ caller }) func getReimbursementPayment(reimbursementId : Nat) : async ?T.PaymentRecord {
-    PaymentsLib.getPaymentByReference(payments, #reimbursement, reimbursementId);
-  };
-
-  /// Record a new booking-fee payment intent.
-  /// amountRupees MUST equal getBookingFee(urgency).totalAmountRupees for the booking.
-  /// stripeSessionId is obtained by the frontend from the Stripe Checkout Session API.
-  public shared ({ caller }) func recordBookingPayment(
-    bookingId       : Nat,
-    amountRupees    : Nat,
-    stripeSessionId : Text,
+  /// Send a connection request to a dentist (by email).
+  /// A patient or another dentist can initiate this.
+  public shared ({ caller }) func sendConnectionRequest(
+    dentistEmail : Text,
+    message      : Text,
   ) : async Nat {
     if (caller.isAnonymous()) {
-      Runtime.trap("Must be authenticated to record a payment");
+      Runtime.trap("Must be authenticated to send a connection request");
     };
-    if (stripeSessionId.size() == 0) {
-      Runtime.trap("stripeSessionId must not be empty");
+    if (dentistEmail.size() == 0) {
+      Runtime.trap("dentistEmail must not be empty");
     };
-    let id = PaymentsLib.createPaymentRecord(
-      payments,
-      nextPaymentIdRef.id,
-      #bookingFee,
-      bookingId,
+    let id = DirectoryLib.createConnectionRequest(
+      connectionRequests,
+      nextConnectionIdRef.id,
       caller,
-      amountRupees,
-      stripeSessionId,
+      dentistEmail,
+      message,
     );
-    nextPaymentIdRef.id += 1;
+    nextConnectionIdRef.id += 1;
     id;
   };
 
-  /// Record a new reimbursement payment intent.
-  /// amountRupees is the gross amount; platform deducts 8 % at settlement.
-  /// stripeSessionId is obtained by the frontend from the Stripe Checkout Session API.
-  public shared ({ caller }) func recordReimbursementPayment(
-    reimbursementId : Nat,
-    amountRupees    : Nat,
-    stripeSessionId : Text,
-  ) : async Nat {
-    if (caller.isAnonymous()) {
-      Runtime.trap("Must be authenticated to record a payment");
-    };
-    if (stripeSessionId.size() == 0) {
-      Runtime.trap("stripeSessionId must not be empty");
-    };
-    let id = PaymentsLib.createPaymentRecord(
-      payments,
-      nextPaymentIdRef.id,
-      #reimbursement,
-      reimbursementId,
-      caller,
-      amountRupees,
-      stripeSessionId,
-    );
-    nextPaymentIdRef.id += 1;
-    id;
+  /// Return all connection requests sent by the caller.
+  public query ({ caller }) func getMyConnectionRequests() : async [T.ConnectionRequest] {
+    DirectoryLib.getRequestsByRequester(connectionRequests, caller);
   };
 
-  /// Mark a payment as paid by Stripe session ID.
-  /// Called on Stripe success redirect or webhook reconciliation.
-  /// Transitions state: #pending → #paid.
-  public shared ({ caller }) func confirmPayment(stripeSessionId : Text) : async () {
+  /// Return all connection requests directed at the calling dentist (matched by email).
+  /// The dentist must be registered; their email is looked up from the caller context.
+  /// Callers who are not registered dentists receive an empty list.
+  public query ({ caller }) func getIncomingConnectionRequests(dentistEmail : Text) : async [T.ConnectionRequest] {
     if (caller.isAnonymous()) {
-      Runtime.trap("Must be authenticated to confirm a payment");
+      Runtime.trap("Must be authenticated to view connection requests");
     };
-    PaymentsLib.markPaymentPaid(payments, stripeSessionId);
+    DirectoryLib.getRequestsForDentist(connectionRequests, dentistEmail);
   };
 
-  /// Mark a payment as failed by Stripe session ID.
-  /// Called on Stripe cancel redirect or webhook reconciliation.
-  /// Transitions state: #pending → #failed.
-  public shared ({ caller }) func failPayment(stripeSessionId : Text) : async () {
+  /// Accept or decline a connection request (dentist action).
+  public shared ({ caller }) func respondToConnectionRequest(id : Nat, accept : Bool) : async () {
     if (caller.isAnonymous()) {
-      Runtime.trap("Must be authenticated to fail a payment");
+      Runtime.trap("Must be authenticated to respond to a connection request");
     };
-    PaymentsLib.markPaymentFailed(payments, stripeSessionId);
+    switch (DirectoryLib.getRequestById(connectionRequests, id)) {
+      case (null) { Runtime.trap("Connection request not found") };
+      case (?_req) {
+        DirectoryLib.respondToRequest(connectionRequests, id, accept);
+      };
+    };
+  };
+
+  /// Return a single connection request by id (visible to either party).
+  public query ({ caller }) func getConnectionRequest(id : Nat) : async ?T.ConnectionRequest {
+    if (caller.isAnonymous()) {
+      Runtime.trap("Must be authenticated to view a connection request");
+    };
+    DirectoryLib.getRequestById(connectionRequests, id);
   };
 
 };

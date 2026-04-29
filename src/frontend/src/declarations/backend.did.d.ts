@@ -18,21 +18,13 @@ export interface AvailabilitySlot {
 }
 export interface Booking {
   'status' : BookingStatus,
-  'paymentStatus' : PaymentStatusInternal,
   'bookingId' : bigint,
   'urgency' : BookingUrgency,
   'patientId' : Principal,
   'dentistEmail' : string,
   'createdAt' : Time,
-  'amountRupees' : bigint,
   'notes' : string,
   'requestedDate' : string,
-}
-export interface BookingFeeBreakdown {
-  'urgency' : BookingUrgency,
-  'totalAmountRupees' : bigint,
-  'platformFeeRupees' : bigint,
-  'baseAmountRupees' : bigint,
 }
 export type BookingStatus = { 'cancelled' : null } |
   { 'pending' : null } |
@@ -42,6 +34,18 @@ export type BookingStatus = { 'cancelled' : null } |
 export type BookingUrgency = { 'emergency' : null } |
   { 'routine' : null } |
   { 'urgent' : null };
+export interface ConnectionRequest {
+  'id' : bigint,
+  'status' : ConnectionStatus,
+  'dentistEmail' : string,
+  'createdAt' : Time,
+  'fromPrincipal' : Principal,
+  'message' : string,
+  'respondedAt' : [] | [Time],
+}
+export type ConnectionStatus = { 'pending' : null } |
+  { 'accepted' : null } |
+  { 'declined' : null };
 export interface DentistProfile {
   'bio' : string,
   'name' : string,
@@ -52,15 +56,9 @@ export interface DentistProfile {
   'specialties' : Array<string>,
   'location' : string,
 }
-export interface DentistSubscription {
-  'startedAt' : Time,
-  'stripeSubscriptionId' : string,
-  'tier' : SubscriptionTier,
-  'renewsAt' : [] | [Time],
-  'monthlyAmountRupees' : bigint,
-  'state' : SubscriptionState,
-  'dentistId' : Principal,
-}
+export type DentistTier = { 'pro' : null } |
+  { 'free' : null } |
+  { 'elite' : null };
 export interface FeedbackEntry {
   'id' : bigint,
   'text' : string,
@@ -89,31 +87,6 @@ export interface PassportRecord {
   'issuedBy' : string,
   'allergies' : string,
 }
-export type PaymentKind = { 'reimbursement' : null } |
-  { 'bookingFee' : null };
-export interface PaymentRecord {
-  'id' : bigint,
-  'kind' : PaymentKind,
-  'createdAt' : Time,
-  'referenceId' : bigint,
-  'amountRupees' : bigint,
-  'state' : PaymentState,
-  'payer' : Principal,
-  'stripeSessionId' : string,
-  'settledAt' : [] | [Time],
-}
-export type PaymentState = { 'pending' : null } |
-  { 'paid' : null } |
-  { 'refunded' : null } |
-  { 'failed' : null };
-export type PaymentStatusInternal = { 'pending' : null } |
-  { 'paid' : null } |
-  { 'refunded' : null };
-export interface ReimbursementFeeBreakdown {
-  'netAmountRupees' : bigint,
-  'platformFeeRupees' : bigint,
-  'grossAmountRupees' : bigint,
-}
 export interface ReimbursementRequest {
   'id' : bigint,
   'status' : ReimbursementStatus,
@@ -140,12 +113,6 @@ export interface ScanResult {
 export type ScanSeverity = { 'mild' : null } |
   { 'severe' : null } |
   { 'moderate' : null };
-export type SubscriptionState = { 'active' : null } |
-  { 'cancelled' : null } |
-  { 'expired' : null };
-export type SubscriptionTier = { 'pro' : null } |
-  { 'free' : null } |
-  { 'elite' : null };
 export interface Testimonial {
   'content' : string,
   'testimonialId' : bigint,
@@ -155,13 +122,6 @@ export interface Testimonial {
   'timestamp' : Time,
   'rating' : bigint,
   'location' : string,
-}
-export interface TierInfo {
-  'features' : Array<string>,
-  'name' : string,
-  'tier' : SubscriptionTier,
-  'monthlyAmountRupees' : bigint,
-  'yearlyAmountRupees' : bigint,
 }
 export type Time = bigint;
 export interface ToothRecord {
@@ -195,8 +155,6 @@ export interface _SERVICE {
   'approveBooking' : ActorMethod<[bigint], undefined>,
   'approveReimbursementRequest' : ActorMethod<[bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'cancelMySubscription' : ActorMethod<[], undefined>,
-  'confirmPayment' : ActorMethod<[string], undefined>,
   /**
    * / createAvailabilitySlot: alias for registerAvailabilitySlot
    */
@@ -219,7 +177,6 @@ export interface _SERVICE {
   'declineReimbursementRequest' : ActorMethod<[bigint, string], undefined>,
   'deleteTestimonial' : ActorMethod<[bigint], undefined>,
   'deleteUserScans' : ActorMethod<[], undefined>,
-  'failPayment' : ActorMethod<[string], undefined>,
   /**
    * / findDentistByEmail: look up a dentist profile by email address
    */
@@ -232,8 +189,6 @@ export interface _SERVICE {
    */
   'getAvailableSlots' : ActorMethod<[Principal], Array<AvailabilitySlot>>,
   'getBooking' : ActorMethod<[bigint], [] | [Booking]>,
-  'getBookingFee' : ActorMethod<[BookingUrgency], BookingFeeBreakdown>,
-  'getBookingPayment' : ActorMethod<[bigint], [] | [PaymentRecord]>,
   /**
    * / Alias for getDentistBookings
    */
@@ -257,31 +212,30 @@ export interface _SERVICE {
   'getCallerScanHistory' : ActorMethod<[], Array<ScanResult>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getConnectionRequest' : ActorMethod<[bigint], [] | [ConnectionRequest]>,
   'getDentistBookings' : ActorMethod<[], Array<Booking>>,
   'getDentistProfile' : ActorMethod<[Principal], [] | [DentistProfile]>,
   /**
    * / Alias for getAllDentists
    */
   'getDentistProfiles' : ActorMethod<[], Array<DentistProfile>>,
-  'getDentistSubscription' : ActorMethod<
-    [Principal],
-    [] | [DentistSubscription]
-  >,
+  'getDentistTier' : ActorMethod<[Principal], DentistTier>,
   'getFeedbackList' : ActorMethod<[], Array<FeedbackEntry>>,
+  'getIncomingConnectionRequests' : ActorMethod<
+    [string],
+    Array<ConnectionRequest>
+  >,
   'getMessages' : ActorMethod<[bigint], Array<Message>>,
   /**
    * / Alias for getMessages
    */
   'getMessagesByBooking' : ActorMethod<[bigint], Array<Message>>,
   'getMyBookings' : ActorMethod<[], Array<Booking>>,
+  'getMyConnectionRequests' : ActorMethod<[], Array<ConnectionRequest>>,
   'getMyPassports' : ActorMethod<[], Array<PassportRecord>>,
-  'getMyPayments' : ActorMethod<[], Array<PaymentRecord>>,
   'getMyReimbursementRequests' : ActorMethod<[], Array<ReimbursementRequest>>,
-  'getMySubscription' : ActorMethod<[], [] | [DentistSubscription]>,
+  'getMyTier' : ActorMethod<[], DentistTier>,
   'getPassportByCode' : ActorMethod<[string], [] | [PassportRecord]>,
-  'getPricingTiers' : ActorMethod<[], Array<TierInfo>>,
-  'getReimbursementFee' : ActorMethod<[bigint], ReimbursementFeeBreakdown>,
-  'getReimbursementPayment' : ActorMethod<[bigint], [] | [PaymentRecord]>,
   'getReimbursementRequests' : ActorMethod<[], Array<ReimbursementRequest>>,
   'getReimbursementRequestsForMe' : ActorMethod<
     [],
@@ -312,8 +266,6 @@ export interface _SERVICE {
     string
   >,
   'lookupPassportByCode' : ActorMethod<[string], [] | [PassportRecord]>,
-  'recordBookingPayment' : ActorMethod<[bigint, bigint, string], bigint>,
-  'recordReimbursementPayment' : ActorMethod<[bigint, bigint, string], bigint>,
   'recordVisit' : ActorMethod<[], undefined>,
   'registerAvailabilitySlot' : ActorMethod<[string], bigint>,
   /**
@@ -339,6 +291,7 @@ export interface _SERVICE {
     bigint
   >,
   'respondToBooking' : ActorMethod<[bigint, boolean], undefined>,
+  'respondToConnectionRequest' : ActorMethod<[bigint, boolean], undefined>,
   'saveCallerUserProfile' : ActorMethod<[string, string], undefined>,
   /**
    * / Alias for registerAvailabilitySlot
@@ -348,10 +301,8 @@ export interface _SERVICE {
     [string, string, string, bigint, string],
     string
   >,
-  'setDentistSubscription' : ActorMethod<
-    [Principal, SubscriptionTier, string, bigint],
-    undefined
-  >,
+  'sendConnectionRequest' : ActorMethod<[string, string], bigint>,
+  'setMyTier' : ActorMethod<[DentistTier], undefined>,
   'settleReimbursement' : ActorMethod<[bigint, bigint], undefined>,
   'submitFeedback' : ActorMethod<[string], undefined>,
   'submitMessage' : ActorMethod<[bigint, string], bigint>,
@@ -378,10 +329,6 @@ export interface _SERVICE {
   'updateBookingStatus' : ActorMethod<[bigint, BookingStatus], undefined>,
   'updateDentistProfile' : ActorMethod<
     [string, string, string, Array<string>, string, string, boolean],
-    undefined
-  >,
-  'updatePaymentStatus' : ActorMethod<
-    [bigint, PaymentStatusInternal, bigint],
     undefined
   >,
   /**

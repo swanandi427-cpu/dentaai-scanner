@@ -4,7 +4,7 @@ import type {
   DentistProfile,
   ReimbursementRequest,
 } from "@/backend.d";
-import { BookingStatus, PaymentStatusInternal } from "@/backend.d";
+import { BookingStatus } from "@/backend.d";
 import LogoCircle from "@/components/LogoCircle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActor } from "@/hooks/useActor";
 import { useInternetIdentity } from "@/hooks/useInternetIdentity";
-import { useMySubscription } from "@/hooks/useQueries";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -22,12 +21,9 @@ import {
   Check,
   CheckCircle,
   Copy,
-  Crown,
-  IndianRupee,
   Loader2,
   MessageSquare,
   Shield,
-  Star,
   Stethoscope,
   Trash2,
   User,
@@ -70,67 +66,10 @@ function reimbStatusColor(status: string): string {
   return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30";
 }
 
-function PaymentUpdatePanel({
-  bookingId,
-  onSuccess,
-}: { bookingId: bigint; onSuccess: () => void }) {
-  const { actor } = useActor();
-  const [amount, setAmount] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const markPaid = async () => {
-    if (!actor || !amount) return;
-    setSaving(true);
-    try {
-      await actor.updatePaymentStatus(
-        bookingId,
-        PaymentStatusInternal.paid,
-        BigInt(amount),
-      );
-      toast.success("Payment marked as paid!");
-      onSuccess();
-    } catch {
-      toast.error("Failed to update payment");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-2 mt-1">
-      <div className="relative flex-1">
-        <IndianRupee className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-        <Input
-          type="number"
-          placeholder="Amount (₹)"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="pl-7 rounded-xl bg-background/60 border-border/40 focus:border-primary/50 h-8 text-xs"
-        />
-      </div>
-      <Button
-        size="sm"
-        className="rounded-full bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 text-xs px-3 h-8"
-        onClick={markPaid}
-        disabled={saving || !amount}
-        data-ocid="dentist_dashboard.mark_paid"
-      >
-        {saving ? (
-          <Loader2 className="w-3 h-3 animate-spin" />
-        ) : (
-          <IndianRupee className="w-3 h-3 mr-1" />
-        )}
-        Mark Paid
-      </Button>
-    </div>
-  );
-}
-
 export default function DentistDashboardPage() {
   const navigate = useNavigate();
   const { identity, login } = useInternetIdentity();
   const { actor, isFetching } = useActor();
-  const { data: mySubscription } = useMySubscription();
 
   const [profile, setProfile] = useState<DentistProfile | null>(null);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
@@ -450,90 +389,6 @@ export default function DentistDashboardPage() {
                   </div>
                 </div>
 
-                {/* Subscription Tier */}
-                <div
-                  className="glass-card rounded-3xl p-5 flex flex-col gap-3"
-                  style={{
-                    border:
-                      mySubscription?.tier === "elite"
-                        ? "1.5px solid oklch(0.72 0.18 75 / 0.5)"
-                        : mySubscription?.tier === "pro"
-                          ? "1.5px solid oklch(0.78 0.16 80 / 0.5)"
-                          : "1px solid oklch(0.35 0.03 70 / 0.5)",
-                  }}
-                  data-ocid="dentist_dashboard.subscription_panel"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gradient-gold">
-                      Subscription Plan
-                    </p>
-                    <Badge
-                      className={`text-xs font-bold uppercase tracking-wider ${mySubscription?.tier === "elite" ? "bg-amber-500/20 text-amber-300 border-amber-500/40" : mySubscription?.tier === "pro" ? "bg-primary/15 text-primary border-primary/40" : "bg-muted/50 text-muted-foreground border-border"}`}
-                      style={
-                        mySubscription?.tier === "elite"
-                          ? { boxShadow: "0 0 10px oklch(0.72 0.18 75 / 0.3)" }
-                          : mySubscription?.tier === "pro"
-                            ? {
-                                boxShadow: "0 0 10px oklch(0.78 0.16 80 / 0.3)",
-                              }
-                            : {}
-                      }
-                    >
-                      {mySubscription?.tier === "elite" ? (
-                        <>
-                          <Crown className="w-3 h-3 mr-1" />
-                          Elite
-                        </>
-                      ) : mySubscription?.tier === "pro" ? (
-                        <>
-                          <Star className="w-3 h-3 mr-1" />
-                          Pro
-                        </>
-                      ) : (
-                        "Free"
-                      )}
-                    </Badge>
-                  </div>
-                  {mySubscription ? (
-                    <div className="text-xs text-muted-foreground flex flex-col gap-0.5">
-                      <p>
-                        <span className="text-foreground font-medium">
-                          ₹
-                          {Number(
-                            mySubscription.monthlyAmountRupees,
-                          ).toLocaleString("en-IN")}
-                        </span>
-                        /month ·{" "}
-                        <span
-                          className={
-                            mySubscription.state === "active"
-                              ? "text-green-400"
-                              : "text-yellow-400"
-                          }
-                        >
-                          {mySubscription.state}
-                        </span>
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      You are on the Free plan.
-                    </p>
-                  )}
-                  <Link to="/pricing">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-full border-primary/30 text-primary text-xs w-full"
-                      data-ocid="dentist_dashboard.upgrade_plan"
-                    >
-                      {mySubscription?.tier === "free" || !mySubscription
-                        ? "Upgrade to Pro"
-                        : "Manage Plan"}
-                    </Button>
-                  </Link>
-                </div>
-
                 {/* Passport Quick Links */}
                 <div className="glass-card rounded-3xl p-5 border border-primary/10 flex flex-col gap-3">
                   <p className="text-sm font-semibold text-gradient-gold mb-1">
@@ -677,7 +532,6 @@ export default function DentistDashboardPage() {
                   bookings.map((bk, i) => {
                     const statusStr = getStatusStr(bk.status);
                     const urgencyStr = getStatusStr(bk.urgency);
-                    const paymentStr = getStatusStr(bk.paymentStatus);
                     return (
                       <motion.div
                         key={bk.bookingId.toString()}
@@ -717,28 +571,8 @@ export default function DentistDashboardPage() {
                             >
                               {statusStr}
                             </Badge>
-                            {bk.amountRupees > 0n && (
-                              <span className="text-xs text-muted-foreground">
-                                ₹
-                                {Number(bk.amountRupees).toLocaleString(
-                                  "en-IN",
-                                )}
-                              </span>
-                            )}
                           </div>
                         </div>
-
-                        {/* Payment status row */}
-                        {paymentStr !== "pending" && (
-                          <div className="flex items-center gap-1.5 text-xs">
-                            <IndianRupee className="w-3 h-3 text-muted-foreground" />
-                            <span
-                              className={`font-medium ${paymentStr === "paid" ? "text-green-400" : "text-muted-foreground"}`}
-                            >
-                              Payment: {paymentStr}
-                            </span>
-                          </div>
-                        )}
 
                         <div className="flex flex-wrap gap-2">
                           {statusStr === "pending" && (
@@ -764,13 +598,6 @@ export default function DentistDashboardPage() {
                               </Button>
                             </>
                           )}
-                          {statusStr === "approved" &&
-                            paymentStr === "pending" && (
-                              <PaymentUpdatePanel
-                                bookingId={bk.bookingId}
-                                onSuccess={loadData}
-                              />
-                            )}
                           <Button
                             size="sm"
                             variant="ghost"
