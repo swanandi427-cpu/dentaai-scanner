@@ -2,6 +2,10 @@ User-agent: *
 Allow: /
 Disallow: /messages/
 Disallow: /ui-test
+Disallow: /dentist-dashboard
+Disallow: /marketing-dashboard
+Disallow: /operations-dashboard
+Disallow: /support-dashboard
 
 Sitemap: https://dentaai-scanner-n0h.caffeine.xyz/sitemap.xml
 

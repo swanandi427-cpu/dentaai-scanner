@@ -15,7 +15,9 @@ import {
   Camera,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Database,
   Globe,
   History,
@@ -25,6 +27,7 @@ import {
   Mail,
   MapPin,
   Menu,
+  Phone,
   QrCode,
   ScanLine,
   Send,
@@ -178,6 +181,112 @@ const TRUST_BADGES = [
 
 const STORAGE_KEY = "dantanova_testimonials_v2";
 
+// ── DENTAL TIPS DATA ─────────────────────────────────────────────────────────
+const DENTAL_TIPS = [
+  {
+    emoji: "🪥",
+    headline: "Brush for 2 full minutes",
+    tip: "Set a timer or use an electric toothbrush with a built-in timer to ensure you reach the full 2 minutes twice daily.",
+  },
+  {
+    emoji: "🧵",
+    headline: "Floss every night before bed",
+    tip: "Flossing removes plaque and food particles from between teeth where your brush can't reach — critical for gum health.",
+  },
+  {
+    emoji: "🔄",
+    headline: "Replace your toothbrush every 3 months",
+    tip: "Worn bristles lose their cleaning effectiveness. Replace sooner if bristles fray or after recovering from illness.",
+  },
+  {
+    emoji: "💧",
+    headline: "Drink water after every meal",
+    tip: "Water rinses away food particles and dilutes acids produced by bacteria, reducing cavity risk throughout the day.",
+  },
+  {
+    emoji: "🚫",
+    headline: "Limit sugary drinks to meal times",
+    tip: "Sipping sugary drinks all day creates a constant acid attack on enamel. Restricting them to meals gives saliva time to neutralize acids.",
+  },
+  {
+    emoji: "🦷",
+    headline: "Use fluoride toothpaste",
+    tip: "Fluoride remineralizes weak enamel and actively fights cavities. Look for at least 1000 ppm fluoride on the label.",
+  },
+  {
+    emoji: "⏱",
+    headline: "Wait 30 min after acidic foods",
+    tip: "Acids from citrus or soda temporarily soften enamel. Brushing immediately can damage it — wait at least 30 minutes.",
+  },
+  {
+    emoji: "📅",
+    headline: "Schedule a check-up every 6 months",
+    tip: "Professional cleanings remove hardened tartar that brushing can't tackle, and early detection saves you pain and money.",
+  },
+  {
+    emoji: "🪶",
+    headline: "Use a soft-bristled toothbrush",
+    tip: "Hard bristles can abrade enamel and irritate gums over time. Soft bristles clean just as well with far less damage.",
+  },
+  {
+    emoji: "👅",
+    headline: "Brush your tongue daily",
+    tip: "Your tongue harbors bacteria that cause bad breath and can transfer to teeth. A few gentle strokes each brush session makes a big difference.",
+  },
+  {
+    emoji: "☕",
+    headline: "Rinse mouth after coffee or tea",
+    tip: "Coffee and tea are heavily staining and acidic. A quick water rinse after your cup helps prevent staining and enamel erosion.",
+  },
+  {
+    emoji: "🥛",
+    headline: "Calcium-rich foods strengthen enamel",
+    tip: "Dairy, almonds, and leafy greens provide calcium that helps remineralize and harden tooth enamel from the inside out.",
+  },
+  {
+    emoji: "🍬",
+    headline: "Chew sugar-free gum after meals",
+    tip: "Sugar-free gum stimulates saliva flow, which neutralizes acids and washes food from between teeth. Look for xylitol-based options.",
+  },
+  {
+    emoji: "😴",
+    headline: "Night guards protect against grinding",
+    tip: "Teeth grinding (bruxism) during sleep can fracture teeth and wear enamel to almost nothing. A custom night guard is a sound investment.",
+  },
+  {
+    emoji: "🦠",
+    headline: "Use antimicrobial mouthwash",
+    tip: "A chlorhexidine or cetylpyridinium mouthwash reduces the bacteria that cause gum disease and bad breath beyond what brushing alone achieves.",
+  },
+  {
+    emoji: "💅",
+    headline: "Avoid biting nails or hard objects",
+    tip: "Nails, pen caps, and ice can crack teeth or chip enamel. These micro-fractures accumulate over time and can lead to costly repairs.",
+  },
+  {
+    emoji: "⚡",
+    headline: "Electric toothbrushes outperform manual",
+    tip: "Studies show oscillating-rotating electric brushes remove significantly more plaque and reduce gingivitis better than manual brushing.",
+  },
+  {
+    emoji: "🚰",
+    headline: "Drink tap water for fluoride benefits",
+    tip: "In most cities, tap water is fluoridated at beneficial levels. Switching entirely to bottled water can mean missing out on this protection.",
+  },
+  {
+    emoji: "🍎",
+    headline: "Crunchy fruits and vegetables clean teeth",
+    tip: "Apples, carrots, and celery act as natural tooth scrubbers and stimulate saliva. They make a smart choice as a snack between meals.",
+  },
+  {
+    emoji: "😁",
+    headline: "A healthy smile starts at home",
+    tip: "Consistency is everything. Ten minutes a day of proper brushing and flossing prevents 90% of common dental problems. Start today!",
+  },
+] as const;
+
+const ONBOARDING_KEY = "dantanova-onboarded";
+
 interface UserTestimonial {
   id: string;
   name: string;
@@ -261,6 +370,7 @@ const sV: Variants = {
 };
 
 function StarRow({ rating }: { rating: number }) {
+  // Forward reference — removed spurious comment
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -313,6 +423,470 @@ function StarPicker({
 }
 
 // ── STAT COUNTER CARD ─────────────────────────────────────────────────────────
+// ── DAILY DENTAL TIPS CAROUSEL ───────────────────────────────────────────────
+
+function DailyTipsCarousel() {
+  const [current, setCurrent] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [dir, setDir] = useState<"next" | "prev">("next");
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  const total = DENTAL_TIPS.length;
+
+  const goto = (idx: number, direction: "next" | "prev") => {
+    if (animating) return;
+    setDir(direction);
+    setAnimating(true);
+    setTimeout(() => {
+      setCurrent((idx + total) % total);
+      setAnimating(false);
+    }, 260);
+  };
+
+  const nextRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    nextRef.current = () => goto(current + 1, "next");
+  });
+
+  const next = () => goto(current + 1, "next");
+  const prev = () => goto(current - 1, "prev");
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => nextRef.current(), 5000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const tip = DENTAL_TIPS[current];
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 40) dx < 0 ? next() : prev();
+    touchStartX.current = null;
+  };
+
+  return (
+    <motion.section
+      variants={sV}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      className="w-full max-w-5xl px-6 py-16"
+      data-ocid="dental_tips.section"
+    >
+      <div className="text-center mb-10">
+        <p
+          className="text-xs font-bold uppercase tracking-[0.25em] mb-3"
+          style={{ color: "oklch(0.82 0.16 85)" }}
+        >
+          Daily Wellness
+        </p>
+        <h2 className="font-display text-3xl md:text-4xl font-bold text-gradient-gold mb-2">
+          Daily Dental Tips
+        </h2>
+        <p className="text-muted-foreground text-sm max-w-md mx-auto">
+          One actionable dental health tip — refreshed every 5 seconds.
+        </p>
+      </div>
+
+      <div
+        className="relative rounded-3xl overflow-hidden select-none"
+        style={{
+          background: "oklch(0.11 0.04 85/0.85)",
+          border: "1.5px solid oklch(0.72 0.15 85/0.45)",
+          boxShadow: "0 0 40px oklch(0.72 0.15 85/0.1)",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        data-ocid="dental_tips.card"
+      >
+        {/* Progress bar */}
+        <div
+          className="absolute top-0 left-0 h-0.5"
+          style={{
+            background:
+              "linear-gradient(90deg,oklch(0.88 0.18 85),oklch(0.68 0.16 80))",
+            animation: "tip-progress 5s linear",
+            animationTimingFunction: "linear",
+            width: "100%",
+          }}
+          key={current}
+        />
+
+        <div className="p-8 md:p-12">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, x: dir === "next" ? 40 : -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: dir === "next" ? -40 : 40 }}
+              transition={{ duration: 0.26, ease: "easeInOut" }}
+              className="flex flex-col items-center text-center gap-6 md:flex-row md:text-left md:gap-10"
+            >
+              <div
+                className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0"
+                style={{
+                  background: "oklch(0.18 0.07 85/0.7)",
+                  border: "2px solid oklch(0.72 0.15 85/0.5)",
+                  boxShadow: "0 0 24px oklch(0.72 0.15 85/0.2)",
+                }}
+              >
+                {tip.emoji}
+              </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <p
+                  className="font-display text-2xl md:text-3xl font-bold"
+                  style={{ color: "oklch(0.92 0.16 85)" }}
+                >
+                  {tip.headline}
+                </p>
+                <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
+                  {tip.tip}
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Navigation arrows */}
+        <div className="flex items-center justify-between px-6 pb-6">
+          <button
+            type="button"
+            onClick={prev}
+            aria-label="Previous tip"
+            data-ocid="dental_tips.prev"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+            style={{
+              background: "oklch(0.18 0.07 85/0.6)",
+              border: "1px solid oklch(0.72 0.15 85/0.4)",
+              color: "oklch(0.88 0.18 85)",
+            }}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* Dot indicators */}
+          <div
+            className="flex gap-1.5"
+            role="tablist"
+            aria-label="Tip indicators"
+          >
+            {DENTAL_TIPS.map((t, i) => (
+              <button
+                key={t.headline}
+                type="button"
+                role="tab"
+                aria-selected={i === current}
+                aria-label={`Tip ${i + 1}`}
+                onClick={() => goto(i, i > current ? "next" : "prev")}
+                data-ocid={`dental_tips.dot.${i + 1}`}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: i === current ? 20 : 6,
+                  height: 6,
+                  background:
+                    i === current
+                      ? "oklch(0.88 0.18 85)"
+                      : "oklch(0.45 0.06 80/0.5)",
+                }}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={next}
+            aria-label="Next tip"
+            data-ocid="dental_tips.next"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+            style={{
+              background: "oklch(0.18 0.07 85/0.6)",
+              border: "1px solid oklch(0.72 0.15 85/0.4)",
+              color: "oklch(0.88 0.18 85)",
+            }}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Tip counter */}
+        <div
+          className="absolute top-4 right-5 text-xs font-mono"
+          style={{ color: "oklch(0.65 0.08 80)" }}
+        >
+          {current + 1} / {total}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+// ── SCROLL TO TOP BUTTON ──────────────────────────────────────────────────────
+
+function ScrollToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setVisible(window.scrollY > 300);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.button
+          type="button"
+          onClick={scrollToTop}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          transition={{ duration: 0.25 }}
+          whileHover={{ scale: 1.12 }}
+          whileTap={{ scale: 0.93 }}
+          aria-label="Scroll to top"
+          data-ocid="scroll_top.button"
+          className="fixed z-40 w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
+          style={{
+            bottom: "5.5rem",
+            right: "1rem",
+            background:
+              "linear-gradient(135deg,oklch(0.82 0.18 85),oklch(0.68 0.16 80))",
+            color: "oklch(0.06 0.01 60)",
+            boxShadow: "0 4px 20px oklch(0.72 0.15 85/0.5)",
+          }}
+        >
+          <ChevronUp className="w-5 h-5" />
+        </motion.button>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ── EMERGENCY SOS BUTTON ──────────────────────────────────────────────────────
+
+function SOSButton({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
+  const handleSOS = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        () =>
+          navigate({
+            to: "/find-dentist",
+            search: { emergency: "true" } as Record<string, string>,
+          }),
+        () => navigate({ to: "/find-dentist" }),
+        { timeout: 3000 },
+      );
+    } else {
+      navigate({ to: "/find-dentist" });
+    }
+  };
+
+  return (
+    <motion.button
+      type="button"
+      onClick={handleSOS}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 1.2, duration: 0.35 }}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.93 }}
+      aria-label="SOS Emergency Dentist"
+      data-ocid="sos.button"
+      className="fixed z-40 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold shadow-lg"
+      style={{
+        bottom: "5.5rem",
+        left: "1rem",
+        background:
+          "linear-gradient(135deg,oklch(0.58 0.22 22),oklch(0.46 0.20 18))",
+        color: "oklch(0.98 0.01 20)",
+        boxShadow: "0 0 0 0 oklch(0.58 0.22 22/0.6)",
+        animation: "sos-pulse 2s ease-in-out infinite",
+      }}
+    >
+      <Phone className="w-3.5 h-3.5" />
+      SOS Emergency Dentist
+    </motion.button>
+  );
+}
+
+// ── ONBOARDING OVERLAY ────────────────────────────────────────────────────────
+
+const ONBOARDING_STEPS = [
+  {
+    title: "Start Your Free AI Scan",
+    description:
+      "Get a full dental health analysis in 30 seconds — completely free, no app download needed.",
+    target: "home.primary_button",
+  },
+  {
+    title: "Connect with a Verified Dentist",
+    description:
+      "Find and connect with emergency dentists near you. Verified professionals, available fast.",
+    target: "home.emergency.cta",
+  },
+  {
+    title: "Create Your Dental Passport",
+    description:
+      "Carry your dental records everywhere you go. Get care abroad without upfront payments.",
+    target: "home.passport.primary_button",
+  },
+] as const;
+
+function OnboardingOverlay() {
+  const [visible, setVisible] = useState(false);
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (!localStorage.getItem(ONBOARDING_KEY)) {
+      // Delay until after intro screen fades
+      const t = setTimeout(() => setVisible(true), 3200);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
+  const dismiss = () => {
+    localStorage.setItem(ONBOARDING_KEY, "true");
+    setVisible(false);
+  };
+
+  const handleNext = () => {
+    if (step < ONBOARDING_STEPS.length - 1) setStep((s) => s + 1);
+    else dismiss();
+  };
+
+  if (!visible) return null;
+
+  const current = ONBOARDING_STEPS[step];
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        key="onboarding-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center"
+        style={{
+          background: "oklch(0.04 0.01 60/0.82)",
+          backdropFilter: "blur(4px)",
+        }}
+        onClick={dismiss}
+        data-ocid="onboarding.dialog"
+      >
+        <motion.div
+          key={`onboarding-card-${step}`}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{
+            duration: 0.3,
+            type: "spring",
+            stiffness: 260,
+            damping: 22,
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-md mx-4 rounded-3xl p-8"
+          style={{
+            background: "oklch(0.10 0.04 85/0.97)",
+            border: "1.5px solid oklch(0.82 0.18 85/0.55)",
+            boxShadow:
+              "0 0 60px oklch(0.72 0.15 85/0.35), 0 24px 64px oklch(0 0 0/0.6)",
+          }}
+        >
+          {/* Step counter */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex gap-2">
+              {ONBOARDING_STEPS.map((s, i) => (
+                <div
+                  key={s.target}
+                  className="h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: i === step ? 28 : 8,
+                    background:
+                      i <= step
+                        ? "oklch(0.88 0.18 85)"
+                        : "oklch(0.35 0.04 80/0.5)",
+                  }}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={dismiss}
+              aria-label="Skip onboarding"
+              data-ocid="onboarding.close_button"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all hover:bg-primary/10"
+              style={{
+                color: "oklch(0.55 0.04 80)",
+                border: "1px solid oklch(0.35 0.04 80/0.4)",
+              }}
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Step badge */}
+          <span
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4"
+            style={{
+              background: "oklch(0.72 0.15 85/0.15)",
+              border: "1px solid oklch(0.72 0.15 85/0.35)",
+              color: "oklch(0.88 0.18 85)",
+            }}
+          >
+            Step {step + 1} of {ONBOARDING_STEPS.length}
+          </span>
+
+          <h3 className="font-display text-2xl font-bold mb-3 text-gradient-gold">
+            {current.title}
+          </h3>
+          <p className="text-muted-foreground leading-relaxed mb-8">
+            {current.description}
+          </p>
+
+          <div className="flex gap-3 justify-end">
+            <button
+              type="button"
+              onClick={dismiss}
+              data-ocid="onboarding.cancel_button"
+              className="px-5 py-2.5 rounded-full text-sm font-semibold transition-all hover:bg-primary/10"
+              style={{
+                border: "1px solid oklch(0.45 0.05 80/0.5)",
+                color: "oklch(0.55 0.04 80)",
+              }}
+            >
+              Skip
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              data-ocid="onboarding.confirm_button"
+              className="px-6 py-2.5 rounded-full text-sm font-bold shimmer-button"
+              style={{
+                background:
+                  "linear-gradient(135deg,oklch(0.82 0.18 85),oklch(0.68 0.16 80))",
+                color: "oklch(0.06 0.01 60)",
+                boxShadow: "0 4px 20px oklch(0.72 0.15 85/0.4)",
+              }}
+            >
+              {step < ONBOARDING_STEPS.length - 1 ? "Next →" : "Get Started →"}
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 function StatCounter({
   end,
@@ -2367,6 +2941,9 @@ export default function HomePage() {
           </motion.div>
         </motion.section>
 
+        {/* ── DAILY DENTAL TIPS CAROUSEL ── */}
+        <DailyTipsCarousel />
+
         {/* ── BEFORE / AFTER ── */}
         <motion.section
           variants={sV}
@@ -2802,6 +3379,11 @@ export default function HomePage() {
           </div>
         </motion.section>
       </main>
+
+      {/* ── FLOATING BUTTONS ── */}
+      <ScrollToTopButton />
+      <SOSButton navigate={navigate} />
+      <OnboardingOverlay />
 
       {/* ── FOOTER ── */}
       <footer

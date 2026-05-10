@@ -8,9 +8,9 @@ import Runtime "mo:core/Runtime";
 import Prim "mo:prim";
 import DirectoryMixin "mixins/payments-api";
 import DirectoryTypes "types/payments";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   // ===================== AUTH TYPES ==============================
 

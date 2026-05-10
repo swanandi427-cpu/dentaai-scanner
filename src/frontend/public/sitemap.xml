@@ -2,134 +2,188 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/</loc>
-    <lastmod>2026-04-13</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/scan</loc>
-    <lastmod>2026-04-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/find-dentist</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/results</loc>
-    <lastmod>2026-04-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/history</loc>
-    <lastmod>2026-04-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/qr</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/find-dentist</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/profile</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/find-dentist-near-me</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/book</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/my-bookings</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/passport</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/issue-passport</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/passport-lookup</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/dentist-register</loc>
-    <lastmod>2026-04-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/dentist-dashboard</loc>
-    <lastmod>2026-04-09</lastmod>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/passport</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/issue-passport</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/passport-lookup</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/demo</loc>
-    <lastmod>2026-04-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/pricing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/corporate-plan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/pitch</loc>
-    <lastmod>2026-04-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/blog/can-ai-detect-cavities</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/marketing-dashboard</loc>
-    <lastmod>2026-04-09</lastmod>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/blog/oral-health-tips</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/operations-dashboard</loc>
-    <lastmod>2026-04-09</lastmod>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/blog/dental-passport-guide</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/support-dashboard</loc>
-    <lastmod>2026-04-09</lastmod>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/changelog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/sitemap</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/brush-timer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/risk-quiz</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/compare</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/tips</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/search</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/referral</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2026-05-08</lastmod>
+  </url>
+  <url>
+    <loc>https://dentaai-scanner-n0h.caffeine.xyz/qr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/privacy</loc>
-    <lastmod>2026-04-09</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.4</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
   <url>
     <loc>https://dentaai-scanner-n0h.caffeine.xyz/terms</loc>
-    <lastmod>2026-04-09</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://dentaai-scanner-n0h.caffeine.xyz/analysis</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.4</priority>
+    <lastmod>2026-05-08</lastmod>
   </url>
 </urlset>

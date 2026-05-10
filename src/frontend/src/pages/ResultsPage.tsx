@@ -14,9 +14,12 @@ import {
   LogIn,
   LogOut,
   MapPin,
+  MessageCircle,
+  Printer,
   RotateCcw,
   Save,
   Share2,
+  Twitter,
   XCircle,
 } from "lucide-react";
 import { motion, useAnimation } from "motion/react";
@@ -717,8 +720,72 @@ export default function ResultsPage() {
           </motion.div>
         )}
 
+        {/* Print header — visible only when printing */}
+        <div className="hidden print:block mb-4 border-b border-border pb-3">
+          <p className="font-display font-bold text-lg">
+            DantaNova Dental Health Report
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {new Date().toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+        </div>
+
+        {/* Social share + Print buttons */}
+        <div
+          className="flex gap-2 flex-wrap print:hidden"
+          data-ocid="results.share_row"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full border-green-600/40 text-green-400 hover:bg-green-500/10 hover:border-green-500/60 flex-1 min-w-[120px]"
+            onClick={() => {
+              const text = encodeURIComponent(
+                `My DantaNova dental health score is ${score}/100! Get your free AI scan at https://dentaai-scanner-n0h.caffeine.xyz`,
+              );
+              window.open(`https://wa.me/?text=${text}`, "_blank");
+            }}
+            data-ocid="results.whatsapp_share_button"
+          >
+            <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+            WhatsApp
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full border-sky-600/40 text-sky-400 hover:bg-sky-500/10 hover:border-sky-500/60 flex-1 min-w-[120px]"
+            onClick={() => {
+              const text = encodeURIComponent(
+                `Just scanned my teeth with AI on @DantaNova! My oral health score: ${score}/100. Get yours free: https://dentaai-scanner-n0h.caffeine.xyz`,
+              );
+              window.open(
+                `https://twitter.com/intent/tweet?text=${text}`,
+                "_blank",
+              );
+            }}
+            data-ocid="results.twitter_share_button"
+          >
+            <Twitter className="w-3.5 h-3.5 mr-1.5" />
+            Twitter / X
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full border-border/40 hover:border-primary/40 flex-1 min-w-[120px]"
+            onClick={() => window.print()}
+            data-ocid="results.print_button"
+          >
+            <Printer className="w-3.5 h-3.5 mr-1.5" />
+            Print Report
+          </Button>
+        </div>
+
         {/* Action buttons */}
-        <div className="flex gap-3 pb-4">
+        <div className="flex gap-3 pb-4 print:hidden">
           <Button
             variant="outline"
             className="flex-1 rounded-full border-border/40 hover:border-primary/40"

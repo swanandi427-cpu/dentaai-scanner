@@ -15,13 +15,27 @@ import {
   ChevronDown,
   ChevronRight,
   ClipboardList,
+  Download,
+  GitCompare,
   LogIn,
   LogOut,
   Scan,
+  TrendingUp,
   XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 function ScoreRing({ score }: { score: number }) {
   const color =
@@ -261,6 +275,52 @@ function ScanCard({
   );
 }
 
+const SAMPLE_CHART_DATA = [
+  { date: "Jan", score: 65 },
+  { date: "Feb", score: 72 },
+  { date: "Mar", score: 58 },
+  { date: "Apr", score: 81 },
+  { date: "May", score: 76 },
+  { date: "Jun", score: 85 },
+];
+
+const GOLD = "oklch(0.78 0.16 80)";
+const GOLD_DIM = "oklch(0.78 0.16 80 / 0.15)";
+
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="glass-card rounded-2xl px-3 py-2 text-xs border border-primary/30">
+      <p className="text-primary font-bold text-sm">{payload[0].value}</p>
+      <p className="text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function exportCSV(history: ScanResult[]) {
+  const header = "Date,Health Score,Severity,Cavities,At Risk";
+  const rows = history.map((s) => {
+    const date = new Date(
+      Number(s.timestamp / BigInt(1_000_000)),
+    ).toLocaleDateString();
+    const cavities = s.teeth.filter((t) => t.status === "cavity").length;
+    const risk = s.teeth.filter((t) => t.status === "risk").length;
+    return `${date},${Number(s.healthScore)},${s.severity ?? "mild"},${cavities},${risk}`;
+  });
+  const csv = [header, ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "dantanova-scan-history.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function HistoryPage() {
   const navigate = useNavigate();
   const { identity, login, clear } = useInternetIdentity();
@@ -408,47 +468,333 @@ export default function HistoryPage() {
             </Button>
           </motion.div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {/* Stats summary */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-3 gap-3 mb-2"
-            >
-              {[
+          <div className="flex flex-col gap-4">
+            {/* ─── 4-stat row ─── */}
+            {(() => {
+              const scores = history.map((h) => Number(h.healthScore));
+              const avg = Math.round(
+                scores.reduce((a, b) => a + b, 0) / scores.length,
+              );
+              const best = Math.max(...scores);
+              const lastDate = new Date(
+                Number(history[0].timestamp / BigInt(1_000_000)),
+              ).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              const stats = [
                 {
                   value: history.length,
                   label: "Total Scans",
                   color: "text-primary",
                 },
-                {
-                  value: Math.round(
-                    history.reduce((s, h) => s + Number(h.healthScore), 0) /
-                      history.length,
-                  ),
-                  label: "Avg. Score",
-                  color: "text-yellow-400",
-                },
-                {
-                  value: history.filter((h) => Number(h.healthScore) >= 70)
-                    .length,
-                  label: "Healthy Scans",
-                  color: "text-green-400",
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="glass-card rounded-3xl p-3 text-center"
+                { value: avg, label: "Avg. Score", color: "text-yellow-400" },
+                { value: best, label: "Best Score", color: "text-green-400" },
+                { value: lastDate, label: "Last Scan", color: "text-primary" },
+              ];
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="grid grid-cols-2 gap-3"
+                  data-ocid="history.stats_panel"
                 >
-                  <p
-                    className={`font-display text-2xl font-bold ${item.color}`}
-                  >
-                    {item.value}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{item.label}</p>
-                </div>
-              ))}
+                  {stats.map((item) => (
+                    <div
+                      key={item.label}
+                      className="glass-card rounded-3xl p-4 text-center card-glow-border"
+                    >
+                      <p
+                        className={`font-display text-2xl font-bold ${item.color}`}
+                      >
+                        {item.value}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {item.label}
+                      </p>
+                    </div>
+                  ))}
+                </motion.div>
+              );
+            })()}
+
+            {/* ─── Action buttons ─── */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex gap-3"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 rounded-full border-primary/30 text-primary hover:bg-primary/10"
+                onClick={() => exportCSV(history)}
+                data-ocid="history.export_button"
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                Export CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 rounded-full border-primary/30 text-primary hover:bg-primary/10"
+                onClick={() => navigate({ to: "/compare" })}
+                data-ocid="history.compare_button"
+              >
+                <GitCompare className="w-3.5 h-3.5 mr-1.5" />
+                Compare Scans
+              </Button>
             </motion.div>
+
+            {/* ─── Health Score Trend Chart ─── */}
+            {(() => {
+              const chartData =
+                history.length >= 2
+                  ? [...history].reverse().map((h, i) => ({
+                      date: new Date(
+                        Number(h.timestamp / BigInt(1_000_000)),
+                      ).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      }),
+                      score: Number(h.healthScore),
+                      index: i,
+                    }))
+                  : SAMPLE_CHART_DATA;
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="glass-card rounded-3xl p-5 card-glow-border"
+                  data-ocid="history.trend_chart"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    <h2 className="font-display font-bold text-sm text-gradient-gold">
+                      Health Score Over Time
+                    </h2>
+                    {history.length < 2 && (
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        (sample data)
+                      </span>
+                    )}
+                  </div>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <LineChart
+                      data={chartData}
+                      margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="scoreGrad"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor={GOLD}
+                            stopOpacity={0.3}
+                          />
+                          <stop offset="95%" stopColor={GOLD} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={GOLD_DIM} />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fill: "oklch(0.55 0.03 70)", fontSize: 10 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        domain={[0, 100]}
+                        tick={{ fill: "oklch(0.55 0.03 70)", fontSize: 10 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line
+                        type="monotone"
+                        dataKey="score"
+                        stroke={GOLD}
+                        strokeWidth={2.5}
+                        dot={{ fill: GOLD, r: 4, strokeWidth: 0 }}
+                        activeDot={{ r: 6, fill: GOLD }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </motion.div>
+              );
+            })()}
+
+            {/* ─── Monthly Scan Frequency ─── */}
+            {(() => {
+              const now = new Date();
+              const months: { date: string; scans: number }[] = [];
+              for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const label = d.toLocaleDateString("en-US", { month: "short" });
+                const scans = history.filter((h) => {
+                  const hd = new Date(Number(h.timestamp / BigInt(1_000_000)));
+                  return (
+                    hd.getMonth() === d.getMonth() &&
+                    hd.getFullYear() === d.getFullYear()
+                  );
+                }).length;
+                months.push({ date: label, scans });
+              }
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="glass-card rounded-3xl p-5 card-glow-border"
+                  data-ocid="history.frequency_chart"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    <h2 className="font-display font-bold text-sm text-gradient-gold">
+                      Scans per Month
+                    </h2>
+                  </div>
+                  <ResponsiveContainer width="100%" height={150}>
+                    <BarChart
+                      data={months}
+                      margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke={GOLD_DIM}
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fill: "oklch(0.55 0.03 70)", fontSize: 10 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        allowDecimals={false}
+                        tick={{ fill: "oklch(0.55 0.03 70)", fontSize: 10 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="scans" fill={GOLD} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </motion.div>
+              );
+            })()}
+
+            {/* ─── Personalized Insights ─── */}
+            {(() => {
+              const scores = history.map((h) => Number(h.healthScore));
+              const latest = history[0];
+              const latestScore = Number(latest.healthScore);
+              const prevScore = history[1]
+                ? Number(history[1].healthScore)
+                : null;
+              const trend =
+                prevScore !== null
+                  ? latestScore >= prevScore
+                    ? "↑ improving"
+                    : "↓ declining"
+                  : "first scan";
+              const daysSince = Math.floor(
+                (Date.now() - Number(latest.timestamp / BigInt(1_000_000))) /
+                  86_400_000,
+              );
+              const topCavityTooth = latest.teeth.find(
+                (t) => t.status === "cavity",
+              );
+              const topRec =
+                topCavityTooth?.recommendation ??
+                latest.teeth[0]?.recommendation ??
+                "Keep up regular brushing and flossing.";
+              const avgScore =
+                scores.reduce((a, b) => a + b, 0) / scores.length;
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="glass-card rounded-3xl p-5 card-glow-border"
+                  data-ocid="history.insights_panel"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    <h2 className="font-display font-bold text-sm text-gradient-gold">
+                      Personalized Health Insights
+                    </h2>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div
+                      className="flex items-start gap-3 p-3 rounded-2xl"
+                      style={{
+                        background: "oklch(0.78 0.16 80 / 0.06)",
+                        border: "1px solid oklch(0.78 0.16 80 / 0.2)",
+                      }}
+                    >
+                      <span className="text-lg leading-none mt-0.5">📈</span>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Your dental health trend is{" "}
+                          <span className="text-primary">{trend}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {daysSince === 0
+                            ? "Scanned today"
+                            : daysSince === 1
+                              ? "Last scanned yesterday"
+                              : daysSince > 7
+                                ? `You haven't scanned in ${daysSince} days — time for a check!`
+                                : `Last scanned ${daysSince} days ago`}{" "}
+                          · Avg score: {Math.round(avgScore)}/100
+                        </p>
+                      </div>
+                    </div>
+                    {topCavityTooth && (
+                      <div
+                        className="flex items-start gap-3 p-3 rounded-2xl"
+                        style={{
+                          background: "oklch(0.63 0.26 27 / 0.07)",
+                          border: "1px solid oklch(0.63 0.26 27 / 0.25)",
+                        }}
+                      >
+                        <span className="text-lg leading-none mt-0.5">🦷</span>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            Most affected: Tooth #
+                            {Number(topCavityTooth.toothNumber)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {topCavityTooth.condition}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <div
+                      className="flex items-start gap-3 p-3 rounded-2xl"
+                      style={{
+                        background: "oklch(0.72 0.17 150 / 0.07)",
+                        border: "1px solid oklch(0.72 0.17 150 / 0.25)",
+                      }}
+                    >
+                      <span className="text-lg leading-none mt-0.5">💡</span>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Top recommendation
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {topRec}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* Scan list */}
             {paged.map((scan, i) => (

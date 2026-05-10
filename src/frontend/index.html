@@ -6,10 +6,10 @@
     <meta name="color-scheme" content="dark" />
     <title>DantaNova — AI Dental Scanner | Free Cavity & Gum Disease Detection</title>
     <meta name="description" content="Scan your teeth instantly with AI. DantaNova detects cavities, gum disease, plaque, and 15+ dental conditions from your phone camera. Connect to emergency dentists near you. Free, private, and instant." />
-    <meta name="keywords" content="AI dental scanner, teeth scan online, cavity detection AI, gum disease detection, oral health AI, dental health app, emergency dentist near me, free dental scan, teeth analysis online, dental AI, DantaNova, dentist finder, dental passport" />
+    <meta name="keywords" content="AI dental scanner, teeth scan online, cavity detection AI, gum disease detection, oral health AI, dental health app, emergency dentist near me, free dental scan, teeth analysis online, dental AI, DantaNova, dentist finder, dental passport, dental blog, ai cavity detection, oral health tips, dental health risk quiz, dental passport guide, find emergency dentist near me, tooth brushing timer, dental health ai" />
     <meta name="author" content="Swanandi Manoj Vispute" />
     <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#0a0804" />
+    <meta name="theme-color" content="#D4AF37" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -120,9 +120,23 @@
       ]
     }
     </script>
-  </head>
+    <!-- Blog schema.org structured data -->
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Blog","url":"https://dentaai-scanner-n0h.caffeine.xyz/blog","name":"DantaNova Blog","description":"Dental health insights, AI scanning guides, and oral care tips","blogPost":[{"@type":"BlogPosting","headline":"Can AI Really Detect Cavities?","url":"https://dentaai-scanner-n0h.caffeine.xyz/blog/can-ai-detect-cavities","datePublished":"2025-05-01"},{"@type":"BlogPosting","headline":"10 Proven Tips for Healthy Teeth and Gums","url":"https://dentaai-scanner-n0h.caffeine.xyz/blog/oral-health-tips","datePublished":"2025-05-05"},{"@type":"BlogPosting","headline":"The Dental Passport: Your Complete Guide","url":"https://dentaai-scanner-n0h.caffeine.xyz/blog/dental-passport-guide","datePublished":"2025-05-08"}]}
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="/manifest.json" />
+</head>
   <body>
     <div id="root"></div>
     <script type="module" src="./src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

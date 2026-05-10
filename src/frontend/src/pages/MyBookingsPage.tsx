@@ -20,7 +20,135 @@ import {
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
+
+// ----- Rating helpers -----
+const RATINGS_KEY = "dantanova-ratings";
+
+function loadRatings(): Record<string, { stars: number; note: string }> {
+  try {
+    return JSON.parse(localStorage.getItem(RATINGS_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveRating(bookingId: string, stars: number, note: string) {
+  const all = loadRatings();
+  all[bookingId] = { stars, note };
+  localStorage.setItem(RATINGS_KEY, JSON.stringify(all));
+}
+
+interface StarRatingProps {
+  bookingId: string;
+  index: number;
+}
+
+function StarRating({ bookingId, index }: StarRatingProps) {
+  const key = bookingId.toString();
+  const saved = loadRatings()[key];
+
+  const [hovered, setHovered] = useState(0);
+  const [selected, setSelected] = useState(saved?.stars ?? 0);
+  const [note, setNote] = useState(saved?.note ?? "");
+  const [submitted, setSubmitted] = useState(!!saved);
+
+  const handleSubmit = useCallback(() => {
+    if (selected === 0) return;
+    saveRating(key, selected, note);
+    setSubmitted(true);
+    toast.success("Thank you for your feedback!");
+  }, [key, selected, note]);
+
+  if (submitted) {
+    return (
+      <div
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs"
+        style={{
+          background: "oklch(0.14 0.06 85/0.2)",
+          border: "1px solid oklch(0.72 0.15 85/0.2)",
+        }}
+        data-ocid={`my_bookings.rating_badge.${index}`}
+      >
+        <span style={{ color: "oklch(0.88 0.18 85)" }}>
+          {"★".repeat(selected)}
+          {"☆".repeat(5 - selected)}
+        </span>
+        <span className="text-muted-foreground">Rated — thank you!</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="flex flex-col gap-2 rounded-xl px-3 py-2.5"
+      style={{
+        background: "oklch(0.12 0.008 60 / 0.6)",
+        border: "1px solid oklch(0.72 0.15 85/0.2)",
+      }}
+      data-ocid={`my_bookings.rating_form.${index}`}
+    >
+      <p className="text-xs text-muted-foreground font-medium">
+        Rate your experience
+      </p>
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+            onMouseEnter={() => setHovered(star)}
+            onMouseLeave={() => setHovered(0)}
+            onClick={() => setSelected(star)}
+            className="text-xl transition-transform hover:scale-110 active:scale-95"
+            style={{
+              color:
+                star <= (hovered || selected)
+                  ? "oklch(0.88 0.18 85)"
+                  : "oklch(0.35 0.01 70)",
+              filter:
+                star <= (hovered || selected)
+                  ? "drop-shadow(0 0 4px oklch(0.88 0.18 85 / 0.6))"
+                  : "none",
+              lineHeight: 1,
+            }}
+            data-ocid={`my_bookings.star.${index}.${star}`}
+          >
+            {star <= (hovered || selected) ? "★" : "☆"}
+          </button>
+        ))}
+      </div>
+      <input
+        type="text"
+        placeholder="Optional note (e.g. Great dentist!)"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        maxLength={120}
+        className="w-full bg-transparent border border-border/30 rounded-lg px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50"
+        data-ocid={`my_bookings.rating_note.${index}`}
+      />
+      <button
+        type="button"
+        disabled={selected === 0}
+        onClick={handleSubmit}
+        className="self-start px-4 py-1.5 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          background:
+            selected > 0
+              ? "linear-gradient(135deg, oklch(0.78 0.16 80), oklch(0.68 0.18 75))"
+              : "oklch(0.20 0.01 60)",
+          color: selected > 0 ? "oklch(0.08 0.005 60)" : "oklch(0.50 0.01 60)",
+        }}
+        data-ocid={`my_bookings.rating_submit.${index}`}
+      >
+        Submit Rating
+      </button>
+    </div>
+  );
+}
+
+// ----- Page -----
 
 function getStatusStr(status: unknown): string {
   if (typeof status === "string") return status;
@@ -275,6 +403,14 @@ export default function MyBookingsPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Satisfaction rating for completed bookings */}
+                  {isCompleted && (
+                    <StarRating
+                      bookingId={bk.bookingId.toString()}
+                      index={i + 1}
+                    />
+                  )}
 
                   {/* Connection note for approved bookings */}
                   {isApproved && (
