@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, L as Link, l as ArrowLeft, m as motion, b as ArrowRight } from "./index-D1mTBV0L.js";
+import { j as jsxRuntimeExports, L as Link, l as ArrowLeft, m as motion, b as ArrowRight } from "./index-BjeGDCX_.js";
 const ARTICLE_URL = "https://dentaai-scanner-n0h.caffeine.xyz/blog/can-ai-detect-cavities";
 const ARTICLE_TITLE = "Can AI Really Detect Cavities? What the Research Says";
 function ShareButtons() {

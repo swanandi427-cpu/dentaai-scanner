@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-JarbT4BY.js","assets/smile-DhKAJgXN.js","assets/SitemapPage-CGrRxhzc.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-DizcNB0x.js","assets/smile-Ue6Wa3-b.js","assets/SitemapPage-B_kUR4R2.js"])))=>i.map(i=>d[i]);
 var __defProp = Object.defineProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
@@ -27617,7 +27617,7 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1t = [
+const __iconNode$1w = [
   [
     "path",
     {
@@ -27626,7 +27626,46 @@ const __iconNode$1t = [
     }
   ]
 ];
-const Activity = createLucideIcon("activity", __iconNode$1t);
+const Activity = createLucideIcon("activity", __iconNode$1w);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1v = [
+  ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
+  ["path", { d: "M19 12H5", key: "x3x0zl" }]
+];
+const ArrowLeft = createLucideIcon("arrow-left", __iconNode$1v);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1u = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "m12 5 7 7-7 7", key: "xquz4c" }]
+];
+const ArrowRight = createLucideIcon("arrow-right", __iconNode$1u);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1t = [
+  [
+    "path",
+    {
+      d: "m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526",
+      key: "1yiouv"
+    }
+  ],
+  ["circle", { cx: "12", cy: "8", r: "6", key: "1vp47v" }]
+];
+const Award = createLucideIcon("award", __iconNode$1t);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27634,10 +27673,16 @@ const Activity = createLucideIcon("activity", __iconNode$1t);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$1s = [
-  ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
-  ["path", { d: "M19 12H5", key: "x3x0zl" }]
+  [
+    "path",
+    {
+      d: "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z",
+      key: "3c2336"
+    }
+  ],
+  ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
 ];
-const ArrowLeft = createLucideIcon("arrow-left", __iconNode$1s);
+const BadgeCheck = createLucideIcon("badge-check", __iconNode$1s);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27645,17 +27690,6 @@ const ArrowLeft = createLucideIcon("arrow-left", __iconNode$1s);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$1r = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "m12 5 7 7-7 7", key: "xquz4c" }]
-];
-const ArrowRight = createLucideIcon("arrow-right", __iconNode$1r);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$1q = [
   ["path", { d: "M12 7v14", key: "1akyts" }],
   [
     "path",
@@ -27665,14 +27699,14 @@ const __iconNode$1q = [
     }
   ]
 ];
-const BookOpen = createLucideIcon("book-open", __iconNode$1q);
+const BookOpen = createLucideIcon("book-open", __iconNode$1r);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1p = [
+const __iconNode$1q = [
   [
     "path",
     {
@@ -27695,7 +27729,18 @@ const __iconNode$1p = [
   ["path", { d: "M6 18a4 4 0 0 1-1.967-.516", key: "2e4loj" }],
   ["path", { d: "M19.967 17.484A4 4 0 0 1 18 18", key: "159ez6" }]
 ];
-const Brain = createLucideIcon("brain", __iconNode$1p);
+const Brain = createLucideIcon("brain", __iconNode$1q);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1p = [
+  ["path", { d: "M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16", key: "jecpp" }],
+  ["rect", { width: "20", height: "14", x: "2", y: "6", rx: "2", key: "i6l2r4" }]
+];
+const Briefcase = createLucideIcon("briefcase", __iconNode$1p);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27703,17 +27748,6 @@ const Brain = createLucideIcon("brain", __iconNode$1p);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$1o = [
-  ["path", { d: "M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16", key: "jecpp" }],
-  ["rect", { width: "20", height: "14", x: "2", y: "6", rx: "2", key: "i6l2r4" }]
-];
-const Briefcase = createLucideIcon("briefcase", __iconNode$1o);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$1n = [
   ["path", { d: "m8 2 1.88 1.88", key: "fmnt4t" }],
   ["path", { d: "M14.12 3.88 16 2", key: "qol33r" }],
   ["path", { d: "M9 7.13v-1a3.003 3.003 0 1 1 6 0v1", key: "d7y7pr" }],
@@ -27732,14 +27766,14 @@ const __iconNode$1n = [
   ["path", { d: "M22 13h-4", key: "1jl80f" }],
   ["path", { d: "M17.2 17c2.1.1 3.8 1.9 3.8 4", key: "k3fwyw" }]
 ];
-const Bug = createLucideIcon("bug", __iconNode$1n);
+const Bug = createLucideIcon("bug", __iconNode$1o);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1m = [
+const __iconNode$1n = [
   ["path", { d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z", key: "1b4qmf" }],
   ["path", { d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2", key: "i71pzd" }],
   ["path", { d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2", key: "10jefs" }],
@@ -27748,7 +27782,21 @@ const __iconNode$1m = [
   ["path", { d: "M10 14h4", key: "kelpxr" }],
   ["path", { d: "M10 18h4", key: "1ulq68" }]
 ];
-const Building2 = createLucideIcon("building-2", __iconNode$1m);
+const Building2 = createLucideIcon("building-2", __iconNode$1n);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1m = [
+  ["path", { d: "M8 2v4", key: "1cmpym" }],
+  ["path", { d: "M16 2v4", key: "4m81vk" }],
+  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
+  ["path", { d: "M3 10h18", key: "8toen8" }],
+  ["path", { d: "m9 16 2 2 4-4", key: "19s6y9" }]
+];
+const CalendarCheck = createLucideIcon("calendar-check", __iconNode$1m);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27760,20 +27808,6 @@ const __iconNode$1l = [
   ["path", { d: "M16 2v4", key: "4m81vk" }],
   ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
   ["path", { d: "M3 10h18", key: "8toen8" }],
-  ["path", { d: "m9 16 2 2 4-4", key: "19s6y9" }]
-];
-const CalendarCheck = createLucideIcon("calendar-check", __iconNode$1l);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$1k = [
-  ["path", { d: "M8 2v4", key: "1cmpym" }],
-  ["path", { d: "M16 2v4", key: "4m81vk" }],
-  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
-  ["path", { d: "M3 10h18", key: "8toen8" }],
   ["path", { d: "M8 14h.01", key: "6423bh" }],
   ["path", { d: "M12 14h.01", key: "1etili" }],
   ["path", { d: "M16 14h.01", key: "1gbofw" }],
@@ -27781,14 +27815,14 @@ const __iconNode$1k = [
   ["path", { d: "M12 18h.01", key: "mhygvu" }],
   ["path", { d: "M16 18h.01", key: "kzsmim" }]
 ];
-const CalendarDays = createLucideIcon("calendar-days", __iconNode$1k);
+const CalendarDays = createLucideIcon("calendar-days", __iconNode$1l);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1j = [
+const __iconNode$1k = [
   ["path", { d: "M16 19h6", key: "xwg31i" }],
   ["path", { d: "M16 2v4", key: "4m81vk" }],
   ["path", { d: "M19 16v6", key: "tddt3s" }],
@@ -27796,7 +27830,20 @@ const __iconNode$1j = [
   ["path", { d: "M3 10h18", key: "8toen8" }],
   ["path", { d: "M8 2v4", key: "1cmpym" }]
 ];
-const CalendarPlus = createLucideIcon("calendar-plus", __iconNode$1j);
+const CalendarPlus = createLucideIcon("calendar-plus", __iconNode$1k);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1j = [
+  ["path", { d: "M8 2v4", key: "1cmpym" }],
+  ["path", { d: "M16 2v4", key: "4m81vk" }],
+  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
+  ["path", { d: "M3 10h18", key: "8toen8" }]
+];
+const Calendar = createLucideIcon("calendar", __iconNode$1j);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27804,19 +27851,6 @@ const CalendarPlus = createLucideIcon("calendar-plus", __iconNode$1j);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$1i = [
-  ["path", { d: "M8 2v4", key: "1cmpym" }],
-  ["path", { d: "M16 2v4", key: "4m81vk" }],
-  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
-  ["path", { d: "M3 10h18", key: "8toen8" }]
-];
-const Calendar = createLucideIcon("calendar", __iconNode$1i);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$1h = [
   [
     "path",
     {
@@ -27826,7 +27860,20 @@ const __iconNode$1h = [
   ],
   ["circle", { cx: "12", cy: "13", r: "3", key: "1vg3eu" }]
 ];
-const Camera$1 = createLucideIcon("camera", __iconNode$1h);
+const Camera$1 = createLucideIcon("camera", __iconNode$1i);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1h = [
+  ["path", { d: "M3 3v16a2 2 0 0 0 2 2h16", key: "c24i48" }],
+  ["path", { d: "M18 17V9", key: "2bz60n" }],
+  ["path", { d: "M13 17V5", key: "1frdt8" }],
+  ["path", { d: "M8 17v-3", key: "17ska0" }]
+];
+const ChartColumn = createLucideIcon("chart-column", __iconNode$1h);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27834,64 +27881,63 @@ const Camera$1 = createLucideIcon("camera", __iconNode$1h);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$1g = [
-  ["path", { d: "M3 3v16a2 2 0 0 0 2 2h16", key: "c24i48" }],
-  ["path", { d: "M18 17V9", key: "2bz60n" }],
-  ["path", { d: "M13 17V5", key: "1frdt8" }],
-  ["path", { d: "M8 17v-3", key: "17ska0" }]
-];
-const ChartColumn = createLucideIcon("chart-column", __iconNode$1g);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$1f = [
   ["line", { x1: "18", x2: "18", y1: "20", y2: "10", key: "1xfpm4" }],
   ["line", { x1: "12", x2: "12", y1: "20", y2: "4", key: "be30l9" }],
   ["line", { x1: "6", x2: "6", y1: "20", y2: "14", key: "1r4le6" }]
 ];
-const ChartNoAxesColumn = createLucideIcon("chart-no-axes-column", __iconNode$1f);
+const ChartNoAxesColumn = createLucideIcon("chart-no-axes-column", __iconNode$1g);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1e = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$1e);
+const __iconNode$1f = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$1f);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1d = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$1d);
+const __iconNode$1e = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$1e);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1c = [["path", { d: "m15 18-6-6 6-6", key: "1wnfg3" }]];
-const ChevronLeft = createLucideIcon("chevron-left", __iconNode$1c);
+const __iconNode$1d = [["path", { d: "m15 18-6-6 6-6", key: "1wnfg3" }]];
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$1d);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1b = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$1b);
+const __iconNode$1c = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$1c);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$1a = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$1a);
+const __iconNode$1b = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$1b);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1a = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
+  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
+];
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$1a);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27899,11 +27945,10 @@ const ChevronUp = createLucideIcon("chevron-up", __iconNode$1a);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$19 = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
-  ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
+  ["path", { d: "M21.801 10A10 10 0 1 1 17 3.335", key: "yps3ct" }],
+  ["path", { d: "m9 11 3 3L22 4", key: "1pflzl" }]
 ];
-const CircleAlert = createLucideIcon("circle-alert", __iconNode$19);
+const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$19);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27911,10 +27956,10 @@ const CircleAlert = createLucideIcon("circle-alert", __iconNode$19);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$18 = [
-  ["path", { d: "M21.801 10A10 10 0 1 1 17 3.335", key: "yps3ct" }],
-  ["path", { d: "m9 11 3 3L22 4", key: "1pflzl" }]
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
 ];
-const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$18);
+const CircleCheck = createLucideIcon("circle-check", __iconNode$18);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27923,9 +27968,10 @@ const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$18);
  */
 const __iconNode$17 = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
+  ["path", { d: "m15 9-6 6", key: "1uzhvr" }],
+  ["path", { d: "m9 9 6 6", key: "z0biqf" }]
 ];
-const CircleCheck = createLucideIcon("circle-check", __iconNode$17);
+const CircleX = createLucideIcon("circle-x", __iconNode$17);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -27933,11 +27979,13 @@ const CircleCheck = createLucideIcon("circle-check", __iconNode$17);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$16 = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "m15 9-6 6", key: "1uzhvr" }],
-  ["path", { d: "m9 9 6 6", key: "z0biqf" }]
+  ["rect", { width: "8", height: "4", x: "8", y: "2", rx: "1", ry: "1", key: "tgr4d6" }],
+  ["path", { d: "M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2", key: "4jdomd" }],
+  ["path", { d: "M16 4h2a2 2 0 0 1 2 2v4", key: "3hqy98" }],
+  ["path", { d: "M21 14H11", key: "1bme5i" }],
+  ["path", { d: "m15 10-4 4 4 4", key: "5dvupr" }]
 ];
-const CircleX = createLucideIcon("circle-x", __iconNode$16);
+const ClipboardCopy = createLucideIcon("clipboard-copy", __iconNode$16);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -32041,7 +32089,7 @@ function resolveElements(elementOrSelector, scope, selectorCache) {
     return [elementOrSelector];
   } else if (typeof elementOrSelector === "string") {
     let root2 = document;
-    const elements = (selectorCache == null ? void 0 : selectorCache[elementOrSelector]) ?? root2.querySelectorAll(elementOrSelector);
+    const elements = root2.querySelectorAll(elementOrSelector);
     return elements ? Array.from(elements) : [];
   }
   return Array.from(elementOrSelector).filter((element) => element != null);
@@ -37066,6 +37114,57 @@ function useAnimationControls() {
   return controls;
 }
 const useAnimation = useAnimationControls;
+const thresholds = {
+  some: 0,
+  all: 1
+};
+function inView(elementOrSelector, onStart, { root: root2, margin: rootMargin, amount = "some" } = {}) {
+  const elements = resolveElements(elementOrSelector);
+  const activeIntersections = /* @__PURE__ */ new WeakMap();
+  const onIntersectionChange = (entries) => {
+    entries.forEach((entry) => {
+      const onEnd = activeIntersections.get(entry.target);
+      if (entry.isIntersecting === Boolean(onEnd))
+        return;
+      if (entry.isIntersecting) {
+        const newOnEnd = onStart(entry.target, entry);
+        if (typeof newOnEnd === "function") {
+          activeIntersections.set(entry.target, newOnEnd);
+        } else {
+          observer2.unobserve(entry.target);
+        }
+      } else if (typeof onEnd === "function") {
+        onEnd(entry);
+        activeIntersections.delete(entry.target);
+      }
+    });
+  };
+  const observer2 = new IntersectionObserver(onIntersectionChange, {
+    root: root2,
+    rootMargin,
+    threshold: typeof amount === "number" ? amount : thresholds[amount]
+  });
+  elements.forEach((element) => observer2.observe(element));
+  return () => observer2.disconnect();
+}
+function useInView(ref, { root: root2, margin, amount, once: once2 = false, initial = false } = {}) {
+  const [isInView, setInView] = reactExports.useState(initial);
+  reactExports.useEffect(() => {
+    if (!ref.current || once2 && isInView)
+      return;
+    const onEnter = () => {
+      setInView(true);
+      return once2 ? void 0 : () => setInView(false);
+    };
+    const options = {
+      root: root2 && root2.current || void 0,
+      margin,
+      amount
+    };
+    return inView(ref.current, onEnter, options);
+  }, [root2, ref, margin, once2, amount]);
+  return isInView;
+}
 const STORAGE_KEY$2 = "dantanova_cookie_dismissed";
 function CookieNotice() {
   const [visible, setVisible] = reactExports.useState(false);
@@ -55252,7 +55351,7 @@ function SelectScrollDownButton({
     }
   );
 }
-const BENEFITS = [
+const BENEFITS$1 = [
   {
     icon: Globe,
     title: "Emergency Coverage Anywhere",
@@ -55637,7 +55736,7 @@ function CorporatePlanPage() {
               {
                 className: "grid grid-cols-1 md:grid-cols-2 gap-6",
                 "data-ocid": "corporate.benefits.list",
-                children: BENEFITS.map((benefit, i2) => {
+                children: BENEFITS$1.map((benefit, i2) => {
                   const Icon2 = benefit.icon;
                   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     motion.div,
@@ -59051,7 +59150,7 @@ const SPECIALTIES = [
   "Prosthodontics",
   "Emergency Dentistry"
 ];
-const STEPS$1 = [
+const STEPS$2 = [
   { label: "Personal Info", icon: "👤" },
   { label: "Professional Details", icon: "🏥" },
   { label: "Location & Hours", icon: "📍" }
@@ -59184,7 +59283,7 @@ function DentistRegisterPage() {
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("main", { className: "flex-1 px-4 py-8 max-w-lg mx-auto w-full", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-center gap-3 mb-8", children: STEPS$1.map((s2, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-center gap-3 mb-8", children: STEPS$2.map((s2, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
           {
@@ -59195,7 +59294,7 @@ function DentistRegisterPage() {
             ]
           }
         ),
-        i2 < STEPS$1.length - 1 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+        i2 < STEPS$2.length - 1 && /* @__PURE__ */ jsxRuntimeExports.jsx(
           "div",
           {
             className: `w-6 h-0.5 ${i2 < step ? "bg-primary/50" : "bg-border"}`
@@ -67559,21 +67658,21 @@ function radial() {
   return linearish(scale2);
 }
 function quantile() {
-  var domain = [], range3 = [], thresholds = [], unknown;
+  var domain = [], range3 = [], thresholds2 = [], unknown;
   function rescale() {
     var i2 = 0, n2 = Math.max(1, range3.length);
-    thresholds = new Array(n2 - 1);
-    while (++i2 < n2) thresholds[i2 - 1] = quantileSorted(domain, i2 / n2);
+    thresholds2 = new Array(n2 - 1);
+    while (++i2 < n2) thresholds2[i2 - 1] = quantileSorted(domain, i2 / n2);
     return scale2;
   }
   function scale2(x3) {
-    return x3 == null || isNaN(x3 = +x3) ? unknown : range3[bisectRight(thresholds, x3)];
+    return x3 == null || isNaN(x3 = +x3) ? unknown : range3[bisectRight(thresholds2, x3)];
   }
   scale2.invertExtent = function(y2) {
     var i2 = range3.indexOf(y2);
     return i2 < 0 ? [NaN, NaN] : [
-      i2 > 0 ? thresholds[i2 - 1] : domain[0],
-      i2 < thresholds.length ? thresholds[i2] : domain[domain.length - 1]
+      i2 > 0 ? thresholds2[i2 - 1] : domain[0],
+      i2 < thresholds2.length ? thresholds2[i2] : domain[domain.length - 1]
     ];
   };
   scale2.domain = function(_2) {
@@ -67590,7 +67689,7 @@ function quantile() {
     return arguments.length ? (unknown = _2, scale2) : unknown;
   };
   scale2.quantiles = function() {
-    return thresholds.slice();
+    return thresholds2.slice();
   };
   scale2.copy = function() {
     return quantile().domain(domain).range(range3).unknown(unknown);
@@ -82905,7 +83004,7 @@ const IMPACT_STATS = [
     duration: 1500
   }
 ];
-const STATS = [
+const STATS$1 = [
   { value: "5,000+", label: "Scans Analyzed" },
   { value: "94%", label: "Accuracy Rate" },
   { value: "15+", label: "Conditions Detected" },
@@ -82937,7 +83036,7 @@ const HOW_IT_WORKS = [
     desc: "Find and book an emergency dentist near you — if issues are found, act fast."
   }
 ];
-const TESTIMONIALS = [
+const TESTIMONIALS$1 = [
   {
     quote: "Caught a cavity early before it became expensive. DantaNova saved me from a root canal!",
     name: "Priya M.",
@@ -83106,7 +83205,7 @@ function saveTestimonial(t2) {
   existing.unshift(t2);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
 }
-function useReveal() {
+function useReveal$1() {
   const ref = reactExports.useRef(null);
   const [visible, setVisible] = reactExports.useState(false);
   reactExports.useEffect(() => {
@@ -83693,7 +83792,7 @@ function StatCounter({
   );
 }
 function ImpactCounterSection() {
-  const { ref, visible } = useReveal();
+  const { ref, visible } = useReveal$1();
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     motion.section,
     {
@@ -84320,10 +84419,10 @@ function HomePage() {
       setIsSubmitting(false);
     }
   };
-  const passportReveal = useReveal();
-  const howReveal = useReveal();
-  const testReveal = useReveal();
-  const aboutReveal = useReveal();
+  const passportReveal = useReveal$1();
+  const howReveal = useReveal$1();
+  const testReveal = useReveal$1();
+  const aboutReveal = useReveal$1();
   const goldBtn = {
     background: "linear-gradient(135deg,oklch(0.82 0.18 85),oklch(0.68 0.16 80))",
     color: "oklch(0.06 0.01 60)",
@@ -84366,6 +84465,7 @@ function HomePage() {
                   { label: "Home", to: "/" },
                   { label: "Scan", to: "/scan" },
                   { label: "Find Dentist", to: "/find-dentist" },
+                  { label: "Join as Dentist", to: "/join-dentist" },
                   { label: "Dental Passport", to: "/passport" },
                   { label: "Demo", to: "/demo" },
                   { label: "Pitch", to: "/pitch" }
@@ -84459,6 +84559,7 @@ function HomePage() {
                         { label: "Home", to: "/" },
                         { label: "Scan", to: "/scan" },
                         { label: "Find Dentist", to: "/find-dentist" },
+                        { label: "Join as Dentist", to: "/join-dentist" },
                         { label: "Dental Passport", to: "/passport" },
                         { label: "Demo", to: "/demo" },
                         { label: "Pitch", to: "/pitch" },
@@ -84922,7 +85023,7 @@ function HomePage() {
             whileInView: "visible",
             viewport: { once: true, amount: 0.3 },
             className: "w-full max-w-5xl mx-auto px-6 py-16",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-4", children: STATS.map((stat, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-4", children: STATS$1.map((stat, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
               motion.div,
               {
                 initial: { opacity: 0, y: 30 },
@@ -85425,7 +85526,7 @@ function HomePage() {
                     children: "⭐ Featured Reviews"
                   }
                 ),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-10", children: TESTIMONIALS.slice(0, 3).map((t2, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-10", children: TESTIMONIALS$1.slice(0, 3).map((t2, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
                   motion.div,
                   {
                     initial: { opacity: 0, y: 30 },
@@ -85518,7 +85619,7 @@ function HomePage() {
                   )
                 ] }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: [
-                  TESTIMONIALS.slice(3).map((t2, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  TESTIMONIALS$1.slice(3).map((t2, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     motion.div,
                     {
                       initial: { opacity: 0, y: 30 },
@@ -85585,7 +85686,7 @@ function HomePage() {
                         background: "oklch(0.11 0.04 85/0.85)",
                         border: "1px solid oklch(0.75 0.18 85/0.45)"
                       },
-                      "data-ocid": `testimonials.item.${TESTIMONIALS.length + idx + 1}`,
+                      "data-ocid": `testimonials.item.${TESTIMONIALS$1.length + idx + 1}`,
                       children: [
                         /* @__PURE__ */ jsxRuntimeExports.jsx(
                           "div",
@@ -86351,6 +86452,7 @@ function HomePage() {
                     { label: "Home", to: "/" },
                     { label: "Start Scan", to: "/scan" },
                     { label: "Find Dentist", to: "/find-dentist" },
+                    { label: "Join as Dentist", to: "/join-dentist" },
                     { label: "Dental Passport", to: "/passport" },
                     { label: "Pitch", to: "/pitch" },
                     { label: "Watch Demo", to: "/demo" }
@@ -86810,6 +86912,1087 @@ function IssuePassportPage() {
       ) })
     ] })
   ] });
+}
+const OUTREACH_MSG = "Hi Dr. [Name], I am Swanandi, founder of DantaNova — an AI-powered dental health platform connecting patients with trusted dentists in Mumbai and Pune. We would love to feature your clinic for free. Patients can find you, book appointments, and connect directly — no commission, no fees. Check it out: https://dentaai-scanner-n0h.caffeine.xyz/join-dentist — interested in joining?";
+const BENEFITS = [
+  {
+    icon: Sparkles,
+    title: "Free Listing",
+    desc: "Get your clinic listed and discovered by patients at absolutely zero cost — forever."
+  },
+  {
+    icon: BadgeCheck,
+    title: "No Commission Ever",
+    desc: "Every patient connection is 100% yours. We never take a cut from your consultations."
+  },
+  {
+    icon: Users,
+    title: "Direct Patient Connections",
+    desc: "Patients reach out to you directly. No middleman, no gatekeeper between you and your next patient."
+  },
+  {
+    icon: Zap,
+    title: "Emergency Referrals",
+    desc: "Get matched with urgent patients who need immediate dental care in your locality."
+  },
+  {
+    icon: MessageCircle,
+    title: "Dental Passport Network",
+    desc: "Access verified patient records via the Dental Passport — treat travelers with full context."
+  },
+  {
+    icon: Award,
+    title: "Verified Dentist Badge",
+    desc: "Earn a gold verified badge on your profile after license confirmation — instant trust signal."
+  }
+];
+const STEPS$1 = [
+  {
+    n: "01",
+    title: "Register Your Clinic",
+    desc: "Fill in your clinic details, specialization, and contact info. Takes less than 2 minutes."
+  },
+  {
+    n: "02",
+    title: "Get Discovered by Patients",
+    desc: "Your profile is immediately searchable. Patients in your area find you via AI-powered matching."
+  },
+  {
+    n: "03",
+    title: "Connect and Grow",
+    desc: "Patients book appointments directly with you. Grow your practice — completely free."
+  }
+];
+const TESTIMONIALS = [
+  {
+    name: "Dr. Priya Sharma",
+    clinic: "Smile Craft Dental, Mumbai",
+    text: "I got 3 new patients in my first week on DantaNova. Completely free and incredibly easy to set up. The emergency referrals alone were worth it.",
+    stars: 5
+  },
+  {
+    name: "Dr. Rakesh Joshi",
+    clinic: "Joshi Dental Care, Pune",
+    text: "What impressed me most is the zero commission model. Every patient who books through DantaNova pays me directly. No fees, no surprises. Highly recommend.",
+    stars: 5
+  },
+  {
+    name: "Dr. Sneha Patil",
+    clinic: "PearlDent Clinic, Andheri West",
+    text: "The Dental Passport feature is a game-changer for treating out-of-town patients. I have their complete dental history before they even sit in the chair.",
+    stars: 5
+  }
+];
+const STATS = [
+  { label: "Dentists Joined", value: "100+" },
+  { label: "Commission Charged", value: "Zero" },
+  { label: "Cost to Join", value: "Free Forever" },
+  { label: "Trust Signal", value: "Verified Badges" }
+];
+const SPECIALIZATIONS = [
+  "General Dentistry",
+  "Orthodontics",
+  "Oral Surgery",
+  "Pediatric Dentistry",
+  "Cosmetic Dentistry",
+  "Endodontics",
+  "Periodontics",
+  "Other"
+];
+function HudBrackets({ size: size2 = 20 }) {
+  const s2 = size2;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "span",
+      {
+        "aria-hidden": true,
+        className: "absolute top-0 left-0 pointer-events-none",
+        style: {
+          width: s2,
+          height: s2,
+          borderTop: "2px solid oklch(0.88 0.18 85/0.7)",
+          borderLeft: "2px solid oklch(0.88 0.18 85/0.7)"
+        }
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "span",
+      {
+        "aria-hidden": true,
+        className: "absolute top-0 right-0 pointer-events-none",
+        style: {
+          width: s2,
+          height: s2,
+          borderTop: "2px solid oklch(0.88 0.18 85/0.7)",
+          borderRight: "2px solid oklch(0.88 0.18 85/0.7)"
+        }
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "span",
+      {
+        "aria-hidden": true,
+        className: "absolute bottom-0 left-0 pointer-events-none",
+        style: {
+          width: s2,
+          height: s2,
+          borderBottom: "2px solid oklch(0.88 0.18 85/0.7)",
+          borderLeft: "2px solid oklch(0.88 0.18 85/0.7)"
+        }
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "span",
+      {
+        "aria-hidden": true,
+        className: "absolute bottom-0 right-0 pointer-events-none",
+        style: {
+          width: s2,
+          height: s2,
+          borderBottom: "2px solid oklch(0.88 0.18 85/0.7)",
+          borderRight: "2px solid oklch(0.88 0.18 85/0.7)"
+        }
+      }
+    )
+  ] });
+}
+function useReveal(threshold2 = 0.15) {
+  const ref = reactExports.useRef(null);
+  const visible = useInView(ref, { once: true, amount: threshold2 });
+  return { ref, visible };
+}
+function JoinDentistPage() {
+  const formRef = reactExports.useRef(null);
+  const [copied, setCopied] = reactExports.useState(false);
+  const [submitted, setSubmitted] = reactExports.useState(false);
+  const [form, setForm] = reactExports.useState({
+    fullName: "",
+    clinicName: "",
+    specialization: "",
+    city: "",
+    area: "",
+    phone: "",
+    email: ""
+  });
+  const benefitsReveal = useReveal();
+  const stepsReveal = useReveal();
+  const statsReveal = useReveal();
+  const outreachReveal = useReveal();
+  const testimonialsReveal = useReveal();
+  const ctaReveal = useReveal();
+  function scrollToForm() {
+    var _a3;
+    (_a3 = formRef.current) == null ? void 0 : _a3.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function handleCopy() {
+    navigator.clipboard.writeText(OUTREACH_MSG).then(() => {
+      setCopied(true);
+      ue.success("Message copied to clipboard!");
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
+  function handleChange(field, value) {
+    setForm((f2) => ({ ...f2, [field]: value }));
+  }
+  function handleSubmit(e3) {
+    e3.preventDefault();
+    if (!form.fullName || !form.clinicName || !form.specialization || !form.city || !form.area || !form.phone || !form.email) {
+      ue.error("Please fill in all fields.");
+      return;
+    }
+    setSubmitted(true);
+    ue.success("Thank you! We will contact you shortly.", {
+      description: `Welcome to DantaNova, Dr. ${form.fullName.split(" ")[0]}!`,
+      duration: 6e3
+    });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: "min-h-screen flex flex-col",
+      style: {
+        background: "linear-gradient(160deg, oklch(0.07 0.015 60) 0%, oklch(0.10 0.015 70) 50%, oklch(0.07 0.012 55) 100%)",
+        color: "oklch(0.96 0.01 80)"
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-6 pt-5", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Link,
+          {
+            to: "/",
+            className: "inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary",
+            style: { color: "oklch(0.68 0.10 85)" },
+            "data-ocid": "join.back_link",
+            children: "← Back to DantaNova"
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "relative flex flex-col items-center justify-center text-center px-4 pt-16 pb-20 overflow-hidden", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            motion.div,
+            {
+              className: "absolute left-0 right-0 h-px pointer-events-none",
+              style: {
+                background: "linear-gradient(90deg, transparent 0%, oklch(0.88 0.18 85/0.8) 50%, transparent 100%)"
+              },
+              animate: { top: ["10%", "90%", "10%"] },
+              transition: {
+                duration: 5,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear"
+              }
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              "aria-hidden": true,
+              className: "absolute top-12 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none",
+              style: { background: "oklch(0.88 0.18 85/0.07)" }
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              "aria-hidden": true,
+              className: "absolute bottom-8 right-1/4 w-56 h-56 rounded-full blur-3xl pointer-events-none",
+              style: { background: "oklch(0.75 0.19 75/0.06)" }
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            motion.div,
+            {
+              initial: { opacity: 0, y: 30 },
+              animate: { opacity: 1, y: 0 },
+              transition: { duration: 0.7 },
+              className: "relative z-10 max-w-3xl",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  Badge,
+                  {
+                    className: "mb-4 px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full border",
+                    style: {
+                      background: "oklch(0.88 0.18 85/0.12)",
+                      borderColor: "oklch(0.88 0.18 85/0.4)",
+                      color: "oklch(0.92 0.18 88)"
+                    },
+                    children: "For Dentists in Mumbai & Pune"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "h1",
+                  {
+                    className: "font-display font-black text-4xl sm:text-5xl md:text-6xl leading-tight mb-5",
+                    style: {
+                      background: "linear-gradient(135deg, oklch(0.96 0.18 90) 0%, oklch(0.88 0.18 85) 50%, oklch(0.75 0.19 75) 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text"
+                    },
+                    children: [
+                      "Grow Your Dental Practice.",
+                      " ",
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { WebkitTextFillColor: "oklch(0.88 0.18 85)" }, children: "For Free." })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "p",
+                  {
+                    className: "text-lg sm:text-xl mb-3 max-w-2xl mx-auto leading-relaxed",
+                    style: { color: "oklch(0.78 0.04 75)" },
+                    children: "DantaNova connects dentists directly with patients — no commission, no fees, no middleman cut. Join hundreds of dentists already growing their practice for free."
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm mb-8", style: { color: "oklch(0.62 0.06 80)" }, children: "✓ Free listing  ·  ✓ Zero commission  ·  ✓ Verified badge  ·  ✓ Emergency referrals" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col sm:flex-row gap-3 justify-center", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    motion.button,
+                    {
+                      type: "button",
+                      whileHover: { scale: 1.04 },
+                      whileTap: { scale: 0.97 },
+                      onClick: scrollToForm,
+                      className: "inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-bold text-base shadow-lg",
+                      style: {
+                        background: "linear-gradient(135deg, oklch(0.88 0.18 85), oklch(0.75 0.19 75))",
+                        color: "oklch(0.08 0.005 60)",
+                        boxShadow: "0 0 28px oklch(0.88 0.18 85/0.35)"
+                      },
+                      "data-ocid": "join.hero_cta_button",
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-4 h-4" }),
+                        "Join DantaNova Free",
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "w-4 h-4" })
+                      ]
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Button,
+                    {
+                      variant: "outline",
+                      size: "lg",
+                      onClick: () => window.open(
+                        "https://dentaai-scanner-n0h.caffeine.xyz",
+                        "_blank"
+                      ),
+                      className: "rounded-full px-8",
+                      style: {
+                        borderColor: "oklch(0.88 0.18 85/0.4)",
+                        color: "oklch(0.88 0.18 85)"
+                      },
+                      "data-ocid": "join.preview_button",
+                      children: "Preview Platform"
+                    }
+                  )
+                ] })
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "px-4 pb-16", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          motion.div,
+          {
+            ref: statsReveal.ref,
+            initial: { opacity: 0, y: 24 },
+            animate: statsReveal.visible ? { opacity: 1, y: 0 } : {},
+            transition: { duration: 0.5 },
+            className: "max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4",
+            children: STATS.map((s2, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              motion.div,
+              {
+                initial: { opacity: 0, scale: 0.9 },
+                animate: statsReveal.visible ? { opacity: 1, scale: 1 } : {},
+                transition: { delay: i2 * 0.08, duration: 0.4 },
+                className: "relative rounded-2xl p-5 text-center overflow-hidden",
+                style: {
+                  background: "oklch(0.12 0.015 65/0.8)",
+                  border: "1px solid oklch(0.88 0.18 85/0.18)",
+                  backdropFilter: "blur(16px)"
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, { size: 12 }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      className: "font-display font-black text-2xl mb-1",
+                      style: { color: "oklch(0.92 0.18 88)" },
+                      children: s2.value
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-muted-foreground uppercase tracking-wide", children: s2.label })
+                ]
+              },
+              s2.label
+            ))
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "section",
+          {
+            className: "px-4 py-16",
+            style: { background: "oklch(0.09 0.012 62/0.6)" },
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              motion.div,
+              {
+                ref: benefitsReveal.ref,
+                initial: { opacity: 0, y: 20 },
+                animate: benefitsReveal.visible ? { opacity: 1, y: 0 } : {},
+                transition: { duration: 0.5 },
+                className: "max-w-5xl mx-auto",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-12", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "h2",
+                      {
+                        className: "font-display font-black text-3xl md:text-4xl mb-3",
+                        style: {
+                          background: "linear-gradient(135deg, oklch(0.92 0.18 88), oklch(0.80 0.16 82))",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text"
+                        },
+                        children: "Why Dentists Choose DantaNova"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground max-w-xl mx-auto", children: "Everything you need to grow your practice — built for Indian dentists, by design." })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5", children: BENEFITS.map((b2, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    motion.div,
+                    {
+                      initial: { opacity: 0, y: 30 },
+                      animate: benefitsReveal.visible ? { opacity: 1, y: 0 } : {},
+                      transition: { delay: i2 * 0.09, duration: 0.45 },
+                      whileHover: { y: -4, scale: 1.02 },
+                      className: "relative rounded-2xl p-6 overflow-hidden",
+                      style: {
+                        background: "oklch(0.11 0.014 62/0.9)",
+                        border: "1px solid oklch(0.88 0.18 85/0.15)",
+                        backdropFilter: "blur(12px)"
+                      },
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, { size: 14 }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          "div",
+                          {
+                            className: "w-11 h-11 rounded-xl flex items-center justify-center mb-4",
+                            style: {
+                              background: "oklch(0.88 0.18 85/0.12)",
+                              border: "1px solid oklch(0.88 0.18 85/0.3)"
+                            },
+                            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              b2.icon,
+                              {
+                                className: "w-5 h-5",
+                                style: { color: "oklch(0.88 0.18 85)" }
+                              }
+                            )
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          "h3",
+                          {
+                            className: "font-display font-bold text-base mb-2",
+                            style: { color: "oklch(0.92 0.14 85)" },
+                            children: b2.title
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: b2.desc })
+                      ]
+                    },
+                    b2.title
+                  )) })
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "px-4 py-16", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          motion.div,
+          {
+            ref: stepsReveal.ref,
+            initial: { opacity: 0, y: 20 },
+            animate: stepsReveal.visible ? { opacity: 1, y: 0 } : {},
+            transition: { duration: 0.5 },
+            className: "max-w-4xl mx-auto",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-12", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "h2",
+                  {
+                    className: "font-display font-black text-3xl md:text-4xl mb-3",
+                    style: {
+                      background: "linear-gradient(135deg, oklch(0.92 0.18 88), oklch(0.80 0.16 82))",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text"
+                    },
+                    children: "How It Works"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground", children: "Three simple steps to start growing your patient base." })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: STEPS$1.map((step, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                motion.div,
+                {
+                  initial: { opacity: 0, x: -20 },
+                  animate: stepsReveal.visible ? { opacity: 1, x: 0 } : {},
+                  transition: { delay: i2 * 0.15, duration: 0.5 },
+                  className: "relative rounded-2xl p-7 overflow-hidden",
+                  style: {
+                    background: "oklch(0.10 0.015 65/0.8)",
+                    border: "1px solid oklch(0.88 0.18 85/0.2)"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, { size: 14 }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: "font-display font-black text-5xl mb-4 leading-none select-none",
+                        style: { color: "oklch(0.88 0.18 85/0.2)" },
+                        children: step.n
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "h3",
+                      {
+                        className: "font-display font-bold text-lg mb-2",
+                        style: { color: "oklch(0.92 0.14 85)" },
+                        children: step.title
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: step.desc })
+                  ]
+                },
+                step.n
+              )) })
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "section",
+          {
+            ref: formRef,
+            id: "register",
+            className: "px-4 py-16",
+            style: { background: "oklch(0.09 0.012 62/0.5)" },
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-2xl mx-auto", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-10", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "h2",
+                  {
+                    className: "font-display font-black text-3xl md:text-4xl mb-3",
+                    style: {
+                      background: "linear-gradient(135deg, oklch(0.92 0.18 88), oklch(0.80 0.16 82))",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text"
+                    },
+                    children: "Register Your Interest"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground", children: "Fill in your details and we'll reach out to onboard your clinic." })
+              ] }),
+              submitted ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                motion.div,
+                {
+                  initial: { opacity: 0, scale: 0.9 },
+                  animate: { opacity: 1, scale: 1 },
+                  className: "relative rounded-2xl p-10 text-center overflow-hidden",
+                  style: {
+                    background: "oklch(0.11 0.015 65/0.9)",
+                    border: "1px solid oklch(0.88 0.18 85/0.4)"
+                  },
+                  "data-ocid": "join.success_state",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, {}),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      CircleCheck,
+                      {
+                        className: "w-14 h-14 mx-auto mb-4",
+                        style: { color: "oklch(0.88 0.18 85)" }
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "h3",
+                      {
+                        className: "font-display font-black text-2xl mb-2",
+                        style: { color: "oklch(0.92 0.16 86)" },
+                        children: "Welcome to DantaNova!"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-muted-foreground", children: [
+                      "Thank you, Dr. ",
+                      form.fullName,
+                      ". We will contact you shortly at",
+                      " ",
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { color: "oklch(0.88 0.18 85)" }, children: form.email }),
+                      "."
+                    ] })
+                  ]
+                }
+              ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                motion.form,
+                {
+                  onSubmit: handleSubmit,
+                  initial: { opacity: 0, y: 20 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { duration: 0.4 },
+                  className: "relative rounded-2xl p-8 overflow-hidden",
+                  style: {
+                    background: "oklch(0.11 0.015 65/0.9)",
+                    border: "1px solid oklch(0.88 0.18 85/0.2)",
+                    backdropFilter: "blur(20px)"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, {}),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-5", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Label$1,
+                          {
+                            htmlFor: "fullName",
+                            style: { color: "oklch(0.82 0.12 82)" },
+                            children: "Full Name"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            id: "fullName",
+                            placeholder: "Dr. Priya Sharma",
+                            value: form.fullName,
+                            onChange: (e3) => handleChange("fullName", e3.target.value),
+                            required: true,
+                            "data-ocid": "join.fullname_input",
+                            style: {
+                              background: "oklch(0.09 0.01 60/0.7)",
+                              borderColor: "oklch(0.88 0.18 85/0.2)"
+                            }
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Label$1,
+                          {
+                            htmlFor: "clinicName",
+                            style: { color: "oklch(0.82 0.12 82)" },
+                            children: "Clinic Name"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            id: "clinicName",
+                            placeholder: "Smile Craft Dental",
+                            value: form.clinicName,
+                            onChange: (e3) => handleChange("clinicName", e3.target.value),
+                            required: true,
+                            "data-ocid": "join.clinicname_input",
+                            style: {
+                              background: "oklch(0.09 0.01 60/0.7)",
+                              borderColor: "oklch(0.88 0.18 85/0.2)"
+                            }
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Label$1,
+                          {
+                            htmlFor: "specialization",
+                            style: { color: "oklch(0.82 0.12 82)" },
+                            children: "Specialization"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          "select",
+                          {
+                            id: "specialization",
+                            value: form.specialization,
+                            onChange: (e3) => handleChange("specialization", e3.target.value),
+                            required: true,
+                            "data-ocid": "join.specialization_select",
+                            className: "w-full rounded-xl border px-3 py-2 text-sm transition-colors",
+                            style: {
+                              background: "oklch(0.09 0.01 60/0.7)",
+                              borderColor: "oklch(0.88 0.18 85/0.2)",
+                              color: "oklch(0.92 0.01 80)"
+                            },
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", disabled: true, children: "Select specialization" }),
+                              SPECIALIZATIONS.map((s2) => /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: s2, children: s2 }, s2))
+                            ]
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Label$1,
+                          {
+                            htmlFor: "city",
+                            style: { color: "oklch(0.82 0.12 82)" },
+                            children: "City"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          "select",
+                          {
+                            id: "city",
+                            value: form.city,
+                            onChange: (e3) => handleChange("city", e3.target.value),
+                            required: true,
+                            "data-ocid": "join.city_select",
+                            className: "w-full rounded-xl border px-3 py-2 text-sm transition-colors",
+                            style: {
+                              background: "oklch(0.09 0.01 60/0.7)",
+                              borderColor: "oklch(0.88 0.18 85/0.2)",
+                              color: "oklch(0.92 0.01 80)"
+                            },
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "", disabled: true, children: "Select city" }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "Mumbai", children: "Mumbai" }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "Pune", children: "Pune" })
+                            ]
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1.5 sm:col-span-2", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Label$1,
+                          {
+                            htmlFor: "area",
+                            style: { color: "oklch(0.82 0.12 82)" },
+                            children: "Area / Locality"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            id: "area",
+                            placeholder: "e.g. Andheri West, Baner",
+                            value: form.area,
+                            onChange: (e3) => handleChange("area", e3.target.value),
+                            required: true,
+                            "data-ocid": "join.area_input",
+                            style: {
+                              background: "oklch(0.09 0.01 60/0.7)",
+                              borderColor: "oklch(0.88 0.18 85/0.2)"
+                            }
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Label$1,
+                          {
+                            htmlFor: "phone",
+                            style: { color: "oklch(0.82 0.12 82)" },
+                            children: "Phone Number"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            id: "phone",
+                            type: "tel",
+                            placeholder: "+91 98765 43210",
+                            value: form.phone,
+                            onChange: (e3) => handleChange("phone", e3.target.value),
+                            required: true,
+                            "data-ocid": "join.phone_input",
+                            style: {
+                              background: "oklch(0.09 0.01 60/0.7)",
+                              borderColor: "oklch(0.88 0.18 85/0.2)"
+                            }
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1.5", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Label$1,
+                          {
+                            htmlFor: "email",
+                            style: { color: "oklch(0.82 0.12 82)" },
+                            children: "Email Address"
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Input,
+                          {
+                            id: "email",
+                            type: "email",
+                            placeholder: "doctor@clinic.com",
+                            value: form.email,
+                            onChange: (e3) => handleChange("email", e3.target.value),
+                            required: true,
+                            "data-ocid": "join.email_input",
+                            style: {
+                              background: "oklch(0.09 0.01 60/0.7)",
+                              borderColor: "oklch(0.88 0.18 85/0.2)"
+                            }
+                          }
+                        )
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-7", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        motion.button,
+                        {
+                          type: "submit",
+                          whileHover: { scale: 1.02 },
+                          whileTap: { scale: 0.97 },
+                          className: "w-full py-3.5 rounded-full font-bold text-base",
+                          style: {
+                            background: "linear-gradient(135deg, oklch(0.88 0.18 85), oklch(0.75 0.19 75))",
+                            color: "oklch(0.08 0.005 60)",
+                            boxShadow: "0 0 24px oklch(0.88 0.18 85/0.3)"
+                          },
+                          "data-ocid": "join.submit_button",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "inline w-4 h-4 mr-2" }),
+                            "Register My Clinic"
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-center mt-3 text-muted-foreground", children: [
+                        "By submitting you agree to our",
+                        " ",
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Link,
+                          {
+                            to: "/privacy",
+                            className: "hover:text-primary underline underline-offset-2",
+                            children: "Privacy Policy"
+                          }
+                        ),
+                        ". We will never share your data."
+                      ] })
+                    ] })
+                  ]
+                }
+              )
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "px-4 py-16", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          motion.div,
+          {
+            ref: outreachReveal.ref,
+            initial: { opacity: 0, y: 20 },
+            animate: outreachReveal.visible ? { opacity: 1, y: 0 } : {},
+            transition: { duration: 0.5 },
+            className: "max-w-2xl mx-auto",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-8", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "h2",
+                  {
+                    className: "font-display font-black text-2xl md:text-3xl mb-2",
+                    style: {
+                      background: "linear-gradient(135deg, oklch(0.92 0.18 88), oklch(0.80 0.16 82))",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text"
+                    },
+                    children: "Share DantaNova with Fellow Dentists"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground text-sm", children: "Copy this message and send it via SMS, email, or any messaging app." })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  className: "relative rounded-2xl overflow-hidden",
+                  style: {
+                    background: "oklch(0.11 0.015 65/0.9)",
+                    border: "1px solid oklch(0.88 0.18 85/0.25)"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, {}),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-6", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "div",
+                        {
+                          className: "text-sm leading-relaxed mb-5 p-4 rounded-xl",
+                          style: {
+                            background: "oklch(0.08 0.01 60/0.7)",
+                            border: "1px solid oklch(0.88 0.18 85/0.12)",
+                            color: "oklch(0.85 0.03 75)",
+                            fontFamily: "'Courier New', monospace"
+                          },
+                          children: OUTREACH_MSG
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        motion.button,
+                        {
+                          type: "button",
+                          whileHover: { scale: 1.03 },
+                          whileTap: { scale: 0.97 },
+                          onClick: handleCopy,
+                          className: "flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm",
+                          style: {
+                            background: copied ? "oklch(0.72 0.18 150/0.2)" : "oklch(0.88 0.18 85/0.12)",
+                            border: copied ? "1px solid oklch(0.72 0.18 150/0.5)" : "1px solid oklch(0.88 0.18 85/0.4)",
+                            color: copied ? "oklch(0.78 0.18 150)" : "oklch(0.88 0.18 85)"
+                          },
+                          "data-ocid": "join.copy_message_button",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(ClipboardCopy, { className: "w-4 h-4" }),
+                            copied ? "Copied!" : "Copy Message"
+                          ]
+                        }
+                      )
+                    ] })
+                  ]
+                }
+              )
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "section",
+          {
+            className: "px-4 py-16",
+            style: { background: "oklch(0.09 0.012 62/0.5)" },
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              motion.div,
+              {
+                ref: testimonialsReveal.ref,
+                initial: { opacity: 0, y: 20 },
+                animate: testimonialsReveal.visible ? { opacity: 1, y: 0 } : {},
+                transition: { duration: 0.5 },
+                className: "max-w-4xl mx-auto",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center mb-10", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "h2",
+                    {
+                      className: "font-display font-black text-3xl md:text-4xl mb-3",
+                      style: {
+                        background: "linear-gradient(135deg, oklch(0.92 0.18 88), oklch(0.80 0.16 82))",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text"
+                      },
+                      children: "What Dentists Say"
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-5", children: TESTIMONIALS.map((t2, i2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    motion.div,
+                    {
+                      initial: { opacity: 0, y: 28 },
+                      animate: testimonialsReveal.visible ? { opacity: 1, y: 0 } : {},
+                      transition: { delay: i2 * 0.1, duration: 0.45 },
+                      className: "relative rounded-2xl p-6 overflow-hidden",
+                      style: {
+                        background: "oklch(0.11 0.015 65/0.9)",
+                        border: "1px solid oklch(0.88 0.18 85/0.2)",
+                        backdropFilter: "blur(12px)"
+                      },
+                      "data-ocid": `join.testimonial.item.${i2 + 1}`,
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, { size: 12 }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-0.5 mb-3", children: Array.from({ length: t2.stars }, (_2, si) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Star,
+                          {
+                            className: "w-3.5 h-3.5 fill-current",
+                            style: { color: "oklch(0.88 0.18 85)" }
+                          },
+                          `${t2.name}-star-${si + 1}`
+                        )) }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          "p",
+                          {
+                            className: "text-sm leading-relaxed mb-5",
+                            style: { color: "oklch(0.82 0.03 75)" },
+                            children: [
+                              "“",
+                              t2.text,
+                              "”"
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "div",
+                            {
+                              className: "font-display font-bold text-sm",
+                              style: { color: "oklch(0.88 0.18 85)" },
+                              children: t2.name
+                            }
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-muted-foreground", children: t2.clinic })
+                        ] })
+                      ]
+                    },
+                    t2.name
+                  )) })
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "px-4 py-20", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          motion.div,
+          {
+            ref: ctaReveal.ref,
+            initial: { opacity: 0, scale: 0.95 },
+            animate: ctaReveal.visible ? { opacity: 1, scale: 1 } : {},
+            transition: { duration: 0.5 },
+            className: "relative max-w-3xl mx-auto rounded-3xl p-10 text-center overflow-hidden",
+            style: {
+              background: "linear-gradient(135deg, oklch(0.12 0.02 72/0.9), oklch(0.10 0.015 65/0.9))",
+              border: "1px solid oklch(0.88 0.18 85/0.3)",
+              boxShadow: "0 0 60px oklch(0.88 0.18 85/0.08)"
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  "aria-hidden": true,
+                  className: "absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none",
+                  style: { background: "oklch(0.88 0.18 85/0.12)" }
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(HudBrackets, { size: 22 }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Search,
+                {
+                  className: "w-12 h-12 mx-auto mb-5",
+                  style: { color: "oklch(0.88 0.18 85)" }
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "h2",
+                {
+                  className: "font-display font-black text-3xl md:text-4xl mb-4",
+                  style: {
+                    background: "linear-gradient(135deg, oklch(0.96 0.18 90), oklch(0.88 0.18 85))",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text"
+                  },
+                  children: "Ready to Join DantaNova?"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  className: "text-lg mb-8 max-w-lg mx-auto",
+                  style: { color: "oklch(0.72 0.04 75)" },
+                  children: "Join 100+ dentists already connecting with patients for free. No commission. No fees. Just growth."
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                motion.button,
+                {
+                  type: "button",
+                  whileHover: { scale: 1.05 },
+                  whileTap: { scale: 0.97 },
+                  onClick: scrollToForm,
+                  className: "inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold text-lg",
+                  style: {
+                    background: "linear-gradient(135deg, oklch(0.88 0.18 85), oklch(0.75 0.19 75))",
+                    color: "oklch(0.08 0.005 60)",
+                    boxShadow: "0 0 32px oklch(0.88 0.18 85/0.4)"
+                  },
+                  "data-ocid": "join.cta_register_button",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-5 h-5" }),
+                    "Register Now — It's Free"
+                  ]
+                }
+              )
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "footer",
+          {
+            className: "mt-auto px-6 py-8 text-center text-xs text-muted-foreground",
+            style: {
+              borderTop: "1px solid oklch(0.88 0.18 85/0.1)"
+            },
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
+              "© ",
+              (/* @__PURE__ */ new Date()).getFullYear(),
+              " DantaNova. Built by Swanandi Manoj Vispute  · ",
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "a",
+                {
+                  href: "mailto:DANTANOVA.14@gmail.com",
+                  className: "hover:text-primary transition-colors",
+                  children: "DANTANOVA.14@gmail.com"
+                }
+              ),
+              " · ",
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Back to Home" })
+            ] })
+          }
+        )
+      ]
+    }
+  );
 }
 const TRAFFIC_DATA = [
   { day: "Mon", visits: 1420, pct: 55 },
@@ -149335,25 +150518,25 @@ function YStatementPage() {
     }
   );
 }
-const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage--GpSPPUR.js"), true ? [] : void 0));
+const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage-DVCF6Gn2.js"), true ? [] : void 0));
 const DentalAgeCalculatorPageLazy = reactExports.lazy(
-  () => __vitePreload(() => import("./DentalAgeCalculatorPage-DK52-Tbu.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./DentalAgeCalculatorPage-HW0GIIpQ.js"), true ? [] : void 0)
 );
-const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-DpV6lf-S.js"), true ? [] : void 0));
-const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-B0mD8ixA.js"), true ? [] : void 0));
-const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-JarbT4BY.js"), true ? __vite__mapDeps([0,1]) : void 0));
-const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-4DbzU3xi.js"), true ? [] : void 0));
-const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-LYsgJZTS.js"), true ? [] : void 0));
-const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-CGrRxhzc.js"), true ? __vite__mapDeps([2,1]) : void 0));
-const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-yTnKoBgr.js"), true ? [] : void 0));
-const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-nlgkJZb0.js"), true ? [] : void 0));
-const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-DDVM-IlA.js"), true ? [] : void 0));
+const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-BJHKI3Ew.js"), true ? [] : void 0));
+const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-D5DpMID0.js"), true ? [] : void 0));
+const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-DizcNB0x.js"), true ? __vite__mapDeps([0,1]) : void 0));
+const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-DfLUm_PV.js"), true ? [] : void 0));
+const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-xvR90m0K.js"), true ? [] : void 0));
+const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-B_kUR4R2.js"), true ? __vite__mapDeps([2,1]) : void 0));
+const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-C0Q-h_SR.js"), true ? [] : void 0));
+const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-DPjwSDe5.js"), true ? [] : void 0));
+const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-BfYWxDjC.js"), true ? [] : void 0));
 const FindDentistNearMePage = reactExports.lazy(
-  () => __vitePreload(() => import("./FindDentistNearMePage-DwrFC83y.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./FindDentistNearMePage-AWuziGWY.js"), true ? [] : void 0)
 );
-const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-DUC2_SmB.js"), true ? [] : void 0));
-const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-BEf9JIcQ.js"), true ? [] : void 0));
-const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-DhDV7JhM.js"), true ? [] : void 0));
+const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-MctI3zhF.js"), true ? [] : void 0));
+const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-BOXOnIRg.js"), true ? [] : void 0));
+const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-CKHFJxUH.js"), true ? [] : void 0));
 function LazyFallback() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen flex items-center justify-center bg-background", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-3", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" }),
@@ -149682,6 +150865,11 @@ const dentalAgeRoute = createRoute({
   path: "/dental-age",
   component: withSuspense(DentalAgeCalculatorPageLazy)
 });
+const joinDentistRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/join-dentist",
+  component: JoinDentistPage
+});
 const routeTree = rootRoute.addChildren([
   homeRoute,
   teledentistryRoute,
@@ -149723,7 +150911,8 @@ const routeTree = rootRoute.addChildren([
   findDentistNearMeRoute,
   searchRoute,
   tipsArchiveRoute,
-  referralRoute
+  referralRoute,
+  joinDentistRoute
 ]);
 const router = createRouter({ routeTree });
 function App() {
@@ -149744,12 +150933,13 @@ export {
   Copy as E,
   FileText as F,
   Globe as G,
-  Users as H,
+  Award as H,
   Info as I,
-  ue as J,
-  Badge as K,
+  Users as J,
+  ue as K,
   Link as L,
   MapPin as M,
+  Badge as N,
   Play as P,
   QrCode as Q,
   RefreshCw as R,

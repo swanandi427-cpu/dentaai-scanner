@@ -16,6 +16,7 @@ import FindDentistPage from "@/pages/FindDentistPage";
 import HistoryPage from "@/pages/HistoryPage";
 import HomePage from "@/pages/HomePage";
 import IssuePassportPage from "@/pages/IssuePassportPage";
+import JoinDentistPage from "@/pages/JoinDentistPage";
 import MarketingDashboardPage from "@/pages/MarketingDashboardPage";
 import MessagesPage from "@/pages/MessagesPage";
 import MyBookingsPage from "@/pages/MyBookingsPage";
@@ -447,6 +448,11 @@ const dentalAgeRoute = createRoute({
   path: "/dental-age",
   component: withSuspense(DentalAgeCalculatorPageLazy),
 });
+const joinDentistRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/join-dentist",
+  component: JoinDentistPage,
+});
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
@@ -490,6 +496,7 @@ const routeTree = rootRoute.addChildren([
   searchRoute,
   tipsArchiveRoute,
   referralRoute,
+  joinDentistRoute,
 ]);
 
 const router = createRouter({ routeTree });
