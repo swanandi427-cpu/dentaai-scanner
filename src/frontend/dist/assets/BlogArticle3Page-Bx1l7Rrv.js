@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, L as Link, l as ArrowLeft, m as motion, q as Lock, G as Globe, s as Search, t as Briefcase, Z as Zap, b as ArrowRight } from "./index-BjeGDCX_.js";
+import { j as jsxRuntimeExports, L as Link, l as ArrowLeft, m as motion, q as Lock, G as Globe, s as Search, t as Briefcase, Z as Zap, b as ArrowRight } from "./index-BtZIWTag.js";
 const ARTICLE_URL = "https://dentaai-scanner-n0h.caffeine.xyz/blog/dental-passport-guide";
 const ARTICLE_TITLE = "The Dental Passport: Your Complete Guide to Seamless Dental Care Anywhere";
 const steps = [

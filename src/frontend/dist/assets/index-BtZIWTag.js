@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-DizcNB0x.js","assets/smile-Ue6Wa3-b.js","assets/SitemapPage-B_kUR4R2.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-nXqchKS4.js","assets/smile-CCItal51.js","assets/SitemapPage-B3Rksm6w.js"])))=>i.map(i=>d[i]);
 var __defProp = Object.defineProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
@@ -87074,12 +87074,20 @@ function JoinDentistPage() {
     phone: "",
     email: ""
   });
+  const [showFloating, setShowFloating] = reactExports.useState(false);
   const benefitsReveal = useReveal();
   const stepsReveal = useReveal();
   const statsReveal = useReveal();
   const outreachReveal = useReveal();
   const testimonialsReveal = useReveal();
   const ctaReveal = useReveal();
+  reactExports.useEffect(() => {
+    function onScroll() {
+      setShowFloating(window.scrollY > 420);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   function scrollToForm() {
     var _a3;
     (_a3 = formRef.current) == null ? void 0 : _a3.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -87427,6 +87435,137 @@ function JoinDentistPage() {
             ]
           }
         ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "px-4 py-14 relative overflow-hidden", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            motion.div,
+            {
+              className: "absolute inset-0 pointer-events-none",
+              animate: { opacity: [0.3, 0.6, 0.3] },
+              transition: {
+                duration: 3,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut"
+              },
+              style: {
+                background: "radial-gradient(ellipse 60% 60% at 50% 50%, oklch(0.88 0.18 85/0.06) 0%, transparent 70%)"
+              }
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative max-w-2xl mx-auto text-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4 justify-center mb-8", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "span",
+                {
+                  className: "flex-1 h-px",
+                  style: {
+                    background: "linear-gradient(90deg, transparent, oklch(0.88 0.18 85/0.35))"
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "span",
+                {
+                  className: "w-2 h-2 rounded-full",
+                  style: {
+                    background: "oklch(0.88 0.18 85)",
+                    boxShadow: "0 0 8px oklch(0.88 0.18 85)"
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "span",
+                {
+                  className: "flex-1 h-px",
+                  style: {
+                    background: "linear-gradient(90deg, oklch(0.88 0.18 85/0.35), transparent)"
+                  }
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              motion.p,
+              {
+                initial: { opacity: 0, y: 10 },
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true },
+                transition: { duration: 0.45 },
+                className: "text-sm font-semibold uppercase tracking-widest mb-3",
+                style: { color: "oklch(0.75 0.12 82)" },
+                children: "Ready in under 2 minutes"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              motion.h2,
+              {
+                initial: { opacity: 0, y: 16 },
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true },
+                transition: { duration: 0.5, delay: 0.05 },
+                className: "font-display font-black text-3xl md:text-4xl mb-3",
+                style: {
+                  background: "linear-gradient(135deg, oklch(0.96 0.18 90) 0%, oklch(0.88 0.18 85) 50%, oklch(0.75 0.19 75) 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text"
+                },
+                children: "Your Patients Are Waiting"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              motion.p,
+              {
+                initial: { opacity: 0, y: 10 },
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true },
+                transition: { duration: 0.5, delay: 0.1 },
+                className: "text-base mb-8 max-w-md mx-auto",
+                style: { color: "oklch(0.72 0.04 75)" },
+                children: "Register now and start receiving direct patient bookings — zero commission, free forever."
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              motion.button,
+              {
+                type: "button",
+                initial: { opacity: 0, scale: 0.92 },
+                whileInView: { opacity: 1, scale: 1 },
+                viewport: { once: true },
+                transition: { duration: 0.45, delay: 0.15 },
+                whileHover: {
+                  scale: 1.05,
+                  boxShadow: "0 0 44px oklch(0.88 0.18 85/0.55)"
+                },
+                whileTap: { scale: 0.97 },
+                onClick: scrollToForm,
+                className: "inline-flex items-center gap-3 px-10 py-4 rounded-full font-black text-lg",
+                style: {
+                  background: "linear-gradient(135deg, oklch(0.92 0.20 88), oklch(0.88 0.18 85), oklch(0.75 0.19 75))",
+                  color: "oklch(0.07 0.005 60)",
+                  boxShadow: "0 0 36px oklch(0.88 0.18 85/0.40), 0 4px 24px oklch(0.08 0.005 60/0.4)",
+                  letterSpacing: "-0.01em"
+                },
+                "data-ocid": "join.bridge_cta_button",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Star, { className: "w-5 h-5", fill: "currentColor" }),
+                  "Join as a Dentist — It's Free",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "w-5 h-5" })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              motion.p,
+              {
+                initial: { opacity: 0 },
+                whileInView: { opacity: 1 },
+                viewport: { once: true },
+                transition: { duration: 0.4, delay: 0.25 },
+                className: "mt-4 text-xs",
+                style: { color: "oklch(0.58 0.05 75)" },
+                children: "✓ No credit card  ·  ✓ No commission  ·  ✓ Verified badge"
+              }
+            )
+          ] })
+        ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "section",
           {
@@ -87966,6 +88105,43 @@ function JoinDentistPage() {
             ]
           }
         ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          motion.div,
+          {
+            initial: { y: 80, opacity: 0 },
+            animate: showFloating ? { y: 0, opacity: 1 } : { y: 80, opacity: 0 },
+            transition: { type: "spring", stiffness: 340, damping: 32 },
+            className: "fixed bottom-6 left-1/2 z-50 pointer-events-none",
+            style: { transform: "translateX(-50%)" },
+            "aria-hidden": !showFloating,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              motion.button,
+              {
+                type: "button",
+                whileHover: {
+                  scale: 1.07,
+                  boxShadow: "0 0 52px oklch(0.88 0.18 85/0.7)"
+                },
+                whileTap: { scale: 0.96 },
+                onClick: scrollToForm,
+                className: "pointer-events-auto inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-black text-sm shadow-2xl",
+                style: {
+                  background: "linear-gradient(135deg, oklch(0.92 0.20 88), oklch(0.88 0.18 85), oklch(0.75 0.19 75))",
+                  color: "oklch(0.07 0.005 60)",
+                  boxShadow: "0 0 32px oklch(0.88 0.18 85/0.50), 0 8px 32px oklch(0.08 0.005 60/0.6)",
+                  letterSpacing: "-0.01em"
+                },
+                tabIndex: showFloating ? 0 : -1,
+                "data-ocid": "join.floating_cta_button",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Star, { className: "w-4 h-4", fill: "currentColor" }),
+                  "Join as a Dentist — It's Free",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "w-4 h-4" })
+                ]
+              }
+            )
+          }
+        ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "footer",
           {
@@ -150518,25 +150694,25 @@ function YStatementPage() {
     }
   );
 }
-const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage-DVCF6Gn2.js"), true ? [] : void 0));
+const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage-DtwehX4M.js"), true ? [] : void 0));
 const DentalAgeCalculatorPageLazy = reactExports.lazy(
-  () => __vitePreload(() => import("./DentalAgeCalculatorPage-HW0GIIpQ.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./DentalAgeCalculatorPage-C2_A9aGa.js"), true ? [] : void 0)
 );
-const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-BJHKI3Ew.js"), true ? [] : void 0));
-const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-D5DpMID0.js"), true ? [] : void 0));
-const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-DizcNB0x.js"), true ? __vite__mapDeps([0,1]) : void 0));
-const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-DfLUm_PV.js"), true ? [] : void 0));
-const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-xvR90m0K.js"), true ? [] : void 0));
-const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-B_kUR4R2.js"), true ? __vite__mapDeps([2,1]) : void 0));
-const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-C0Q-h_SR.js"), true ? [] : void 0));
-const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-DPjwSDe5.js"), true ? [] : void 0));
-const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-BfYWxDjC.js"), true ? [] : void 0));
+const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-B00nGDAj.js"), true ? [] : void 0));
+const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-CQpheP5Q.js"), true ? [] : void 0));
+const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-nXqchKS4.js"), true ? __vite__mapDeps([0,1]) : void 0));
+const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-Bx1l7Rrv.js"), true ? [] : void 0));
+const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-Dn2PogiX.js"), true ? [] : void 0));
+const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-B3Rksm6w.js"), true ? __vite__mapDeps([2,1]) : void 0));
+const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-DEvXx1y4.js"), true ? [] : void 0));
+const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-CSXO3TBH.js"), true ? [] : void 0));
+const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-jGVnHx9Z.js"), true ? [] : void 0));
 const FindDentistNearMePage = reactExports.lazy(
-  () => __vitePreload(() => import("./FindDentistNearMePage-AWuziGWY.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./FindDentistNearMePage-DVduz-vh.js"), true ? [] : void 0)
 );
-const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-MctI3zhF.js"), true ? [] : void 0));
-const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-BOXOnIRg.js"), true ? [] : void 0));
-const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-CKHFJxUH.js"), true ? [] : void 0));
+const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-Bu7cAmuM.js"), true ? [] : void 0));
+const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-CQ9fwZ_y.js"), true ? [] : void 0));
+const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-ghM8I0XV.js"), true ? [] : void 0));
 function LazyFallback() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen flex items-center justify-center bg-background", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-3", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" }),

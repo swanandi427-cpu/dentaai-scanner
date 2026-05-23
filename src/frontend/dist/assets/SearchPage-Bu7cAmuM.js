@@ -1,4 +1,4 @@
-import { r as reactExports, j as jsxRuntimeExports, L as Link, l as ArrowLeft, s as Search } from "./index-BjeGDCX_.js";
+import { r as reactExports, j as jsxRuntimeExports, L as Link, l as ArrowLeft, s as Search } from "./index-BtZIWTag.js";
 const allResults = [
   {
     type: "page",

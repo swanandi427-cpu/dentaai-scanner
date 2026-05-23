@@ -18,7 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { motion, useInView } from "motion/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const OUTREACH_MSG =
@@ -186,12 +186,23 @@ export default function JoinDentistPage() {
     email: "",
   });
 
+  const [showFloating, setShowFloating] = useState(false);
+
   const benefitsReveal = useReveal();
   const stepsReveal = useReveal();
   const statsReveal = useReveal();
   const outreachReveal = useReveal();
   const testimonialsReveal = useReveal();
   const ctaReveal = useReveal();
+
+  // Show floating button after scrolling past hero
+  useEffect(() => {
+    function onScroll() {
+      setShowFloating(window.scrollY > 420);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function scrollToForm() {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -537,6 +548,130 @@ export default function JoinDentistPage() {
             ))}
           </div>
         </motion.div>
+      </section>
+
+      {/* ── JOIN CTA BRIDGE ─────────────────────────────────────── */}
+      <section className="px-4 py-14 relative overflow-hidden">
+        {/* Background pulse */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{
+            duration: 3,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, oklch(0.88 0.18 85/0.06) 0%, transparent 70%)",
+          }}
+        />
+        <div className="relative max-w-2xl mx-auto text-center">
+          {/* Divider with HUD motif */}
+          <div className="flex items-center gap-4 justify-center mb-8">
+            <span
+              className="flex-1 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, oklch(0.88 0.18 85/0.35))",
+              }}
+            />
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{
+                background: "oklch(0.88 0.18 85)",
+                boxShadow: "0 0 8px oklch(0.88 0.18 85)",
+              }}
+            />
+            <span
+              className="flex-1 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, oklch(0.88 0.18 85/0.35), transparent)",
+              }}
+            />
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45 }}
+            className="text-sm font-semibold uppercase tracking-widest mb-3"
+            style={{ color: "oklch(0.75 0.12 82)" }}
+          >
+            Ready in under 2 minutes
+          </motion.p>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="font-display font-black text-3xl md:text-4xl mb-3"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.96 0.18 90) 0%, oklch(0.88 0.18 85) 50%, oklch(0.75 0.19 75) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            Your Patients Are Waiting
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-base mb-8 max-w-md mx-auto"
+            style={{ color: "oklch(0.72 0.04 75)" }}
+          >
+            Register now and start receiving direct patient bookings — zero
+            commission, free forever.
+          </motion.p>
+
+          <motion.button
+            type="button"
+            initial={{ opacity: 0, scale: 0.92 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, delay: 0.15 }}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 0 44px oklch(0.88 0.18 85/0.55)",
+            }}
+            whileTap={{ scale: 0.97 }}
+            onClick={scrollToForm}
+            className="inline-flex items-center gap-3 px-10 py-4 rounded-full font-black text-lg"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.92 0.20 88), oklch(0.88 0.18 85), oklch(0.75 0.19 75))",
+              color: "oklch(0.07 0.005 60)",
+              boxShadow:
+                "0 0 36px oklch(0.88 0.18 85/0.40), 0 4px 24px oklch(0.08 0.005 60/0.4)",
+              letterSpacing: "-0.01em",
+            }}
+            data-ocid="join.bridge_cta_button"
+          >
+            <Star className="w-5 h-5" fill="currentColor" />
+            Join as a Dentist — It&#39;s Free
+            <ChevronRight className="w-5 h-5" />
+          </motion.button>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.25 }}
+            className="mt-4 text-xs"
+            style={{ color: "oklch(0.58 0.05 75)" }}
+          >
+            ✓ No credit card &nbsp;·&nbsp; ✓ No commission &nbsp;·&nbsp; ✓
+            Verified badge
+          </motion.p>
+        </div>
       </section>
 
       {/* ── REGISTRATION FORM ───────────────────────────────────── */}
@@ -1028,6 +1163,41 @@ export default function JoinDentistPage() {
           </motion.button>
         </motion.div>
       </section>
+
+      {/* ── FLOATING STICKY CTA ───────────────────────────────── */}
+      <motion.div
+        initial={{ y: 80, opacity: 0 }}
+        animate={showFloating ? { y: 0, opacity: 1 } : { y: 80, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 340, damping: 32 }}
+        className="fixed bottom-6 left-1/2 z-50 pointer-events-none"
+        style={{ transform: "translateX(-50%)" }}
+        aria-hidden={!showFloating}
+      >
+        <motion.button
+          type="button"
+          whileHover={{
+            scale: 1.07,
+            boxShadow: "0 0 52px oklch(0.88 0.18 85/0.7)",
+          }}
+          whileTap={{ scale: 0.96 }}
+          onClick={scrollToForm}
+          className="pointer-events-auto inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-black text-sm shadow-2xl"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.92 0.20 88), oklch(0.88 0.18 85), oklch(0.75 0.19 75))",
+            color: "oklch(0.07 0.005 60)",
+            boxShadow:
+              "0 0 32px oklch(0.88 0.18 85/0.50), 0 8px 32px oklch(0.08 0.005 60/0.6)",
+            letterSpacing: "-0.01em",
+          }}
+          tabIndex={showFloating ? 0 : -1}
+          data-ocid="join.floating_cta_button"
+        >
+          <Star className="w-4 h-4" fill="currentColor" />
+          Join as a Dentist — It&#39;s Free
+          <ChevronRight className="w-4 h-4" />
+        </motion.button>
+      </motion.div>
 
       {/* Footer */}
       <footer
