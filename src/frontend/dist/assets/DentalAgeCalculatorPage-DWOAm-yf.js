@@ -1,16 +1,4 @@
-import { c as createLucideIcon, r as reactExports, j as jsxRuntimeExports, L as Link, m as motion, h as CalendarDays, i as TrendingUp, C as CircleCheckBig, b as ArrowRight, R as RefreshCw, k as Share2, e as ChevronLeft, f as ChevronRight } from "./index-BtZIWTag.js";
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$1 = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3", key: "1u773s" }],
-  ["path", { d: "M12 17h.01", key: "p32p05" }]
-];
-const CircleHelp = createLucideIcon("circle-help", __iconNode$1);
+import { c as createLucideIcon, r as reactExports, j as jsxRuntimeExports, L as Link, m as motion, h as CalendarDays, i as TrendingUp, C as CircleCheckBig, b as ArrowRight, R as RefreshCw, k as Share2, e as ChevronLeft, f as ChevronRight, l as CircleHelp } from "./index-59P_mZ0k.js";
 /**
  * @license lucide-react v0.511.0 - ISC
  *

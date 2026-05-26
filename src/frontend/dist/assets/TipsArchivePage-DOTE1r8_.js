@@ -1,4 +1,4 @@
-import { j as jsxRuntimeExports, L as Link, l as ArrowLeft } from "./index-BtZIWTag.js";
+import { j as jsxRuntimeExports, L as Link, n as ArrowLeft } from "./index-59P_mZ0k.js";
 const sections = [
   {
     category: "Brushing",

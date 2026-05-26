@@ -23,7 +23,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { motion, useAnimation } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const STATUS_CONFIG = {
@@ -432,6 +432,9 @@ export default function ResultsPage() {
   const autoSavedRef = useRef(false);
 
   const score = scanResult ? Number(scanResult.healthScore) : 0;
+  const [cancerBannerDismissed, setCancerBannerDismissed] = useState(
+    () => sessionStorage.getItem("ocBannerDismissed") === "1",
+  );
 
   useEffect(() => {
     if (identity && scanResult && !autoSavedRef.current) {
@@ -646,6 +649,48 @@ export default function ResultsPage() {
             ))}
           </div>
         </motion.div>
+
+        {/* Oral Cancer Risk Banner */}
+        {!cancerBannerDismissed &&
+          (score < 40 ||
+            (scanResult?.teeth || []).some(
+              (t: { condition?: string; recommendation?: string }) =>
+                ["cancer", "malignant", "lesion", "suspicious"].some(
+                  (kw) =>
+                    (t.condition || "").toLowerCase().includes(kw) ||
+                    (t.recommendation || "").toLowerCase().includes(kw),
+                ),
+            )) && (
+            <div className="relative mb-6 rounded-xl border-2 border-red-500/60 bg-gradient-to-r from-red-950/60 via-black/80 to-yellow-900/40 p-4 flex items-start gap-4 shadow-lg shadow-red-900/30">
+              <div className="text-2xl mt-0.5">⚠️</div>
+              <div className="flex-1">
+                <p className="font-bold text-red-400 text-base mb-1">
+                  Oral Cancer Risk Detected — Act Early
+                </p>
+                <p className="text-sm text-gray-300 mb-3">
+                  Early detection saves lives. Connect with trusted NGOs and get
+                  support today.
+                </p>
+                <a
+                  href="/cancer-support"
+                  className="inline-block bg-gradient-to-r from-yellow-500 to-amber-600 text-black text-sm font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  Visit Cancer Support
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setCancerBannerDismissed(true);
+                  sessionStorage.setItem("ocBannerDismissed", "1");
+                }}
+                className="text-gray-400 hover:text-white text-xl leading-none mt-0.5"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
         {/* Full Report Box — RED when cavities present */}
         {issueTeeth.length > 0 && <ReportBox teeth={scanResult.teeth} />}

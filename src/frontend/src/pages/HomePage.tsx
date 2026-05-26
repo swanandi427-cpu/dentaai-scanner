@@ -20,6 +20,7 @@ import {
   ChevronUp,
   Database,
   Globe,
+  HeartHandshake,
   History,
   Lock,
   LogIn,
@@ -1648,6 +1649,7 @@ export default function HomePage() {
             { label: "Scan", to: "/scan" },
             { label: "Find Dentist", to: "/find-dentist" },
             { label: "Join as Dentist", to: "/join-dentist" },
+            { label: "Support Cancer Patients", to: "/cancer-support" },
             { label: "Dental Passport", to: "/passport" },
             { label: "Demo", to: "/demo" },
             { label: "Pitch", to: "/pitch" },
@@ -1734,6 +1736,7 @@ export default function HomePage() {
                 { label: "Scan", to: "/scan" },
                 { label: "Find Dentist", to: "/find-dentist" },
                 { label: "Join as Dentist", to: "/join-dentist" },
+                { label: "Support Cancer Patients", to: "/cancer-support" },
                 { label: "Dental Passport", to: "/passport" },
                 { label: "Demo", to: "/demo" },
                 { label: "Pitch", to: "/pitch" },
@@ -2170,6 +2173,69 @@ export default function HomePage() {
 
       {/* ── TRUST BADGES ── */}
       <div className="w-full max-w-5xl mx-auto px-6 pb-10">
+        {/* ── CANCER SUPPORT BANNER ── */}
+        <motion.div
+          variants={sV}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          className="w-full max-w-5xl mx-auto px-6 pb-6"
+        >
+          <div
+            className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl px-6 py-4"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.13 0.04 12/0.85), oklch(0.14 0.05 28/0.85), oklch(0.12 0.04 85/0.7))",
+              border: "1.5px solid oklch(0.82 0.18 80 / 0.35)",
+              boxShadow:
+                "0 0 20px oklch(0.62 0.19 28 / 0.15), 0 4px 16px rgba(0,0,0,0.3)",
+            }}
+            data-ocid="cancer_support.banner"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                style={{
+                  background: "oklch(0.62 0.19 28 / 0.2)",
+                  border: "1.5px solid oklch(0.72 0.18 52 / 0.5)",
+                }}
+              >
+                <HeartHandshake
+                  className="w-5 h-5"
+                  style={{ color: "oklch(0.85 0.16 60)" }}
+                />
+              </div>
+              <div>
+                <p
+                  className="text-sm font-bold"
+                  style={{ color: "oklch(0.88 0.14 72)" }}
+                >
+                  Fighting cancer? We're here for you.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  We connect patients with donors and trusted NGOs — completely
+                  free.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/cancer-support"
+              data-ocid="cancer_support.primary_button"
+              className="flex-shrink-0 flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold transition-all hover:scale-105 active:scale-95"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.55 0.21 12), oklch(0.62 0.19 28), oklch(0.72 0.18 52))",
+                color: "oklch(0.97 0.02 80)",
+                border: "1px solid oklch(0.82 0.18 80 / 0.4)",
+                boxShadow: "0 0 12px oklch(0.62 0.19 28 / 0.3)",
+              }}
+            >
+              <HeartHandshake className="w-3.5 h-3.5" />
+              Get Support / Donate
+            </Link>
+          </div>
+        </motion.div>
+
         <div className="flex flex-wrap gap-3 justify-center">
           {TRUST_BADGES.map((b) => (
             <span
@@ -3440,6 +3506,7 @@ export default function HomePage() {
                 { label: "Start Scan", to: "/scan" },
                 { label: "Find Dentist", to: "/find-dentist" },
                 { label: "Join as Dentist", to: "/join-dentist" },
+                { label: "Support Cancer Patients", to: "/cancer-support" },
                 { label: "Dental Passport", to: "/passport" },
                 { label: "Pitch", to: "/pitch" },
                 { label: "Watch Demo", to: "/demo" },

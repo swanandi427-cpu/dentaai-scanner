@@ -15,6 +15,11 @@ export interface ScanResult {
     severity: ScanSeverity;
     healthScore: bigint;
 }
+export interface CancerImpactStats {
+    pledgeCount: bigint;
+    donorCount: bigint;
+    patientCount: bigint;
+}
 export interface PassportRecord {
     id: bigint;
     patientEmail: string;
@@ -56,6 +61,15 @@ export interface DentistProfile {
     licenseNumber: string;
     specialties: Array<string>;
     location: string;
+}
+export interface DonorRegistration {
+    id: bigint;
+    preferredOrg: string;
+    name: string;
+    email: string;
+    timestamp: Time;
+    supportType: SupportType;
+    phone: string;
 }
 export interface ConnectionRequest {
     id: bigint;
@@ -124,6 +138,10 @@ export enum BookingUrgency {
     routine = "routine",
     urgent = "urgent"
 }
+export enum CancerType {
+    oral = "oral",
+    brain = "brain"
+}
 export enum ConnectionStatus {
     pending = "pending",
     accepted = "accepted",
@@ -144,6 +162,11 @@ export enum ScanSeverity {
     mild = "mild",
     severe = "severe",
     moderate = "moderate"
+}
+export enum SupportType {
+    awareness = "awareness",
+    financial = "financial",
+    volunteer = "volunteer"
 }
 export enum ToothStatus {
     risk = "risk",
@@ -215,6 +238,7 @@ export interface backendInterface {
     getCallerScanHistory(): Promise<Array<ScanResult>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getCancerImpactStats(): Promise<CancerImpactStats>;
     getConnectionRequest(id: bigint): Promise<ConnectionRequest | null>;
     getDentistBookings(): Promise<Array<Booking>>;
     getDentistProfile(dentist: Principal): Promise<DentistProfile | null>;
@@ -223,6 +247,7 @@ export interface backendInterface {
      */
     getDentistProfiles(): Promise<Array<DentistProfile>>;
     getDentistTier(dentistId: Principal): Promise<DentistTier>;
+    getDonorRegistrations(): Promise<Array<DonorRegistration>>;
     getFeedbackList(): Promise<Array<FeedbackEntry>>;
     getIncomingConnectionRequests(dentistEmail: string): Promise<Array<ConnectionRequest>>;
     getMessages(bookingId: bigint): Promise<Array<Message>>;
@@ -264,6 +289,7 @@ export interface backendInterface {
      */
     registerDentist(name: string, email: string, licenseNumber: string, specialties: Array<string>, location: string, bio: string): Promise<void>;
     registerDentistProfile(name: string, email: string, licenseNumber: string, specialties: Array<string>, location: string, bio: string, available: boolean): Promise<void>;
+    registerDonor(name: string, email: string, phone: string, supportType: SupportType, preferredOrg: string): Promise<bigint>;
     /**
      * / Alias for requestBooking
      */
@@ -282,6 +308,7 @@ export interface backendInterface {
     settleReimbursement(requestId: bigint, amountRupees: bigint): Promise<void>;
     submitFeedback(text: string): Promise<void>;
     submitMessage(bookingId: bigint, content: string): Promise<bigint>;
+    submitPatientRequest(name: string, email: string, phone: string, cancerType: CancerType, story: string, supportPreference: string): Promise<bigint>;
     submitReimbursementRequest(passportCode: string, treatmentDetails: string, amountRupees: bigint, notes: string): Promise<bigint>;
     submitScan(teeth: Array<ToothRecord>, healthScore: bigint, severity: ScanSeverity): Promise<bigint>;
     submitTestimonial(name: string, location: string, rating: bigint, content: string, role: string): Promise<bigint>;

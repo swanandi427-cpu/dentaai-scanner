@@ -34,6 +34,13 @@ export type BookingStatus = { 'cancelled' : null } |
 export type BookingUrgency = { 'emergency' : null } |
   { 'routine' : null } |
   { 'urgent' : null };
+export interface CancerImpactStats {
+  'pledgeCount' : bigint,
+  'donorCount' : bigint,
+  'patientCount' : bigint,
+}
+export type CancerType = { 'oral' : null } |
+  { 'brain' : null };
 export interface ConnectionRequest {
   'id' : bigint,
   'status' : ConnectionStatus,
@@ -59,6 +66,15 @@ export interface DentistProfile {
 export type DentistTier = { 'pro' : null } |
   { 'free' : null } |
   { 'elite' : null };
+export interface DonorRegistration {
+  'id' : bigint,
+  'preferredOrg' : string,
+  'name' : string,
+  'email' : string,
+  'timestamp' : Time,
+  'supportType' : SupportType,
+  'phone' : string,
+}
 export interface FeedbackEntry {
   'id' : bigint,
   'text' : string,
@@ -113,6 +129,9 @@ export interface ScanResult {
 export type ScanSeverity = { 'mild' : null } |
   { 'severe' : null } |
   { 'moderate' : null };
+export type SupportType = { 'awareness' : null } |
+  { 'financial' : null } |
+  { 'volunteer' : null };
 export interface Testimonial {
   'content' : string,
   'testimonialId' : bigint,
@@ -212,6 +231,7 @@ export interface _SERVICE {
   'getCallerScanHistory' : ActorMethod<[], Array<ScanResult>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getCancerImpactStats' : ActorMethod<[], CancerImpactStats>,
   'getConnectionRequest' : ActorMethod<[bigint], [] | [ConnectionRequest]>,
   'getDentistBookings' : ActorMethod<[], Array<Booking>>,
   'getDentistProfile' : ActorMethod<[Principal], [] | [DentistProfile]>,
@@ -220,6 +240,7 @@ export interface _SERVICE {
    */
   'getDentistProfiles' : ActorMethod<[], Array<DentistProfile>>,
   'getDentistTier' : ActorMethod<[Principal], DentistTier>,
+  'getDonorRegistrations' : ActorMethod<[], Array<DonorRegistration>>,
   'getFeedbackList' : ActorMethod<[], Array<FeedbackEntry>>,
   'getIncomingConnectionRequests' : ActorMethod<
     [string],
@@ -279,6 +300,10 @@ export interface _SERVICE {
     [string, string, string, Array<string>, string, string, boolean],
     undefined
   >,
+  'registerDonor' : ActorMethod<
+    [string, string, string, SupportType, string],
+    bigint
+  >,
   /**
    * / Alias for requestBooking
    */
@@ -306,6 +331,10 @@ export interface _SERVICE {
   'settleReimbursement' : ActorMethod<[bigint, bigint], undefined>,
   'submitFeedback' : ActorMethod<[string], undefined>,
   'submitMessage' : ActorMethod<[bigint, string], bigint>,
+  'submitPatientRequest' : ActorMethod<
+    [string, string, string, CancerType, string, string],
+    bigint
+  >,
   'submitReimbursementRequest' : ActorMethod<
     [string, string, bigint, string],
     bigint

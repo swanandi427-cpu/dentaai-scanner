@@ -1,39 +1,24 @@
 {
-  "overview": "DantaNova is an AI-powered dental health platform offering tooth scanning, 3D visualization, Dental Passport, emergency dentist connection, and a suite of free tools including health dashboards, risk quizzes, brushing timers, blog articles, referral system, PWA install, and geolocation-based dentist search — all with a premium gold Tony Stark HUD design.",
+  "overview": "DantaNova is an AI-powered dental health platform with oral cancer awareness, emergency dentist connection, and community cancer support features.",
   "features": [
-    "AI-powered dental scan (simulated) with 5-step camera wizard",
-    "3D interactive dental arch visualization with glass-enamel textures",
-    "Patient health dashboard with scan trend charts",
-    "Geolocation-based nearest dentist search",
-    "Dental Passport system — create, issue, lookup, and reimbursement",
-    "Emergency dentist booking with real-time messaging",
-    "Blog with dental health articles for SEO",
-    "Risk assessment quiz with instant health risk score",
-    "2-minute tooth brushing timer with quadrant guide",
-    "Before/after scan comparison page",
-    "Daily dental health tips rotating carousel",
-    "PWA manifest — installable as home screen app",
-    "Referral invite system with tracking",
-    "Social sharing buttons for WhatsApp and Twitter",
-    "Scroll-to-top, toast notifications, empty states, onboarding walkthrough",
-    "Y Combinator pitch page, pricing tiers, corporate plan",
-    "3 analytics dashboards (Marketing, Operations, Support)",
-    "SEO: schema.org, sitemap, IndexNow, AdSense, FAQPage, Blog schema",
-    "Gold Tony Stark HUD hero with scan-line animation and neural network",
-    "Changelog, HTML sitemap, search page, and accessibility improvements"
+    "AI dental scan and analysis",
+    "Interactive 3D dental arch visualization",
+    "Emergency Dentist Finder and booking",
+    "Dental Passport system",
+    "Cancer Support page with NGO directory",
+    "Donor and patient registration forms",
+    "Oral cancer risk prompt on scan results",
+    "Community impact stats for cancer awareness"
   ],
-  "category": "health-wellness",
+  "category": "health-tech",
   "tags": [
     "dental",
     "ai",
+    "cancer-support",
     "health",
-    "scanner",
+    "india",
     "dentist",
-    "pwa",
-    "3d",
-    "passport",
-    "booking",
-    "gold"
+    "oral-health"
   ],
-  "last_updated": "2026-05-08T20:43:35.407Z"
+  "last_updated": "2026-05-26T14:27:05.869Z"
 }

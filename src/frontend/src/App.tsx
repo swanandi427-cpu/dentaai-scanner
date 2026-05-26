@@ -1,4 +1,5 @@
 import CookieNotice from "@/components/CookieNotice";
+import FloatingCancerSupport from "@/components/FloatingCancerSupport";
 import FloatingFeedback from "@/components/FloatingFeedback";
 import IntroScreen from "@/components/IntroScreen";
 import KeyboardShortcutsModal from "@/components/KeyboardShortcutsModal";
@@ -8,6 +9,7 @@ import { ScanProvider } from "@/context/ScanContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import AnalysisPage from "@/pages/AnalysisPage";
 import BookByCodePage from "@/pages/BookByCodePage";
+import CancerSupportPage from "@/pages/CancerSupportPage";
 import CorporatePlanPage from "@/pages/CorporatePlanPage";
 import DemoPage from "@/pages/DemoPage";
 import DentistDashboardPage from "@/pages/DentistDashboardPage";
@@ -164,7 +166,7 @@ function RootLayout() {
         <Outlet />
       </div>
       <ThemeToggle />
-      <FloatingFeedback />
+      <FloatingFeedback /> <FloatingCancerSupport />
       <CookieNotice />
       <KeyboardShortcutsModal
         open={kbdOpen}
@@ -453,6 +455,11 @@ const joinDentistRoute = createRoute({
   path: "/join-dentist",
   component: JoinDentistPage,
 });
+const cancerSupportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/cancer-support",
+  component: CancerSupportPage,
+});
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
@@ -497,6 +504,7 @@ const routeTree = rootRoute.addChildren([
   tipsArchiveRoute,
   referralRoute,
   joinDentistRoute,
+  cancerSupportRoute,
 ]);
 
 const router = createRouter({ routeTree });

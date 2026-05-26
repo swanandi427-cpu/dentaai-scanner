@@ -20,6 +20,7 @@ type Booking__519012722 =
     status : BookingStatus__163633778;
     urgency : BookingUrgency__789987877
   };
+type CancerType__896786631 = {#brain; #oral};
 type ConnectionRequest__830195371 =
   {
     createdAt : Time__900049286;
@@ -45,6 +46,16 @@ type DentistProfile__642545049 =
     specialties : [Text]
   };
 type DentistTier__315967841 = {#elite; #free; #pro};
+type DonorRegistration__988097555 =
+  {
+    email : Text;
+    id : Nat;
+    name : Text;
+    phone : Text;
+    preferredOrg : Text;
+    supportType : SupportType__197195516;
+    timestamp : Time__900049286
+  };
 type FeedbackEntry__271733681 =
   {author : Principal; id : Nat; text : Text; timestamp : Time__900049286};
 type Int__270357528 = Int__616954475;
@@ -84,6 +95,17 @@ type PassportRecord__1042929136 =
     preApprovedBudget : Nat;
     treatmentHistory : Text
   };
+type PatientSupportRequest__362629093 =
+  {
+    cancerType : CancerType__896786631;
+    email : Text;
+    id : Nat;
+    name : Text;
+    phone : Text;
+    story : Text;
+    supportPreference : Text;
+    timestamp : Time__900049286
+  };
 type ReimbursementRequest__309717813 =
   {
     amountRupees : Nat;
@@ -108,6 +130,7 @@ type ScanResult__571685448 =
     timestamp : Time__900049286
   };
 type ScanSeverity__546739403 = {#mild; #moderate; #severe};
+type SupportType__197195516 = {#awareness; #financial; #volunteer};
 type Testimonial__393323594 =
   {
     author : Principal;
@@ -169,6 +192,12 @@ actor {
       var root : Node__46230540<Principal, DentistTier__315967841>;
       var size : Nat__490723111
     };
+  stable donorRegistrations :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?DonorRegistration__988097555]];
+      var elementIndex : Nat__490723111
+    };
   stable emailToDentistPrincipal :
     {var root : Node__46230540<Text, Principal>; var size : Nat__490723111};
   stable var feedbackCount : Nat;
@@ -184,8 +213,10 @@ actor {
     };
   stable var nextBookingId : Nat;
   stable nextConnectionIdRef : {var id : Nat};
+  stable nextDonorIdRef : {var id : Nat};
   stable var nextMessageId : Nat;
   stable var nextPassportId : Nat;
+  stable nextPatientReqIdRef : {var id : Nat};
   stable var nextReimbursementId : Nat;
   stable var nextScanId : Nat;
   stable var nextSlotId : Nat;
@@ -199,6 +230,12 @@ actor {
     };
   stable patientPassportMap :
     {var root : Node__46230540<Principal, Nat>; var size : Nat__490723111};
+  stable patientRequests :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?PatientSupportRequest__362629093]];
+      var elementIndex : Nat__490723111
+    };
   stable reimbursementRequests :
     {
       var root : Node__46230540<Nat, ReimbursementRequest__309717813>;

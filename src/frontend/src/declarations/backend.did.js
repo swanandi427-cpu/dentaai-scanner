@@ -114,6 +114,11 @@ export const UserProfile = IDL.Record({
   'email' : IDL.Text,
   'principalId' : IDL.Text,
 });
+export const CancerImpactStats = IDL.Record({
+  'pledgeCount' : IDL.Nat,
+  'donorCount' : IDL.Nat,
+  'patientCount' : IDL.Nat,
+});
 export const ConnectionStatus = IDL.Variant({
   'pending' : IDL.Null,
   'accepted' : IDL.Null,
@@ -132,6 +137,20 @@ export const DentistTier = IDL.Variant({
   'pro' : IDL.Null,
   'free' : IDL.Null,
   'elite' : IDL.Null,
+});
+export const SupportType = IDL.Variant({
+  'awareness' : IDL.Null,
+  'financial' : IDL.Null,
+  'volunteer' : IDL.Null,
+});
+export const DonorRegistration = IDL.Record({
+  'id' : IDL.Nat,
+  'preferredOrg' : IDL.Text,
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+  'timestamp' : Time,
+  'supportType' : SupportType,
+  'phone' : IDL.Text,
 });
 export const FeedbackEntry = IDL.Record({
   'id' : IDL.Nat,
@@ -156,6 +175,10 @@ export const ReimbursementRequest = IDL.Record({
   'netAmountRupees' : IDL.Nat,
   'platformFeeRupees' : IDL.Nat,
   'requestedBy' : IDL.Text,
+});
+export const CancerType = IDL.Variant({
+  'oral' : IDL.Null,
+  'brain' : IDL.Null,
 });
 
 export const idlService = IDL.Service({
@@ -212,6 +235,7 @@ export const idlService = IDL.Service({
   'getCallerScanHistory' : IDL.Func([], [IDL.Vec(ScanResult)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getCancerImpactStats' : IDL.Func([], [CancerImpactStats], ['query']),
   'getConnectionRequest' : IDL.Func(
       [IDL.Nat],
       [IDL.Opt(ConnectionRequest)],
@@ -225,6 +249,11 @@ export const idlService = IDL.Service({
     ),
   'getDentistProfiles' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
   'getDentistTier' : IDL.Func([IDL.Principal], [DentistTier], ['query']),
+  'getDonorRegistrations' : IDL.Func(
+      [],
+      [IDL.Vec(DonorRegistration)],
+      ['query'],
+    ),
   'getFeedbackList' : IDL.Func([], [IDL.Vec(FeedbackEntry)], ['query']),
   'getIncomingConnectionRequests' : IDL.Func(
       [IDL.Text],
@@ -311,6 +340,11 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'registerDonor' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, SupportType, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
   'requestAppointment' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, BookingUrgency],
       [IDL.Nat],
@@ -335,6 +369,11 @@ export const idlService = IDL.Service({
   'settleReimbursement' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'submitFeedback' : IDL.Func([IDL.Text], [], []),
   'submitMessage' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Nat], []),
+  'submitPatientRequest' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, CancerType, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
   'submitReimbursementRequest' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
       [IDL.Nat],
@@ -482,6 +521,11 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'principalId' : IDL.Text,
   });
+  const CancerImpactStats = IDL.Record({
+    'pledgeCount' : IDL.Nat,
+    'donorCount' : IDL.Nat,
+    'patientCount' : IDL.Nat,
+  });
   const ConnectionStatus = IDL.Variant({
     'pending' : IDL.Null,
     'accepted' : IDL.Null,
@@ -500,6 +544,20 @@ export const idlFactory = ({ IDL }) => {
     'pro' : IDL.Null,
     'free' : IDL.Null,
     'elite' : IDL.Null,
+  });
+  const SupportType = IDL.Variant({
+    'awareness' : IDL.Null,
+    'financial' : IDL.Null,
+    'volunteer' : IDL.Null,
+  });
+  const DonorRegistration = IDL.Record({
+    'id' : IDL.Nat,
+    'preferredOrg' : IDL.Text,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+    'timestamp' : Time,
+    'supportType' : SupportType,
+    'phone' : IDL.Text,
   });
   const FeedbackEntry = IDL.Record({
     'id' : IDL.Nat,
@@ -525,6 +583,7 @@ export const idlFactory = ({ IDL }) => {
     'platformFeeRupees' : IDL.Nat,
     'requestedBy' : IDL.Text,
   });
+  const CancerType = IDL.Variant({ 'oral' : IDL.Null, 'brain' : IDL.Null });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
@@ -580,6 +639,7 @@ export const idlFactory = ({ IDL }) => {
     'getCallerScanHistory' : IDL.Func([], [IDL.Vec(ScanResult)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getCancerImpactStats' : IDL.Func([], [CancerImpactStats], ['query']),
     'getConnectionRequest' : IDL.Func(
         [IDL.Nat],
         [IDL.Opt(ConnectionRequest)],
@@ -593,6 +653,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getDentistProfiles' : IDL.Func([], [IDL.Vec(DentistProfile)], ['query']),
     'getDentistTier' : IDL.Func([IDL.Principal], [DentistTier], ['query']),
+    'getDonorRegistrations' : IDL.Func(
+        [],
+        [IDL.Vec(DonorRegistration)],
+        ['query'],
+      ),
     'getFeedbackList' : IDL.Func([], [IDL.Vec(FeedbackEntry)], ['query']),
     'getIncomingConnectionRequests' : IDL.Func(
         [IDL.Text],
@@ -683,6 +748,11 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'registerDonor' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, SupportType, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
     'requestAppointment' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, BookingUrgency],
         [IDL.Nat],
@@ -707,6 +777,11 @@ export const idlFactory = ({ IDL }) => {
     'settleReimbursement' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'submitFeedback' : IDL.Func([IDL.Text], [], []),
     'submitMessage' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Nat], []),
+    'submitPatientRequest' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, CancerType, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
     'submitReimbursementRequest' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
         [IDL.Nat],

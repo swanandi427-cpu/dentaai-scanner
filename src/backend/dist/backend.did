@@ -37,6 +37,12 @@ type Testimonial =
    testimonialId: nat;
    timestamp: Time;
  };
+type SupportType = 
+ variant {
+   awareness;
+   financial;
+   volunteer;
+ };
 type ScanSeverity = 
  variant {
    mild;
@@ -102,6 +108,16 @@ type FeedbackEntry =
    "text": text;
    timestamp: Time;
  };
+type DonorRegistration = 
+ record {
+   email: text;
+   id: nat;
+   name: text;
+   phone: text;
+   preferredOrg: text;
+   supportType: SupportType;
+   timestamp: Time;
+ };
 type DentistTier = 
  variant {
    elite;
@@ -134,6 +150,17 @@ type ConnectionRequest =
    message: text;
    respondedAt: opt Time;
    status: ConnectionStatus;
+ };
+type CancerType = 
+ variant {
+   brain;
+   oral;
+ };
+type CancerImpactStats = 
+ record {
+   donorCount: nat;
+   patientCount: nat;
+   pledgeCount: nat;
  };
 type BookingUrgency = 
  variant {
@@ -211,12 +238,14 @@ service : {
   getCallerScanHistory: () -> (vec ScanResult) query;
   getCallerUserProfile: () -> (opt UserProfile) query;
   getCallerUserRole: () -> (UserRole) query;
+  getCancerImpactStats: () -> (CancerImpactStats) query;
   getConnectionRequest: (id: nat) -> (opt ConnectionRequest) query;
   getDentistBookings: () -> (vec Booking) query;
   getDentistProfile: (dentist: principal) -> (opt DentistProfile) query;
   /// Alias for getAllDentists
   getDentistProfiles: () -> (vec DentistProfile) query;
   getDentistTier: (dentistId: principal) -> (DentistTier) query;
+  getDonorRegistrations: () -> (vec DonorRegistration) query;
   getFeedbackList: () -> (vec FeedbackEntry) query;
   getIncomingConnectionRequests: (dentistEmail: text) ->
    (vec ConnectionRequest) query;
@@ -254,6 +283,8 @@ service : {
    specialties: vec text, location: text, bio: text) -> ();
   registerDentistProfile: (name: text, email: text, licenseNumber: text,
    specialties: vec text, location: text, bio: text, available: bool) -> ();
+  registerDonor: (name: text, email: text, phone: text, supportType:
+   SupportType, preferredOrg: text) -> (nat);
   /// Alias for requestBooking
   requestAppointment: (dentistEmail: text, requestedDate: text, notes: 
    text, urgency: BookingUrgency) -> (nat);
@@ -271,6 +302,8 @@ service : {
   settleReimbursement: (requestId: nat, amountRupees: nat) -> ();
   submitFeedback: ("text": text) -> ();
   submitMessage: (bookingId: nat, content: text) -> (nat);
+  submitPatientRequest: (name: text, email: text, phone: text, cancerType:
+   CancerType, story: text, supportPreference: text) -> (nat);
   submitReimbursementRequest: (passportCode: text, treatmentDetails: 
    text, amountRupees: nat, notes: text) -> (nat);
   submitScan: (teeth: vec ToothRecord, healthScore: nat, severity:

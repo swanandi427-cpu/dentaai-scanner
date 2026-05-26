@@ -8,6 +8,8 @@ import Runtime "mo:core/Runtime";
 import Prim "mo:prim";
 import DirectoryMixin "mixins/payments-api";
 import DirectoryTypes "types/payments";
+import CancerSupportMixin "mixins/cancer-support-api";
+import CancerTypes "types/cancer-support";
 
 
 
@@ -236,6 +238,20 @@ actor {
   let nextConnectionIdRef = { var id : Nat = 1 };
 
   include DirectoryMixin(dentistTiers, connectionRequests, nextConnectionIdRef);
+  // ─── Cancer support state ────────────────────────────────────────────────
+  let donorRegistrations  = List.empty<CancerTypes.DonorRegistration>();
+  let patientRequests     = List.empty<CancerTypes.PatientSupportRequest>();
+  let nextDonorIdRef      = { var id : Nat = 1 };
+  let nextPatientReqIdRef = { var id : Nat = 1 };
+
+  include CancerSupportMixin(
+    donorRegistrations,
+    patientRequests,
+    nextDonorIdRef,
+    nextPatientReqIdRef,
+    func(caller) { acIsAdmin(accessControlState, caller) },
+  );
+
 
   // ===================== AUTH MIXIN ENDPOINTS ==============================
 
