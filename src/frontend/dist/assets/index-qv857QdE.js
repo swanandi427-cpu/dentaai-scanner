@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-xZXq3cAm.js","assets/smile-Di_B5-Ta.js","assets/SitemapPage-DUqYzn5U.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-ChW2xIKa.js","assets/smile-ChB8VEJa.js","assets/SitemapPage-DD5XA5Is.js"])))=>i.map(i=>d[i]);
 var __defProp = Object.defineProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
@@ -42528,26 +42528,25 @@ function FloatingCancerSupport() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s2) => s2.location.pathname });
   if (pathname === "/cancer-support") return null;
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     motion.button,
     {
       type: "button",
-      initial: { opacity: 0, x: 60, scale: 0.8 },
+      initial: { opacity: 1, x: 0, scale: 1 },
       animate: { opacity: 1, x: 0, scale: 1 },
       exit: { opacity: 0, x: 60, scale: 0.8 },
-      transition: { delay: 1.5, duration: 0.45, ease: "easeOut" },
       onClick: () => navigate({ to: "/cancer-support" }),
       "aria-label": "Support cancer patients",
       "data-ocid": "cancer_support.open_modal_button",
-      className: "fixed z-50 flex items-center gap-2 rounded-full shadow-2xl group",
+      className: "fixed flex items-center gap-2 rounded-full shadow-2xl group",
       style: {
         bottom: "5.5rem",
         right: "1.5rem",
+        zIndex: 9999,
         padding: "0.6rem 1.1rem 0.6rem 0.8rem",
         background: "linear-gradient(135deg, oklch(0.55 0.21 12), oklch(0.62 0.19 28), oklch(0.72 0.18 52))",
         border: "1.5px solid oklch(0.82 0.18 80 / 0.55)",
         color: "oklch(0.97 0.02 80)",
-        boxShadow: "0 0 18px oklch(0.62 0.19 28 / 0.45), 0 0 50px oklch(0.72 0.18 52 / 0.15), 0 4px 16px rgba(0,0,0,0.45)",
         animation: "cancer-support-pulse 3s ease-in-out infinite"
       },
       whileHover: { scale: 1.07 },
@@ -42572,7 +42571,7 @@ function FloatingCancerSupport() {
       ]
     },
     "cancer-support-float"
-  ) });
+  );
 }
 function setRef(ref, value) {
   if (typeof ref === "function") {
@@ -152130,25 +152129,25 @@ function YStatementPage() {
     }
   );
 }
-const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage-BfDWNf2i.js"), true ? [] : void 0));
+const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage-BvjMNOXp.js"), true ? [] : void 0));
 const DentalAgeCalculatorPageLazy = reactExports.lazy(
-  () => __vitePreload(() => import("./DentalAgeCalculatorPage-DWOAm-yf.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./DentalAgeCalculatorPage-CvmGn5oq.js"), true ? [] : void 0)
 );
-const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-BW8ZGq00.js"), true ? [] : void 0));
-const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-uiMmGBTN.js"), true ? [] : void 0));
-const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-xZXq3cAm.js"), true ? __vite__mapDeps([0,1]) : void 0));
-const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-BnZ71Dl5.js"), true ? [] : void 0));
-const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-BCgErbNq.js"), true ? [] : void 0));
-const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-DUqYzn5U.js"), true ? __vite__mapDeps([2,1]) : void 0));
-const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-BwDVxsV2.js"), true ? [] : void 0));
-const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-DB-QY7D4.js"), true ? [] : void 0));
-const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-DLrr8EHr.js"), true ? [] : void 0));
+const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-CkV0t5P2.js"), true ? [] : void 0));
+const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-CWPHFkE4.js"), true ? [] : void 0));
+const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-ChW2xIKa.js"), true ? __vite__mapDeps([0,1]) : void 0));
+const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-CVUdAyRt.js"), true ? [] : void 0));
+const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-CjNYkGzo.js"), true ? [] : void 0));
+const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-DD5XA5Is.js"), true ? __vite__mapDeps([2,1]) : void 0));
+const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-CdUE73uI.js"), true ? [] : void 0));
+const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-BylPbrUF.js"), true ? [] : void 0));
+const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-BJ6XuhGo.js"), true ? [] : void 0));
 const FindDentistNearMePage = reactExports.lazy(
-  () => __vitePreload(() => import("./FindDentistNearMePage-RnEmr9T8.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./FindDentistNearMePage-C8aX7K14.js"), true ? [] : void 0)
 );
-const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-OSNdGKl2.js"), true ? [] : void 0));
-const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-DOTE1r8_.js"), true ? [] : void 0));
-const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-s1b33A7C.js"), true ? [] : void 0));
+const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-nKxLtnJ4.js"), true ? [] : void 0));
+const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-CuxyurOI.js"), true ? [] : void 0));
+const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-CslPds_D.js"), true ? [] : void 0));
 function LazyFallback() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen flex items-center justify-center bg-background", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-3", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" }),
@@ -152230,9 +152229,26 @@ function RootLayout() {
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { id: "main-content", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Outlet, {}) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(ThemeToggle, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(FloatingFeedback, {}),
-    " ",
     /* @__PURE__ */ jsxRuntimeExports.jsx(FloatingCancerSupport, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(CookieNotice, {}),
+    pathname !== "/cancer-support" && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      Link,
+      {
+        to: "/cancer-support",
+        "data-ocid": "nav.cancer_support_link",
+        className: "fixed top-3 right-16 z-[9998] hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all",
+        style: {
+          background: "linear-gradient(135deg, oklch(0.55 0.21 12 / 0.85), oklch(0.62 0.19 28 / 0.85))",
+          borderColor: "oklch(0.82 0.18 80 / 0.45)",
+          color: "oklch(0.97 0.02 80)",
+          backdropFilter: "blur(8px)"
+        },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(HeartHandshake, { className: "w-3 h-3" }),
+          "Cancer Support"
+        ]
+      }
+    ),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       KeyboardShortcutsModal,
       {

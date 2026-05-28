@@ -677,6 +677,9 @@ video {
 .right-10 {
   right: 2.5rem;
 }
+.right-16 {
+  right: 4rem;
+}
 .right-2 {
   right: 0.5rem;
 }
@@ -784,6 +787,9 @@ video {
 }
 .z-\[200\] {
   z-index: 200;
+}
+.z-\[9998\] {
+  z-index: 9998;
 }
 .z-\[9999\] {
   z-index: 9999;

@@ -45,7 +45,7 @@ import {
   createRouter,
   useRouterState,
 } from "@tanstack/react-router";
-import { Bug, Keyboard, Moon, Sun } from "lucide-react";
+import { Bug, HeartHandshake, Keyboard, Moon, Sun } from "lucide-react";
 import { type ComponentType, Suspense, lazy, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -166,8 +166,27 @@ function RootLayout() {
         <Outlet />
       </div>
       <ThemeToggle />
-      <FloatingFeedback /> <FloatingCancerSupport />
+      <FloatingFeedback />
+      <FloatingCancerSupport />
       <CookieNotice />
+      {/* Global Cancer Support nav link — always visible on all pages */}
+      {pathname !== "/cancer-support" && (
+        <Link
+          to="/cancer-support"
+          data-ocid="nav.cancer_support_link"
+          className="fixed top-3 right-16 z-[9998] hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.55 0.21 12 / 0.85), oklch(0.62 0.19 28 / 0.85))",
+            borderColor: "oklch(0.82 0.18 80 / 0.45)",
+            color: "oklch(0.97 0.02 80)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <HeartHandshake className="w-3 h-3" />
+          Cancer Support
+        </Link>
+      )}
       <KeyboardShortcutsModal
         open={kbdOpen}
         onClose={() => setKbdOpen(false)}
