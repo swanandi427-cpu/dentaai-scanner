@@ -756,6 +756,13 @@ body {
   }
 }
 
+.cancer-support-fab-wrapper {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 99999 !important;
+}
+
 @keyframes tip-progress {
   from {
     transform: scaleX(1);
