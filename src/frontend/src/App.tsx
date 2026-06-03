@@ -168,6 +168,31 @@ function RootLayout() {
       <ThemeToggle />
       <FloatingFeedback />
       <FloatingCancerSupport />
+      <a
+        href="/cancer-support"
+        style={{
+          position: "fixed",
+          bottom: "140px",
+          right: "24px",
+          zIndex: 9998,
+          background: "linear-gradient(135deg,#dc2626,#ffd700)",
+          color: "#fff",
+          padding: "10px 16px",
+          borderRadius: "50px",
+          fontWeight: 700,
+          fontSize: "12px",
+          border: "2px solid #ffd700",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          textDecoration: "none",
+          boxShadow: "0 4px 16px rgba(220,38,38,0.5)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span>🎗️ Cancer Support</span>
+      </a>
       <CookieNotice />
       <KeyboardShortcutsModal
         open={kbdOpen}

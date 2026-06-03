@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-C1nC2oyd.js","assets/smile-CJg0OmpP.js","assets/SitemapPage-DqLClGc-.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/BlogArticle2Page-B3F9QH9r.js","assets/smile-CDjyJ_SY.js","assets/SitemapPage-CodSIVqD.js"])))=>i.map(i=>d[i]);
 var __defProp = Object.defineProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
@@ -15758,7 +15758,7 @@ function mergeLoginOptions(loginOptions, otherLoginOptions) {
   };
 }
 const ONE_HOUR_IN_NANOSECONDS = BigInt(36e11);
-const DEFAULT_IDENTITY_PROVIDER = "https://id.ai";
+const DEFAULT_IDENTITY_PROVIDER = "https://id.ai/authorize";
 const InternetIdentityReactContext = reactExports.createContext(void 0);
 async function createAuthClient(createOptions) {
   const config2 = await loadConfig();
@@ -37311,55 +37311,34 @@ function CookieNotice() {
   ) });
 }
 function FloatingCancerSupport() {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: `
-        @keyframes cancerPulse {
-          0%, 100% {
-            box-shadow: 0 4px 20px rgba(255,107,107,0.6), 0 0 0 0 rgba(255,107,107,0.4);
-          }
-          50% {
-            box-shadow: 0 4px 30px rgba(255,215,0,0.8), 0 0 0 10px rgba(255,107,107,0);
-          }
-        }
-      ` }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "a",
-      {
-        href: "/cancer-support",
-        "aria-label": "Support cancer patients",
-        "data-ocid": "cancer_support.open_modal_button",
-        style: {
-          position: "fixed",
-          bottom: "24px",
-          right: "24px",
-          zIndex: 99999,
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          padding: "10px 20px",
-          borderRadius: "50px",
-          background: "linear-gradient(135deg, #ff6b6b, #ffd700)",
-          color: "#000",
-          fontWeight: 700,
-          fontSize: "14px",
-          cursor: "pointer",
-          textDecoration: "none",
-          boxShadow: "0 4px 20px rgba(255,107,107,0.6)",
-          border: "2px solid #ffd700",
-          animation: "cancerPulse 2s ease-in-out infinite"
-        },
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            HeartHandshake,
-            {
-              style: { width: "18px", height: "18px", flexShrink: 0 }
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Cancer Support" })
-        ]
-      }
-    )
-  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "a",
+    {
+      href: "/cancer-support",
+      "data-ocid": "cancer_support.open_modal_button",
+      style: {
+        position: "fixed",
+        bottom: "80px",
+        right: "24px",
+        zIndex: 9999,
+        background: "linear-gradient(135deg,#dc2626,#ffd700)",
+        color: "#fff",
+        padding: "12px 20px",
+        borderRadius: "50px",
+        fontWeight: 700,
+        fontSize: "14px",
+        border: "2px solid #ffd700",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        textDecoration: "none",
+        boxShadow: "0 4px 20px rgba(220,38,38,0.5)",
+        whiteSpace: "nowrap"
+      },
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "♥ Cancer Support" })
+    }
+  );
 }
 function setRef(ref, value) {
   if (typeof ref === "function") {
@@ -55994,6 +55973,83 @@ function CancerSupportPage() {
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-border/60", children: "|" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-semibold text-primary", children: "Cancer Support" })
     ] }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        style: {
+          textAlign: "center",
+          padding: "32px 16px",
+          background: "rgba(220,38,38,0.08)",
+          borderBottom: "2px solid #ffd700"
+        },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "h2",
+            {
+              style: {
+                fontSize: "28px",
+                color: "#ffd700",
+                fontWeight: "bold",
+                marginBottom: "24px"
+              },
+              children: "🎗️ Select Cancer Support Type"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              style: {
+                display: "flex",
+                justifyContent: "center",
+                flexWrap: "wrap"
+              },
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "a",
+                  {
+                    href: "#oral-cancer",
+                    style: {
+                      display: "inline-block",
+                      padding: "28px 40px",
+                      fontSize: "22px",
+                      fontWeight: "bold",
+                      borderRadius: "16px",
+                      color: "#fff",
+                      textDecoration: "none",
+                      margin: "12px",
+                      border: "3px solid #ffd700",
+                      background: "linear-gradient(135deg,#dc2626,#b91c1c)",
+                      boxShadow: "0 6px 24px rgba(220,38,38,0.5)"
+                    },
+                    children: "🦷 Oral Cancer Support"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "a",
+                  {
+                    href: "#brain-cancer",
+                    style: {
+                      display: "inline-block",
+                      padding: "28px 40px",
+                      fontSize: "22px",
+                      fontWeight: "bold",
+                      borderRadius: "16px",
+                      color: "#fff",
+                      textDecoration: "none",
+                      margin: "12px",
+                      border: "3px solid #ffd700",
+                      background: "linear-gradient(135deg,#7c3aed,#ffd700)",
+                      boxShadow: "0 6px 24px rgba(124,58,237,0.5)"
+                    },
+                    children: "🧠 Brain Cancer Support"
+                  }
+                )
+              ]
+            }
+          )
+        ]
+      }
+    ),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "relative overflow-hidden py-24 md:py-36", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute inset-0 pointer-events-none", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" }),
@@ -152131,25 +152187,25 @@ function YStatementPage() {
     }
   );
 }
-const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage-DI4vNItf.js"), true ? [] : void 0));
+const TeledentistryPageLazy = reactExports.lazy(() => __vitePreload(() => import("./TeledentistryPage-C-Nem-rk.js"), true ? [] : void 0));
 const DentalAgeCalculatorPageLazy = reactExports.lazy(
-  () => __vitePreload(() => import("./DentalAgeCalculatorPage-Di0tpLzw.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./DentalAgeCalculatorPage-BQ-Ho0hF.js"), true ? [] : void 0)
 );
-const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-k_PNMDHl.js"), true ? [] : void 0));
-const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-DaMuKaqg.js"), true ? [] : void 0));
-const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-C1nC2oyd.js"), true ? __vite__mapDeps([0,1]) : void 0));
-const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-Dh4_zEQm.js"), true ? [] : void 0));
-const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-BgvMTZW5.js"), true ? [] : void 0));
-const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-DqLClGc-.js"), true ? __vite__mapDeps([2,1]) : void 0));
-const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-D4am79rN.js"), true ? [] : void 0));
-const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-D0oKyZgb.js"), true ? [] : void 0));
-const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-C84re2Ca.js"), true ? [] : void 0));
+const BlogPage = reactExports.lazy(() => __vitePreload(() => import("./BlogPage-D0iN_8dN.js"), true ? [] : void 0));
+const BlogArticle1Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle1Page-BVMYnbg4.js"), true ? [] : void 0));
+const BlogArticle2Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle2Page-B3F9QH9r.js"), true ? __vite__mapDeps([0,1]) : void 0));
+const BlogArticle3Page = reactExports.lazy(() => __vitePreload(() => import("./BlogArticle3Page-BuFKD18i.js"), true ? [] : void 0));
+const ChangelogPage = reactExports.lazy(() => __vitePreload(() => import("./ChangelogPage-BXy1cYnk.js"), true ? [] : void 0));
+const SitemapPage = reactExports.lazy(() => __vitePreload(() => import("./SitemapPage-CodSIVqD.js"), true ? __vite__mapDeps([2,1]) : void 0));
+const BrushTimerPage = reactExports.lazy(() => __vitePreload(() => import("./BrushTimerPage-qe9l93Q6.js"), true ? [] : void 0));
+const RiskQuizPage = reactExports.lazy(() => __vitePreload(() => import("./RiskQuizPage-B_9qxVcu.js"), true ? [] : void 0));
+const CompareScansPage = reactExports.lazy(() => __vitePreload(() => import("./CompareScansPage-HTBRHszi.js"), true ? [] : void 0));
 const FindDentistNearMePage = reactExports.lazy(
-  () => __vitePreload(() => import("./FindDentistNearMePage-BF0-vXGH.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./FindDentistNearMePage-DDe09Dw0.js"), true ? [] : void 0)
 );
-const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-DUovu8zo.js"), true ? [] : void 0));
-const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-CHxorVOk.js"), true ? [] : void 0));
-const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-D5BOnmHc.js"), true ? [] : void 0));
+const SearchPage = reactExports.lazy(() => __vitePreload(() => import("./SearchPage-DutaN9X3.js"), true ? [] : void 0));
+const TipsArchivePage = reactExports.lazy(() => __vitePreload(() => import("./TipsArchivePage-CwN35T-X.js"), true ? [] : void 0));
+const ReferralPage = reactExports.lazy(() => __vitePreload(() => import("./ReferralPage-DjqrBQqb.js"), true ? [] : void 0));
 function LazyFallback() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen flex items-center justify-center bg-background", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-3", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" }),
@@ -152232,6 +152288,33 @@ function RootLayout() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(ThemeToggle, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(FloatingFeedback, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(FloatingCancerSupport, {}),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "a",
+      {
+        href: "/cancer-support",
+        style: {
+          position: "fixed",
+          bottom: "140px",
+          right: "24px",
+          zIndex: 9998,
+          background: "linear-gradient(135deg,#dc2626,#ffd700)",
+          color: "#fff",
+          padding: "10px 16px",
+          borderRadius: "50px",
+          fontWeight: 700,
+          fontSize: "12px",
+          border: "2px solid #ffd700",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          textDecoration: "none",
+          boxShadow: "0 4px 16px rgba(220,38,38,0.5)",
+          whiteSpace: "nowrap"
+        },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "🎗️ Cancer Support" })
+      }
+    ),
     /* @__PURE__ */ jsxRuntimeExports.jsx(CookieNotice, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       KeyboardShortcutsModal,

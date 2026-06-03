@@ -407,6 +407,71 @@ export default function CancerSupportPage() {
         </div>
       </nav>
 
+      {/* ── CANCER TYPE SELECTOR ── */}
+      <div
+        style={{
+          textAlign: "center",
+          padding: "32px 16px",
+          background: "rgba(220,38,38,0.08)",
+          borderBottom: "2px solid #ffd700",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "28px",
+            color: "#ffd700",
+            fontWeight: "bold",
+            marginBottom: "24px",
+          }}
+        >
+          🎗️ Select Cancer Support Type
+        </h2>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <a
+            href="#oral-cancer"
+            style={{
+              display: "inline-block",
+              padding: "28px 40px",
+              fontSize: "22px",
+              fontWeight: "bold",
+              borderRadius: "16px",
+              color: "#fff",
+              textDecoration: "none",
+              margin: "12px",
+              border: "3px solid #ffd700",
+              background: "linear-gradient(135deg,#dc2626,#b91c1c)",
+              boxShadow: "0 6px 24px rgba(220,38,38,0.5)",
+            }}
+          >
+            🦷 Oral Cancer Support
+          </a>
+          <a
+            href="#brain-cancer"
+            style={{
+              display: "inline-block",
+              padding: "28px 40px",
+              fontSize: "22px",
+              fontWeight: "bold",
+              borderRadius: "16px",
+              color: "#fff",
+              textDecoration: "none",
+              margin: "12px",
+              border: "3px solid #ffd700",
+              background: "linear-gradient(135deg,#7c3aed,#ffd700)",
+              boxShadow: "0 6px 24px rgba(124,58,237,0.5)",
+            }}
+          >
+            🧠 Brain Cancer Support
+          </a>
+        </div>
+      </div>
+
       {/* ── HERO ── */}
       <section className="relative overflow-hidden py-24 md:py-36">
         {/* HUD background */}
